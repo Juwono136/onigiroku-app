@@ -1,0 +1,138 @@
+# =============================================================================
+# Onigiroku — .gitignore
+# Keep the repo lean for GitHub while preserving everything needed to build
+# and deploy (source, lockfiles, go.sum, public brand assets, drizzle SQL).
+# =============================================================================
+
+# ----- Dependencies -----
+node_modules/
+.pnp
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/versions
+.pnpm-store/
+
+# ----- Next.js / frontend builds -----
+.next/
+out/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+
+# ----- Go backend builds / caches -----
+backend/bin/
+backend/tmp/
+backend/vendor/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+__debug_bin*
+
+# ----- Environment & secrets (commit .env.example only) -----
+.env
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!.env*.example
+*.pem
+*.key
+*.p12
+*.pfx
+secrets/
+credentials*.json
+service-account*.json
+
+# ----- Logs & debug -----
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# ----- Tests / coverage -----
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+blob-report/
+
+# ----- Large / local runtime data (do NOT commit uploads or dumps) -----
+uploads/
+tmp/
+.temp/
+.tmp/
+storage/data/
+storage/volumes/
+public/uploads/
+data/
+*.sql.gz
+*.dump
+*.backup
+*.bak
+dump.rdb
+appendonly.aof
+*.mp4
+*.mov
+*.avi
+*.mkv
+*.webm
+*.zip
+*.7z
+*.rar
+*.tar
+*.tar.gz
+*.tgz
+# Keep brand images; ignore oversized accidental drops in public
+public/**/*.psd
+public/**/*.ai
+public/**/*.sketch
+
+# ----- OS / IDE -----
+.DS_Store
+Thumbs.db
+Desktop.ini
+.idea/
+*.swp
+*.swo
+*~
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json.example
+!.vscode/launch.json.example
+
+# ----- Deploy / cloud local state -----
+.vercel
+.netlify
+.serverless/
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# ----- Caches -----
+.eslintcache
+.stylelintcache
+.cache/
+*.pid
+*.seed
+
+# ----- Agent / local tooling noise (safe to regenerate) -----
+.cursor/
+agent-tools/
+agent-transcripts/
+
+# ----- Misc -----
+*.local
+!*.example
+ehthumbs.db

@@ -1,0 +1,353 @@
+{
+  "meta": {
+    "title": "Onigiroku — Measurable Japanese Learning, Practice & Progress",
+    "description": "A SaaS platform for Japanese practice, assessments, quizzes, and real-time learning progress monitoring. Prepare for exams, master kana & kanji, track mastery.",
+    "keywords": "learn Japanese, JLPT, onigiroku, Japanese quiz, Japanese assessment"
+  },
+  "nav": {
+    "features": "Features",
+    "howItWorks": "How it works",
+    "pricing": "Pricing",
+    "faq": "FAQ",
+    "login": "Log in",
+    "register": "Start free",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
+  },
+  "hero": {
+    "eyebrow": "Evidence-based Japanese learning platform",
+    "title": "Learn Japanese with clarity, see progress that matters",
+    "subtitle": "Onigiroku combines practice, assessments, quizzes, and real-time analytics so you know exactly where your strengths and gaps are.",
+    "ctaPrimary": "Try 1-day trial",
+    "ctaSecondary": "See how it works",
+    "trust": "Built for exam prep, formative practice, and long-term mastery.",
+    "orbLabel": "Learning readiness",
+    "orbHint": "今日の学習",
+    "scrollExplore": "Scroll to explore"
+  },
+  "features": {
+    "eyebrow": "Capabilities",
+    "title": "Everything you need to improve consistently",
+    "subtitle": "One platform to practice, assess, study materials, and monitor capability growth.",
+    "items": {
+      "practice": {
+        "title": "Practice & drills",
+        "description": "Kana, kanji, vocabulary, and JLPT competencies with clear feedback."
+      },
+      "assessment": {
+        "title": "Realistic assessments",
+        "description": "Timed exam simulations plus formative mode with immediate explanations."
+      },
+      "analytics": {
+        "title": "Real-time progress",
+        "description": "Mastery dashboards, readiness, streaks, and actionable weak topics."
+      },
+      "materials": {
+        "title": "Structured materials",
+        "description": "Learning notes connected to practice and assessment outcomes."
+      },
+      "integrity": {
+        "title": "Integrity analytics",
+        "description": "Separates independent vs assisted answers so scores stay honest."
+      },
+      "bilingual": {
+        "title": "ID & EN UI",
+        "description": "Bilingual interface ready for global expansion, with accurate Japanese content."
+      }
+    }
+  },
+  "howItWorks": {
+    "eyebrow": "How it works",
+    "title": "Get started in three steps",
+    "subtitle": "Simple flow, measurable impact.",
+    "steps": {
+      "one": {
+        "title": "Sign up & verify",
+        "description": "Create an account, verify email, and unlock a 1-day premium trial."
+      },
+      "two": {
+        "title": "Practice or assess",
+        "description": "Choose drills, formative quizzes, or exam simulations for your goal."
+      },
+      "three": {
+        "title": "Monitor & improve",
+        "description": "Read mastery insights, focus weak topics, and retry with intent."
+      }
+    }
+  },
+  "preview": {
+    "title": "Track progress like a personal dashboard",
+    "subtitle": "Readiness, confidence, streak, and next-step recommendations in one view.",
+    "readiness": "Readiness index",
+    "mastery": "Active mastery",
+    "streak": "Study streak",
+    "weak": "This week's focus",
+    "weakValue": "Particles & N4 kanji",
+    "readinessValue": "78",
+    "masteryValue": "64",
+    "streakValue": "12"
+  },
+  "pricing": {
+    "title": "Start free, continue when ready",
+    "subtitle": "1-day trial after verification. Monthly subscription for full access.",
+    "currencyNote": "Payments are processed in IDR via Xendit.",
+    "trial": {
+      "name": "Trial",
+      "price": "Free",
+      "period": "1 day",
+      "cta": "Activate trial",
+      "features": [
+        "Time-limited premium access",
+        "Core practice & quizzes",
+        "Basic progress dashboard"
+      ]
+    },
+    "pro": {
+      "name": "Monthly Pro",
+      "price": "Soon",
+      "period": "/month",
+      "cta": "Join waiting list",
+      "badge": "Recommended",
+      "features": [
+        "Full assessments & review",
+        "Real-time mastery analytics",
+        "Structured learning materials",
+        "History & progress snapshots"
+      ]
+    }
+  },
+  "faq": {
+    "title": "Frequently asked questions",
+    "subtitle": "Clear answers before you begin.",
+    "items": {
+      "q1": {
+        "question": "How is Onigiroku different from a regular quiz app?",
+        "answer": "We record detailed learning events—including hints and reveals—then compute evidence-based mastery, not just a final score."
+      },
+      "q2": {
+        "question": "Is it suitable for JLPT prep?",
+        "answer": "Yes. Timed simulation and formative modes connect to a competency taxonomy by level."
+      },
+      "q3": {
+        "question": "Which interface languages are supported?",
+        "answer": "Indonesian and English for the UI. Japanese learning content uses proper fonts and rendering, with furigana support on the roadmap."
+      },
+      "q4": {
+        "question": "How does payment work?",
+        "answer": "Checkout uses Xendit (QRIS, virtual account, e-wallet, and other supported methods) with IDR as the charge currency."
+      }
+    }
+  },
+  "cta": {
+    "title": "Ready to see your real learning progress?",
+    "subtitle": "Join Onigiroku and build measurable Japanese ability.",
+    "button": "Get started"
+  },
+  "footer": {
+    "tagline": "Learn Japanese with practice, assessment, and progress intelligence.",
+    "product": "Product",
+    "company": "Company",
+    "legal": "Legal",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact",
+    "rights": "© {year} Onigiroku. All rights reserved."
+  },
+  "announcements": {
+    "eyebrow": "Announcements",
+    "title": "News & updates from Onigiroku",
+    "subtitle": "Product news, learning tips, and platform notices — up to five featured slides.",
+    "prevLabel": "Previous announcement",
+    "nextLabel": "Next announcement",
+    "autoPlayMs": "6500",
+    "slides": {
+      "welcome": {
+        "enabled": "true",
+        "imageAlt": "Welcome to Onigiroku",
+        "title": "Welcome to Onigiroku",
+        "caption": "Evidence-based Japanese learning with progress you can explain.",
+        "href": "#"
+      },
+      "trial": {
+        "enabled": "true",
+        "imageAlt": "24-hour premium trial",
+        "title": "24-hour premium trial",
+        "caption": "Verify your email and unlock a measured day of full access.",
+        "href": "/register"
+      },
+      "mastery": {
+        "enabled": "true",
+        "imageAlt": "Mastery that explains itself",
+        "title": "Mastery that explains itself",
+        "caption": "Independent vs assisted analytics keep every score honest.",
+        "href": "#features"
+      },
+      "jlpt": {
+        "enabled": "true",
+        "imageAlt": "Exam and formative modes",
+        "title": "Exam & formative modes",
+        "caption": "Timed simulations plus clear explanations in one flow.",
+        "href": "#how-it-works"
+      },
+      "update": {
+        "enabled": "true",
+        "imageAlt": "Product updates",
+        "title": "Product updates",
+        "caption": "Watch this space for release notes and community news.",
+        "href": "#"
+      }
+    },
+    "slideKicker": "お知らせ"
+  },
+  "notFound": {
+    "code": "404",
+    "title": "This path leads nowhere",
+    "description": "The page you requested is not part of Onigiroku. It may have moved, been removed, or the link was typed incorrectly.",
+    "home": "Back to home",
+    "login": "Log in"
+  },
+  "auth": {
+    "divider": "or",
+    "fields": {
+      "name": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "newPassword": "New password"
+    },
+    "placeholders": {
+      "name": "Your name",
+      "email": "you@example.com",
+      "password": "Enter your password",
+      "newPassword": "At least 6 characters",
+      "confirmPassword": "Repeat your password"
+    },
+    "password": {
+      "show": "Show password",
+      "hide": "Hide password"
+    },
+    "google": {
+      "login": "Continue with Google",
+      "register": "Sign up with Google"
+    },
+    "login": {
+      "eyebrow": "Welcome back",
+      "title": "Sign in to Onigiroku",
+      "subtitle": "Enter your email and password to continue learning.",
+      "submit": "Sign in",
+      "submitting": "Signing in…",
+      "forgot": "Forgot password?",
+      "noAccount": "Don't have an account?",
+      "toRegister": "Sign up",
+      "success": "Signed in successfully."
+    },
+    "register": {
+      "eyebrow": "Start free",
+      "title": "Create your account",
+      "subtitle": "Register to activate email verification and your 1-day trial.",
+      "submit": "Create account",
+      "submitting": "Creating account…",
+      "hasAccount": "Already have an account?",
+      "toLogin": "Sign in",
+      "success": "Account created. Check your email to verify.",
+      "passwordHint": "At least 6 characters with uppercase, lowercase, a number, and a symbol.",
+      "disabledTitle": "Registration is closed",
+      "disabledBody": "Self-registration is currently disabled. Please contact the platform owner."
+    },
+    "forgot": {
+      "eyebrow": "Account recovery",
+      "title": "Forgot password?",
+      "subtitle": "Enter the email linked to your account. We'll send a secure reset link.",
+      "submit": "Send reset link",
+      "submitting": "Sending…",
+      "success": "If that email is registered, a reset link is on the way.",
+      "sentTitle": "Check your inbox",
+      "sentBody": "We sent password reset instructions if an account exists for that email. The link expires for your security.",
+      "backToLogin": "Back to sign in"
+    },
+    "reset": {
+      "eyebrow": "Security",
+      "title": "Choose a new password",
+      "subtitle": "Enter and confirm your new password to finish resetting.",
+      "submit": "Update password",
+      "submitting": "Updating…",
+      "success": "Password updated. You can sign in now.",
+      "invalidTitle": "Reset link invalid",
+      "invalidBody": "This reset link is missing, expired, or already used. Request a new one.",
+      "requestAgain": "Request a new link"
+    },
+    "verify": {
+      "title": "Verify your email",
+      "subtitle": "We sent a confirmation link to your inbox. Open it to activate your account.",
+      "subtitleWithEmail": "We sent a confirmation link to {email}. Open it to activate your account.",
+      "resend": "Resend verification email",
+      "resending": "Sending…",
+      "resent": "Verification email sent again.",
+      "missingEmail": "Email address is required to resend verification.",
+      "backToLogin": "Back to sign in"
+    },
+    "logout": {
+      "action": "Sign out",
+      "success": "Signed out."
+    },
+    "fieldErrors": {
+      "NAME_MIN": "Name must be at least 2 characters.",
+      "NAME_MAX": "Name is too long.",
+      "NAME_INVALID": "Name contains invalid characters.",
+      "EMAIL_INVALID": "Enter a valid email address.",
+      "EMAIL_MAX": "Email is too long.",
+      "PASSWORD_REQUIRED": "Password is required.",
+      "PASSWORD_MIN": "Password must be at least 6 characters.",
+      "PASSWORD_MAX": "Password is too long.",
+      "PASSWORD_UPPER": "Password must include an uppercase letter.",
+      "PASSWORD_LOWER": "Password must include a lowercase letter.",
+      "PASSWORD_NUMBER": "Password must include a number.",
+      "PASSWORD_SYMBOL": "Password must include a symbol (e.g. !@#$).",
+      "CONFIRM_REQUIRED": "Please confirm your password.",
+      "PASSWORD_MISMATCH": "Passwords do not match.",
+      "TOKEN_REQUIRED": "Reset token is missing."
+    },
+    "errors": {
+      "GENERIC": "Something went wrong. Please try again.",
+      "INVALID_EMAIL_OR_PASSWORD": "Invalid email or password.",
+      "INVALID_PASSWORD": "Invalid email or password.",
+      "USER_NOT_FOUND": "Invalid email or password.",
+      "USER_ALREADY_EXISTS": "An account with this email already exists.",
+      "EMAIL_NOT_VERIFIED": "Please verify your email before signing in.",
+      "EMAIL_ALREADY_VERIFIED": "Email is already verified.",
+      "SELF_REGISTRATION_DISABLED": "Self-registration is currently disabled.",
+      "ACCOUNT_LOCKED": "Too many failed attempts. Your account is temporarily locked.",
+      "TOO_MANY_REQUESTS": "Too many requests. Please wait and try again.",
+      "RATE_LIMIT": "Too many requests. Please wait and try again.",
+      "INVALID_TOKEN": "This link is invalid or has expired.",
+      "TOKEN_EXPIRED": "This link has expired. Request a new one.",
+      "PASSWORD_TOO_SHORT": "Password is too short.",
+      "PASSWORD_TOO_LONG": "Password is too long.",
+      "PASSWORD_COMPROMISED": "This password appears in known breaches. Choose another.",
+      "SOCIAL_ACCOUNT_ALREADY_LINKED": "This Google account is already linked.",
+      "FAILED_TO_CREATE_USER": "Could not create your account. Please try again.",
+      "FAILED_TO_CREATE_SESSION": "Could not start a session. Please try again.",
+      "CREDENTIAL_ACCOUNT_NOT_FOUND": "No password login is set for this account. Try Google sign-in."
+    }
+  },
+  "dashboard": {
+    "labels": {
+      "email": "Email",
+      "role": "Role"
+    },
+    "student": {
+      "eyebrow": "Student workspace",
+      "title": "Welcome, {name}",
+      "subtitle": "You are signed in as {role}. Practice and progress tools unlock here next.",
+      "cardTitle": "Your learning hub",
+      "cardBody": "This dashboard is the home for practice, assessments, and mastery insights. Core modules will appear here as they ship."
+    },
+    "admin": {
+      "eyebrow": "Platform admin",
+      "title": "Welcome, {name}",
+      "subtitle": "You are signed in as {role}. Manage the Onigiroku platform from here.",
+      "cardTitle": "Admin console",
+      "cardBody": "CMS, users, and operational controls will live in this workspace. Authentication and role gating are active."
+    }
+  }
+}

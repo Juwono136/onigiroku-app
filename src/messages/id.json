@@ -1,0 +1,353 @@
+{
+  "meta": {
+    "title": "Onigiroku — Belajar Bahasa Jepang dengan Progress yang Terukur",
+    "description": "Platform SaaS untuk latihan, assessment, quiz, dan monitoring progress belajar bahasa Jepang secara real-time. Siap ujian, kuasai kana & kanji, pantau mastery Anda.",
+    "keywords": "belajar bahasa Jepang, JLPT, onigiroku, quiz Jepang, assessment Jepang"
+  },
+  "nav": {
+    "features": "Fitur",
+    "howItWorks": "Cara Kerja",
+    "pricing": "Paket",
+    "faq": "FAQ",
+    "login": "Masuk",
+    "register": "Mulai Gratis",
+    "openMenu": "Buka menu",
+    "closeMenu": "Tutup menu"
+  },
+  "hero": {
+    "eyebrow": "Platform belajar bahasa Jepang berbasis evidence",
+    "title": "Belajar Jepang lebih terarah, progress terlihat nyata",
+    "subtitle": "Onigiroku menggabungkan latihan, assessment, quiz, dan analytics real-time agar Anda tahu tepat di mana kekuatan dan celah kemampuan Anda.",
+    "ctaPrimary": "Coba trial 1 hari",
+    "ctaSecondary": "Lihat cara kerja",
+    "trust": "Dirancang untuk persiapan ujian, latihan formatif, dan mastery jangka panjang.",
+    "orbLabel": "Kesiapan belajar",
+    "orbHint": "今日の学習",
+    "scrollExplore": "Gulir untuk jelajahi"
+  },
+  "features": {
+    "eyebrow": "Kapabilitas",
+    "title": "Semua yang Anda butuhkan untuk maju konsisten",
+    "subtitle": "Satu platform untuk berlatih, diuji, belajar materi, dan memantau perkembangan kemampuan.",
+    "items": {
+      "practice": {
+        "title": "Latihan & Drill",
+        "description": "Kana, kanji, kosakata, dan kompetensi JLPT dengan feedback yang jelas."
+      },
+      "assessment": {
+        "title": "Assessment Realistis",
+        "description": "Simulasi ujian berwaktu plus mode formatif dengan penjelasan langsung."
+      },
+      "analytics": {
+        "title": "Progress Real-time",
+        "description": "Dashboard mastery, readiness, streak, dan topik lemah yang actionable."
+      },
+      "materials": {
+        "title": "Materi Terstruktur",
+        "description": "Catatan pembelajaran terhubung ke latihan dan hasil assessment."
+      },
+      "integrity": {
+        "title": "Analytics Berintegritas",
+        "description": "Membedakan jawaban mandiri vs terbantu agar skor tidak menipu."
+      },
+      "bilingual": {
+        "title": "UI ID & EN",
+        "description": "Antarmuka dwibahasa siap ekspansi pasar global, konten Jepang tetap akurat."
+      }
+    }
+  },
+  "howItWorks": {
+    "eyebrow": "Cara kerja",
+    "title": "Mulai dalam tiga langkah",
+    "subtitle": "Alur sederhana, dampak terukur.",
+    "steps": {
+      "one": {
+        "title": "Daftar & verifikasi",
+        "description": "Buat akun, verifikasi email, dan aktifkan trial premium 1 hari."
+      },
+      "two": {
+        "title": "Latihan atau assessment",
+        "description": "Pilih drill, quiz formatif, atau simulasi ujian sesuai target Anda."
+      },
+      "three": {
+        "title": "Pantau & perbaiki",
+        "description": "Baca insight mastery, fokus ke topik lemah, ulangi dengan tujuan jelas."
+      }
+    }
+  },
+  "preview": {
+    "title": "Pantau progress seperti dashboard pribadi",
+    "subtitle": "Readiness, confidence, streak, dan rekomendasi langkah berikutnya dalam satu pandangan.",
+    "readiness": "Indeks kesiapan",
+    "mastery": "Mastery aktif",
+    "streak": "Streak belajar",
+    "weak": "Fokus minggu ini",
+    "weakValue": "Partikel & kanji N4",
+    "readinessValue": "78",
+    "masteryValue": "64",
+    "streakValue": "12"
+  },
+  "pricing": {
+    "title": "Mulai gratis, lanjut saat siap",
+    "subtitle": "Trial 1 hari setelah verifikasi. Langganan bulanan untuk akses penuh.",
+    "currencyNote": "Pembayaran diproses dalam IDR melalui Xendit.",
+    "trial": {
+      "name": "Trial",
+      "price": "Gratis",
+      "period": "1 hari",
+      "cta": "Aktifkan trial",
+      "features": [
+        "Akses fitur premium terbatas waktu",
+        "Latihan & quiz inti",
+        "Dashboard progress dasar"
+      ]
+    },
+    "pro": {
+      "name": "Pro Bulanan",
+      "price": "Segera",
+      "period": "/bulan",
+      "cta": "Gabung waiting list",
+      "badge": "Rekomendasi",
+      "features": [
+        "Assessment & review lengkap",
+        "Analytics mastery real-time",
+        "Materi pembelajaran terstruktur",
+        "Riwayat & snapshot progress"
+      ]
+    }
+  },
+  "faq": {
+    "title": "Pertanyaan yang sering muncul",
+    "subtitle": "Ringkas dan jelas sebelum Anda mulai.",
+    "items": {
+      "q1": {
+        "question": "Apa bedanya Onigiroku dengan quiz biasa?",
+        "answer": "Kami merekam event belajar secara detail—termasuk hint dan reveal—lalu menghitung mastery berbasis evidence, bukan sekadar skor akhir."
+      },
+      "q2": {
+        "question": "Apakah cocok untuk persiapan JLPT?",
+        "answer": "Ya. Ada mode simulasi berwaktu dan mode formatif dengan penjelasan, terhubung ke taksonomi kompetensi per level."
+      },
+      "q3": {
+        "question": "Bahasa antarmuka apa yang didukung?",
+        "answer": "Indonesia dan Inggris untuk UI. Konten pembelajaran Jepang menggunakan font dan rendering yang tepat, termasuk dukungan furigana di roadmap."
+      },
+      "q4": {
+        "question": "Bagaimana sistem pembayaran?",
+        "answer": "Checkout menggunakan Xendit (QRIS, VA, e-wallet, dan metode lain yang didukung) dengan mata uang IDR."
+      }
+    }
+  },
+  "cta": {
+    "title": "Siap melihat progress belajar yang sebenarnya?",
+    "subtitle": "Bergabung dengan Onigiroku dan bangun kemampuan Jepang yang terukur.",
+    "button": "Mulai sekarang"
+  },
+  "footer": {
+    "tagline": "Belajar bahasa Jepang dengan latihan, assessment, dan progress intelligence.",
+    "product": "Produk",
+    "company": "Perusahaan",
+    "legal": "Legal",
+    "privacy": "Privasi",
+    "terms": "Syarat",
+    "contact": "Kontak",
+    "rights": "© {year} Onigiroku. Semua hak dilindungi."
+  },
+  "announcements": {
+    "eyebrow": "Pengumuman",
+    "title": "Berita & update dari Onigiroku",
+    "subtitle": "Berita produk, tips belajar, dan pemberitahuan platform — maksimal lima slide unggulan.",
+    "prevLabel": "Pengumuman sebelumnya",
+    "nextLabel": "Pengumuman berikutnya",
+    "autoPlayMs": "6500",
+    "slides": {
+      "welcome": {
+        "enabled": "true",
+        "imageAlt": "Selamat datang di Onigiroku",
+        "title": "Selamat datang di Onigiroku",
+        "caption": "Belajar Jepang berbasis bukti dengan progress yang bisa dijelaskan.",
+        "href": "#"
+      },
+      "trial": {
+        "enabled": "true",
+        "imageAlt": "Trial premium 24 jam",
+        "title": "Trial premium 24 jam",
+        "caption": "Verifikasi email dan buka akses penuh terukur selama satu hari.",
+        "href": "/register"
+      },
+      "mastery": {
+        "enabled": "true",
+        "imageAlt": "Mastery yang bisa dijelaskan",
+        "title": "Mastery yang bisa dijelaskan",
+        "caption": "Analitik mandiri vs terbantu menjaga skor tetap jujur.",
+        "href": "#features"
+      },
+      "jlpt": {
+        "enabled": "true",
+        "imageAlt": "Mode ujian dan formatif",
+        "title": "Mode ujian & formatif",
+        "caption": "Simulasi berwaktu plus penjelasan jelas dalam satu alur.",
+        "href": "#how-it-works"
+      },
+      "update": {
+        "enabled": "true",
+        "imageAlt": "Update produk",
+        "title": "Update produk",
+        "caption": "Pantau ruang ini untuk catatan rilis dan berita komunitas.",
+        "href": "#"
+      }
+    },
+    "slideKicker": "お知らせ"
+  },
+  "notFound": {
+    "code": "404",
+    "title": "Halaman tidak ditemukan",
+    "description": "URL yang Anda buka bukan bagian dari Onigiroku. Mungkin sudah dipindah, dihapus, atau salah ketik.",
+    "home": "Kembali ke beranda",
+    "login": "Masuk"
+  },
+  "auth": {
+    "divider": "atau",
+    "fields": {
+      "name": "Nama lengkap",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Konfirmasi password",
+      "newPassword": "Password baru"
+    },
+    "placeholders": {
+      "name": "Nama Anda",
+      "email": "anda@email.com",
+      "password": "Masukkan password",
+      "newPassword": "Minimal 6 karakter",
+      "confirmPassword": "Ulangi password"
+    },
+    "password": {
+      "show": "Tampilkan password",
+      "hide": "Sembunyikan password"
+    },
+    "google": {
+      "login": "Lanjut dengan Google",
+      "register": "Daftar dengan Google"
+    },
+    "login": {
+      "eyebrow": "Selamat datang kembali",
+      "title": "Masuk ke Onigiroku",
+      "subtitle": "Masukkan email dan password untuk melanjutkan belajar.",
+      "submit": "Masuk",
+      "submitting": "Sedang masuk…",
+      "forgot": "Lupa password?",
+      "noAccount": "Belum punya akun?",
+      "toRegister": "Daftar",
+      "success": "Berhasil masuk."
+    },
+    "register": {
+      "eyebrow": "Mulai gratis",
+      "title": "Buat akun Anda",
+      "subtitle": "Daftar untuk verifikasi email dan mengaktifkan trial 1 hari.",
+      "submit": "Buat akun",
+      "submitting": "Membuat akun…",
+      "hasAccount": "Sudah punya akun?",
+      "toLogin": "Masuk",
+      "success": "Akun dibuat. Cek email untuk verifikasi.",
+      "passwordHint": "Minimal 6 karakter dengan huruf besar, huruf kecil, angka, dan simbol.",
+      "disabledTitle": "Registrasi ditutup",
+      "disabledBody": "Pendaftaran mandiri saat ini dinonaktifkan. Hubungi pemilik platform."
+    },
+    "forgot": {
+      "eyebrow": "Pemulihan akun",
+      "title": "Lupa password?",
+      "subtitle": "Masukkan email yang terdaftar. Kami akan kirim link reset yang aman.",
+      "submit": "Kirim link reset",
+      "submitting": "Mengirim…",
+      "success": "Jika email terdaftar, link reset sedang dikirim.",
+      "sentTitle": "Cek kotak masuk",
+      "sentBody": "Kami mengirim instruksi reset jika akun dengan email tersebut ada. Link akan kedaluwarsa demi keamanan.",
+      "backToLogin": "Kembali ke masuk"
+    },
+    "reset": {
+      "eyebrow": "Keamanan",
+      "title": "Pilih password baru",
+      "subtitle": "Masukkan dan konfirmasi password baru untuk menyelesaikan reset.",
+      "submit": "Perbarui password",
+      "submitting": "Memperbarui…",
+      "success": "Password diperbarui. Silakan masuk.",
+      "invalidTitle": "Link reset tidak valid",
+      "invalidBody": "Link reset hilang, kedaluwarsa, atau sudah dipakai. Ajukan link baru.",
+      "requestAgain": "Ajukan link baru"
+    },
+    "verify": {
+      "title": "Verifikasi email Anda",
+      "subtitle": "Kami mengirim link konfirmasi ke inbox Anda. Buka link itu untuk mengaktifkan akun.",
+      "subtitleWithEmail": "Kami mengirim link konfirmasi ke {email}. Buka link itu untuk mengaktifkan akun.",
+      "resend": "Kirim ulang email verifikasi",
+      "resending": "Mengirim…",
+      "resent": "Email verifikasi dikirim ulang.",
+      "missingEmail": "Email diperlukan untuk mengirim ulang verifikasi.",
+      "backToLogin": "Kembali ke masuk"
+    },
+    "logout": {
+      "action": "Keluar",
+      "success": "Berhasil keluar."
+    },
+    "fieldErrors": {
+      "NAME_MIN": "Nama minimal 2 karakter.",
+      "NAME_MAX": "Nama terlalu panjang.",
+      "NAME_INVALID": "Nama mengandung karakter tidak valid.",
+      "EMAIL_INVALID": "Masukkan alamat email yang valid.",
+      "EMAIL_MAX": "Email terlalu panjang.",
+      "PASSWORD_REQUIRED": "Password wajib diisi.",
+      "PASSWORD_MIN": "Password minimal 6 karakter.",
+      "PASSWORD_MAX": "Password terlalu panjang.",
+      "PASSWORD_UPPER": "Password harus mengandung huruf besar.",
+      "PASSWORD_LOWER": "Password harus mengandung huruf kecil.",
+      "PASSWORD_NUMBER": "Password harus mengandung angka.",
+      "PASSWORD_SYMBOL": "Password harus mengandung simbol (mis. !@#$).",
+      "CONFIRM_REQUIRED": "Konfirmasi password wajib diisi.",
+      "PASSWORD_MISMATCH": "Password tidak cocok.",
+      "TOKEN_REQUIRED": "Token reset tidak ada."
+    },
+    "errors": {
+      "GENERIC": "Terjadi kesalahan. Coba lagi.",
+      "INVALID_EMAIL_OR_PASSWORD": "Email atau password tidak valid.",
+      "INVALID_PASSWORD": "Email atau password tidak valid.",
+      "USER_NOT_FOUND": "Email atau password tidak valid.",
+      "USER_ALREADY_EXISTS": "Akun dengan email ini sudah ada.",
+      "EMAIL_NOT_VERIFIED": "Verifikasi email terlebih dahulu sebelum masuk.",
+      "EMAIL_ALREADY_VERIFIED": "Email sudah diverifikasi.",
+      "SELF_REGISTRATION_DISABLED": "Pendaftaran mandiri saat ini dinonaktifkan.",
+      "ACCOUNT_LOCKED": "Terlalu banyak percobaan gagal. Akun sementara dikunci.",
+      "TOO_MANY_REQUESTS": "Terlalu banyak permintaan. Tunggu sebentar.",
+      "RATE_LIMIT": "Terlalu banyak permintaan. Tunggu sebentar.",
+      "INVALID_TOKEN": "Link tidak valid atau sudah kedaluwarsa.",
+      "TOKEN_EXPIRED": "Link sudah kedaluwarsa. Ajukan yang baru.",
+      "PASSWORD_TOO_SHORT": "Password terlalu pendek.",
+      "PASSWORD_TOO_LONG": "Password terlalu panjang.",
+      "PASSWORD_COMPROMISED": "Password ini ditemukan di kebocoran data. Pilih yang lain.",
+      "SOCIAL_ACCOUNT_ALREADY_LINKED": "Akun Google ini sudah terhubung.",
+      "FAILED_TO_CREATE_USER": "Gagal membuat akun. Coba lagi.",
+      "FAILED_TO_CREATE_SESSION": "Gagal memulai sesi. Coba lagi.",
+      "CREDENTIAL_ACCOUNT_NOT_FOUND": "Akun ini tidak punya login password. Coba masuk dengan Google."
+    }
+  },
+  "dashboard": {
+    "labels": {
+      "email": "Email",
+      "role": "Peran"
+    },
+    "student": {
+      "eyebrow": "Ruang peserta",
+      "title": "Selamat datang, {name}",
+      "subtitle": "Anda masuk sebagai {role}. Latihan dan progress akan tersedia di sini.",
+      "cardTitle": "Pusat belajar Anda",
+      "cardBody": "Dashboard ini adalah rumah untuk latihan, asesmen, dan insight mastery. Modul inti akan muncul seiring rilis."
+    },
+    "admin": {
+      "eyebrow": "Admin platform",
+      "title": "Selamat datang, {name}",
+      "subtitle": "Anda masuk sebagai {role}. Kelola platform Onigiroku dari sini.",
+      "cardTitle": "Konsol admin",
+      "cardBody": "CMS, pengguna, dan kontrol operasional akan berada di ruang ini. Autentikasi dan role gating sudah aktif."
+    }
+  }
+}
