@@ -30,8 +30,11 @@ function createTransport() {
     secure: port === 465,
     auth: { user, pass },
     pool: true,
-    maxConnections: 3,
-    maxMessages: 100,
+    maxConnections: 2,
+    maxMessages: 50,
+    connectionTimeout: 8_000,
+    greetingTimeout: 8_000,
+    socketTimeout: 20_000,
   });
 }
 

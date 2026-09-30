@@ -162,12 +162,17 @@
     min-width: 0;
   }
 
-  img,
+  /* Keep layout-safe media scaling, but don't fight Next.js Image (`data-nimg`). */
+  img:not([data-nimg]),
   svg,
   video,
   canvas {
     max-width: 100%;
     height: auto;
+  }
+
+  img[data-nimg] {
+    max-width: none;
   }
 
   ::selection {
@@ -222,6 +227,39 @@
   /* Noren-inspired left accent rail */
   .jp-rail {
     box-shadow: inset 3px 0 0 0 var(--brand);
+  }
+
+  /*
+   * Authenticated workspace (AppShell) — softer surfaces for long sessions.
+   * Keeps brand red as accent; avoids pure-white glare from marketing pages.
+   */
+  .app-workspace {
+    --workspace-bg: #e8e4de;
+    --workspace-sidebar: #ddd8d0;
+    --workspace-elevated: #f1ede7;
+    --workspace-surface: #f4f0ea;
+    --workspace-card: #f7f3ee;
+    --workspace-footer: #d9d4cb;
+    color-scheme: light;
+  }
+
+  .bg-workspace-mesh {
+    background-image:
+      radial-gradient(
+        ellipse 80% 60% at 6% 8%,
+        color-mix(in oklab, var(--brand) 9%, transparent),
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 55% 45% at 94% 12%,
+        color-mix(in oklab, var(--charcoal) 7%, transparent),
+        transparent 50%
+      ),
+      linear-gradient(
+        180deg,
+        color-mix(in oklab, var(--workspace-bg) 88%, white) 0%,
+        var(--workspace-bg) 100%
+      );
   }
 
   .logo-mark {

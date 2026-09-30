@@ -46,6 +46,9 @@ Flag: `SELF_REGISTRATION_ENABLED` / `NEXT_PUBLIC_SELF_REGISTRATION_ENABLED`.
 2. Email belum terverifikasi → error + arahkan ke `/verify-email`.
 3. Sukses → `/dashboard` (USER) atau `/admin` (ADMIN).
 4. Link **Forgot password** → `/forgot-password`; **Sign up** → `/register`.
+5. Guests tidak bisa membuka `/dashboard`, `/admin`, `/settings` (redirect ke `/login`).
+6. User yang sudah login tidak bisa membuka halaman auth (`/login`, `/register`, `/forgot-password`, `/reset-password`) — redirect ke dashboard sesuai role.
+7. Logout (dengan modal konfirmasi) mengarah ke `/login`.
 
 ### 3. Forgot / reset password
 
@@ -96,7 +99,8 @@ Cookie: `httpOnly`, `sameSite=lax`, `secure` di production.
 | `src/components/auth/*` | UI forms |
 | `src/app/api/auth/[...all]/route.ts` | Catch-all Better Auth |
 | `src/app/[locale]/{login,register,forgot-password,reset-password,verify-email}` | Halaman auth |
-| `src/app/[locale]/{dashboard,admin}` | Dashboard per role |
+| `src/app/[locale]/(app)/{dashboard,admin,settings}` | Workspace app shell (sidebar + topbar + footer) per role |
+| `src/components/app-shell/*` | Chrome dashboard (collapsible sidebar, breadcrumb, avatar) |
 
 ## Template email (modular)
 
@@ -206,6 +210,23 @@ Berlaku untuk **register** dan **reset password** (bukan Google OAuth):
 | Simbol | ≥ 1 (bukan alfanumerik, mis. `!@#$`) |
 
 Validasi client: Zod di `src/lib/validations/auth.ts`. Server: Better Auth `minPasswordLength: 6` + schema yang sama pada form.
+
+### Remember me (login)
+
+- Checkbox di `/login` menyimpan email + password di **localStorage perangkat** selama **1 hari**.
+- Setelah TTL habis, data dihapus otomatis dan checkbox kembali unchecked.
+- Uncheck manual juga menghapus data tersimpan.
+- Hanya untuk perangkat pribadi tepercaya (bukan sandi server-side).
+
+### Google profile image
+
+- Provider Google memakai `overrideUserInfoOnSignIn` + `mapProfileToUser` agar `user.image` terisi dari foto Google.
+- Avatar memakai `referrerPolicy="no-referrer"` agar foto Googleusercontent bisa dimuat.
+- Setelah deploy/perubahan ini, **login ulang dengan Google** sekali agar foto tersinkron ke DB untuk akun lama.
+
+- Bahasa email mengikuti **locale website** (`NEXT_LOCALE` cookie) dan/atau `user.locale` yang disimpan saat register.
+- Layout chrome (tagline, help footer, `html lang`) ikut locale yang sama — tidak mencampur ID/EN.
+- Pengiriman SMTP **non-blocking** (`dispatchBrandedEmail`) agar signup/login/forgot tidak menunggu latency Gmail.
 
 ## Toast UX
 

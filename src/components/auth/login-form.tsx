@@ -2,7 +2,7 @@
 
 import { Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
@@ -13,8 +13,14 @@ import { Label } from "@/components/ui/label";
 import { Link, useRouter } from "@/i18n/routing";
 import { authClient } from "@/lib/auth/client";
 import { mapAuthError } from "@/lib/auth/errors";
+import {
+  clearRememberMe,
+  loadRememberMe,
+  saveRememberMe,
+} from "@/lib/auth/remember-me";
 import { getDashboardPath } from "@/lib/auth/roles";
 import { loginSchema } from "@/lib/validations/auth";
+import { cn } from "@/lib/utils";
 
 type Props = {
   googleEnabled: boolean;
@@ -27,7 +33,21 @@ export function LoginForm({ googleEnabled, callbackUrl }: Props) {
   const [pending, startTransition] = useTransition();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
+  const [hydrated, setHydrated] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const saved = loadRememberMe();
+    if (saved) {
+      setEmail(saved.email);
+      setPassword(saved.password);
+      setRememberMe(true);
+    } else {
+      setRememberMe(false);
+    }
+    setHydrated(true);
+  }, []);
 
   function translateFieldError(code: string) {
     return t(`fieldErrors.${code}`);
@@ -63,6 +83,15 @@ export function LoginForm({ googleEnabled, callbackUrl }: Props) {
           );
         }
         return;
+      }
+
+      if (rememberMe) {
+        saveRememberMe({
+          email: parsed.data.email,
+          password: parsed.data.password,
+        });
+      } else {
+        clearRememberMe();
       }
 
       toast.success(t("login.success"));
@@ -126,7 +155,7 @@ export function LoginForm({ googleEnabled, callbackUrl }: Props) {
             autoComplete="email"
             placeholder={t("placeholders.email")}
             value={email}
-            disabled={pending}
+            disabled={pending || !hydrated}
             aria-invalid={Boolean(fieldErrors.email)}
             onChange={(e) => setEmail(e.target.value)}
             className="h-11 rounded-xl border-charcoal/15 bg-white"
@@ -145,13 +174,36 @@ export function LoginForm({ googleEnabled, callbackUrl }: Props) {
           onChange={setPassword}
           placeholder={t("placeholders.password")}
           autoComplete="current-password"
-          disabled={pending}
+          disabled={pending || !hydrated}
           error={fieldErrors.password}
           showLabel={t("password.show")}
           hideLabel={t("password.hide")}
         />
 
-        <div className="flex justify-end">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <label
+            htmlFor="login-remember"
+            className={cn(
+              "inline-flex cursor-pointer items-center gap-2 text-sm text-charcoal/80 select-none",
+              (pending || !hydrated) && "pointer-events-none opacity-60",
+            )}
+          >
+            <input
+              id="login-remember"
+              name="rememberMe"
+              type="checkbox"
+              checked={rememberMe}
+              disabled={pending || !hydrated}
+              onChange={(event) => {
+                const next = event.target.checked;
+                setRememberMe(next);
+                if (!next) clearRememberMe();
+              }}
+              className="size-4 cursor-pointer rounded border-charcoal/30 text-brand accent-brand focus-visible:ring-2 focus-visible:ring-brand/40"
+            />
+            <span>{t("login.rememberMe")}</span>
+          </label>
+
           <Link
             href="/forgot-password"
             className="cursor-pointer text-sm font-medium text-brand hover:underline"
@@ -162,8 +214,8 @@ export function LoginForm({ googleEnabled, callbackUrl }: Props) {
 
         <Button
           type="submit"
-          disabled={pending}
-          className="h-11 w-full rounded-xl font-semibold"
+          disabled={pending || !hydrated}
+          className="h-11 w-full cursor-pointer rounded-xl font-semibold"
         >
           {pending ? (
             <>

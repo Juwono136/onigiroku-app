@@ -2,9 +2,12 @@ import { setRequestLocale } from "next-intl/server";
 
 import { AuthShell } from "@/components/auth/auth-shell";
 import { VerifyEmailPanel } from "@/components/auth/verify-email-panel";
-import { getServerSession, getSessionRole } from "@/lib/auth/session";
 import { getDashboardPath } from "@/lib/auth/roles";
-import { redirect } from "@/i18n/routing";
+import {
+  getServerSession,
+  getSessionRole,
+} from "@/lib/auth/session";
+import { redirect } from "next/navigation";
 
 export default async function VerifyEmailPage({
   params,
@@ -18,11 +21,10 @@ export default async function VerifyEmailPage({
   setRequestLocale(locale);
 
   const session = await getServerSession();
+  // Verified sessions belong on the dashboard, not auth screens.
   if (session?.user.emailVerified) {
-    redirect({
-      href: getDashboardPath(getSessionRole(session)),
-      locale,
-    });
+    const path = getDashboardPath(getSessionRole(session));
+    redirect(locale !== "id" ? `/${locale}${path}` : path);
   }
 
   return (

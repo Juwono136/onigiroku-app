@@ -8,7 +8,8 @@ type BrandWordmarkProps = {
   textClassName?: string;
   size?: number;
   priority?: boolean;
-  href?: "/" | null;
+  /** Home by default; pass null for non-link lockup. */
+  href?: "/" | "/dashboard" | "/admin" | null;
 };
 
 /** Logo + “Onigiroku” lockup — shared by navbar, hero, and menus. */

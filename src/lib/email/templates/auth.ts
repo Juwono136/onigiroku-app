@@ -32,6 +32,7 @@ export function buildVerificationEmail(input: {
 
   const content: BrandedEmailContent = {
     title: isEn ? "Confirm your account" : "Konfirmasi akun Anda",
+    locale,
     preheader: isEn
       ? "One click to activate your Onigiroku account"
       : "Satu klik untuk mengaktifkan akun Onigiroku Anda",
@@ -44,7 +45,7 @@ export function buildVerificationEmail(input: {
             : "Selamat datang di Onigiroku. Verifikasi email Anda untuk mengaktifkan akun dan membuka trial 1 hari."
         }
       </p>
-      <p style="margin:0 0 12px;color:#6b7280;font-size:14px;">
+      <p style="margin:0;padding:10px 12px;background:#ffffff;border-radius:10px;border:1px solid #f0e9e9;color:#6b7280;font-size:13px;">
         ${escapeHtml(input.user.email)}
       </p>
     `,
@@ -77,12 +78,13 @@ export function buildPasswordResetEmail(input: {
 
   const content: BrandedEmailContent = {
     title: isEn ? "Reset your password" : "Atur ulang password",
+    locale,
     preheader: isEn
       ? "Secure link to choose a new password"
       : "Link aman untuk membuat password baru",
     bodyHtml: `
       ${greet(input.user.name, locale)}
-      <p style="margin:0 0 12px;">
+      <p style="margin:0;">
         ${
           isEn
             ? "We received a request to reset the password for your Onigiroku account. Click the button below to continue."
@@ -119,12 +121,13 @@ export function buildPasswordChangedEmail(input: {
 
   const content: BrandedEmailContent = {
     title: isEn ? "Password updated" : "Password berhasil diperbarui",
+    locale,
     preheader: isEn
       ? "Your Onigiroku password was changed"
       : "Password Onigiroku Anda telah diubah",
     bodyHtml: `
       ${greet(input.user.name, locale)}
-      <p style="margin:0 0 12px;">
+      <p style="margin:0;">
         ${
           isEn
             ? "Your password was changed successfully. You can now sign in with your new password."

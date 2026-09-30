@@ -67,8 +67,13 @@ export function RegisterForm({ googleEnabled, registrationEnabled }: Props) {
         email: parsed.data.email,
         password: parsed.data.password,
         callbackURL: "/dashboard",
-        // additionalFields.locale (input: true)
-        ...({ locale } as Record<string, string>),
+        locale,
+      } as {
+        name: string;
+        email: string;
+        password: string;
+        callbackURL: string;
+        locale: string;
       });
 
       if (result.error) {

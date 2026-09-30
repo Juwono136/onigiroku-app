@@ -12,7 +12,11 @@
     "login": "Log in",
     "register": "Start free",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "dashboard": "Dashboard",
+    "settings": "My settings",
+    "logout": "Sign out",
+    "accountMenu": "Account menu"
   },
   "hero": {
     "eyebrow": "Evidence-based Japanese learning platform",
@@ -237,6 +241,7 @@
       "submit": "Sign in",
       "submitting": "Signing in…",
       "forgot": "Forgot password?",
+      "rememberMe": "Remember me",
       "noAccount": "Don't have an account?",
       "toRegister": "Sign up",
       "success": "Signed in successfully."
@@ -288,7 +293,12 @@
     },
     "logout": {
       "action": "Sign out",
-      "success": "Signed out."
+      "success": "Signed out.",
+      "confirmTitle": "Sign out of Onigiroku?",
+      "confirmBody": "You will need to sign in again to access your dashboard and learning progress.",
+      "confirm": "Sign out",
+      "cancel": "Cancel",
+      "submitting": "Signing out…"
     },
     "fieldErrors": {
       "NAME_MIN": "Name must be at least 2 characters.",
@@ -332,22 +342,102 @@
   },
   "dashboard": {
     "labels": {
+      "name": "Name",
       "email": "Email",
-      "role": "Role"
+      "role": "Role",
+      "verified": "Email status"
+    },
+    "stats": {
+      "streak": "Study streak",
+      "streakValue": "Ready to begin",
+      "trial": "Trial",
+      "trialValue": "1-day unlock",
+      "mastery": "Mastery",
+      "masteryValue": "Coming soon",
+      "platform": "Platform",
+      "platformValue": "Healthy",
+      "ops": "Operations",
+      "opsValue": "Auth live",
+      "session": "Session",
+      "sessionValue": "7-day idle max"
+    },
+    "actions": {
+      "settings": "My settings",
+      "explore": "Explore features"
+    },
+    "account": {
+      "title": "Account",
+      "subtitle": "Signed-in profile summary",
+      "verifiedYes": "Verified",
+      "verifiedNo": "Not verified"
     },
     "student": {
       "eyebrow": "Student workspace",
       "title": "Welcome, {name}",
       "subtitle": "You are signed in as {role}. Practice and progress tools unlock here next.",
       "cardTitle": "Your learning hub",
-      "cardBody": "This dashboard is the home for practice, assessments, and mastery insights. Core modules will appear here as they ship."
+      "cardBody": "This is your home for practice, assessments, and mastery insights. Core learning modules will appear here as they ship — your account and session are already secured."
     },
     "admin": {
       "eyebrow": "Platform admin",
       "title": "Welcome, {name}",
       "subtitle": "You are signed in as {role}. Manage the Onigiroku platform from here.",
       "cardTitle": "Admin console",
-      "cardBody": "CMS, users, and operational controls will live in this workspace. Authentication and role gating are active."
+      "cardBody": "CMS, users, and operational controls will live in this workspace. Authentication and role gating are already active."
     }
+  },
+  "settings": {
+    "eyebrow": "Account",
+    "title": "My settings",
+    "subtitle": "Review your profile details. Editable preferences arrive in the next milestone.",
+    "profileTitle": "Profile",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "locale": "Language"
+    },
+    "comingSoon": "Profile editing, notification preferences, and security options will live here.",
+    "backToDashboard": "Back to dashboard"
+  },
+  "appShell": {
+    "breadcrumb": {
+      "label": "Breadcrumb",
+      "home": "Home",
+      "dashboard": "Dashboard",
+      "admin": "Admin",
+      "settings": "Settings",
+      "app": "Workspace"
+    },
+    "nav": {
+      "label": "Workspace navigation",
+      "dashboard": "Dashboard",
+      "admin": "Admin console",
+      "settings": "Settings",
+      "sectionLearn": "Learning",
+      "sectionAdmin": "Administration",
+      "collapse": "Collapse sidebar",
+      "expand": "Expand sidebar",
+      "openMenu": "Open navigation",
+      "closeMenu": "Close navigation"
+    },
+      "sidebar": {
+      "copyright": "© {year} Onigiroku"
+    },
+    "topbar": {
+      "publicPage": "Public site"
+    },
+    "footer": {
+      "tagline": "Learn Japanese with practice, assessment, and progress intelligence.",
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "help": "Help",
+      "copyright": "© {year} Onigiroku. All rights reserved."
+    }
+  },
+  "localeSwitcher": {
+    "label": "Language",
+    "id": "Bahasa Indonesia",
+    "en": "English"
   }
 }

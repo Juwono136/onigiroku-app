@@ -129,11 +129,19 @@ Locale routing memakai `src/proxy.ts` (menggantikan konvensi `middleware` yang d
 ## 5c. Autentikasi (Better Auth)
 
 - Halaman: `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`
-- Dashboard: `/dashboard` (Peserta/`USER`), `/admin` (Super Admin/`ADMIN`)
-- Email verifikasi & reset memakai SMTP (`SMTP_*`) + template modular di `src/lib/email/templates/`
+- Dashboard: `/dashboard` (Peserta/`USER`), `/admin` (Super Admin/`ADMIN`), `/settings`
+- Workspace chrome: AppShell tersendiri (sidebar collapsible hover-toggle, breadcrumb, tombol public site, avatar) — terpisah dari navbar/footer landing; palette `--workspace-*` lebih lembut untuk sesi panjang
+- Locale switcher di dashboard topbar: dropdown di mobile, pills di desktop
+- Navbar authenticated di **landing** (desktop): avatar dropdown (name, email, **role badge**, Dashboard, My settings, Sign out + modal)
+- Navbar authenticated di **landing** (mobile): tanpa avatar — akun (role, Dashboard, Settings, Sign out) masuk panel hamburger
+- Remember me di login: isi ulang email/password selama 1 hari (localStorage perangkat); tanpa teks hint di bawah checkbox
+- Logout redirect → `/login` (bukan home publik)
+- Guest-only auth pages memakai `redirectIfAuthenticated`; app pages memakai `requireSession` / `requireRole`
+- Email verifikasi & reset memakai SMTP (`SMTP_*`) + template modular di `src/lib/email/templates/` (locale-aware)
 - Google OAuth: isi `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` — panduan lengkap di [AUTH.md](./AUTH.md)
 - Session idle max 7 hari (sliding). Setelah idle ≥7 hari, user wajib login ulang.
 - Pastikan migrasi DB sudah jalan (`user`, `session`, `account`, `verification`, `auth_lockout`).
+- Auth API tidak menunggu SMTP selesai (email dikirim di background) agar form terasa responsif.
 
 ## 6. Git & file besar
 

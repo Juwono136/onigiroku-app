@@ -12,7 +12,11 @@
     "login": "Masuk",
     "register": "Mulai Gratis",
     "openMenu": "Buka menu",
-    "closeMenu": "Tutup menu"
+    "closeMenu": "Tutup menu",
+    "dashboard": "Dashboard",
+    "settings": "Pengaturan saya",
+    "logout": "Keluar",
+    "accountMenu": "Menu akun"
   },
   "hero": {
     "eyebrow": "Platform belajar bahasa Jepang berbasis evidence",
@@ -237,6 +241,7 @@
       "submit": "Masuk",
       "submitting": "Sedang masuk…",
       "forgot": "Lupa password?",
+      "rememberMe": "Ingat saya",
       "noAccount": "Belum punya akun?",
       "toRegister": "Daftar",
       "success": "Berhasil masuk."
@@ -288,7 +293,12 @@
     },
     "logout": {
       "action": "Keluar",
-      "success": "Berhasil keluar."
+      "success": "Berhasil keluar.",
+      "confirmTitle": "Keluar dari Onigiroku?",
+      "confirmBody": "Anda perlu masuk lagi untuk mengakses dashboard dan progress belajar.",
+      "confirm": "Keluar",
+      "cancel": "Batal",
+      "submitting": "Sedang keluar…"
     },
     "fieldErrors": {
       "NAME_MIN": "Nama minimal 2 karakter.",
@@ -332,15 +342,41 @@
   },
   "dashboard": {
     "labels": {
+      "name": "Nama",
       "email": "Email",
-      "role": "Peran"
+      "role": "Peran",
+      "verified": "Status email"
+    },
+    "stats": {
+      "streak": "Streak belajar",
+      "streakValue": "Siap mulai",
+      "trial": "Trial",
+      "trialValue": "Buka 1 hari",
+      "mastery": "Mastery",
+      "masteryValue": "Segera hadir",
+      "platform": "Platform",
+      "platformValue": "Sehat",
+      "ops": "Operasional",
+      "opsValue": "Auth aktif",
+      "session": "Sesi",
+      "sessionValue": "Idle maks 7 hari"
+    },
+    "actions": {
+      "settings": "Pengaturan saya",
+      "explore": "Jelajahi fitur"
+    },
+    "account": {
+      "title": "Akun",
+      "subtitle": "Ringkasan profil yang sedang masuk",
+      "verifiedYes": "Terverifikasi",
+      "verifiedNo": "Belum terverifikasi"
     },
     "student": {
       "eyebrow": "Ruang peserta",
       "title": "Selamat datang, {name}",
       "subtitle": "Anda masuk sebagai {role}. Latihan dan progress akan tersedia di sini.",
       "cardTitle": "Pusat belajar Anda",
-      "cardBody": "Dashboard ini adalah rumah untuk latihan, asesmen, dan insight mastery. Modul inti akan muncul seiring rilis."
+      "cardBody": "Ini rumah untuk latihan, asesmen, dan insight mastery. Modul inti akan muncul seiring rilis — akun dan sesi Anda sudah diamankan."
     },
     "admin": {
       "eyebrow": "Admin platform",
@@ -349,5 +385,59 @@
       "cardTitle": "Konsol admin",
       "cardBody": "CMS, pengguna, dan kontrol operasional akan berada di ruang ini. Autentikasi dan role gating sudah aktif."
     }
+  },
+  "settings": {
+    "eyebrow": "Akun",
+    "title": "Pengaturan saya",
+    "subtitle": "Tinjau detail profil Anda. Preferensi yang bisa diedit akan datang di tahap berikutnya.",
+    "profileTitle": "Profil",
+    "fields": {
+      "name": "Nama",
+      "email": "Email",
+      "role": "Peran",
+      "locale": "Bahasa"
+    },
+    "comingSoon": "Pengeditan profil, preferensi notifikasi, dan opsi keamanan akan berada di sini.",
+    "backToDashboard": "Kembali ke dashboard"
+  },
+  "appShell": {
+    "breadcrumb": {
+      "label": "Breadcrumb",
+      "home": "Beranda",
+      "dashboard": "Dashboard",
+      "admin": "Admin",
+      "settings": "Pengaturan",
+      "app": "Ruang kerja"
+    },
+    "nav": {
+      "label": "Navigasi ruang kerja",
+      "dashboard": "Dashboard",
+      "admin": "Konsol admin",
+      "settings": "Pengaturan",
+      "sectionLearn": "Belajar",
+      "sectionAdmin": "Administrasi",
+      "collapse": "Ciutkan sidebar",
+      "expand": "Perluas sidebar",
+      "openMenu": "Buka navigasi",
+      "closeMenu": "Tutup navigasi"
+    },
+      "sidebar": {
+      "copyright": "© {year} Onigiroku"
+    },
+    "topbar": {
+      "publicPage": "Situs publik"
+    },
+    "footer": {
+      "tagline": "Belajar bahasa Jepang dengan latihan, asesmen, dan intelijen progress.",
+      "privacy": "Privasi",
+      "terms": "Syarat",
+      "help": "Bantuan",
+      "copyright": "© {year} Onigiroku. Hak cipta dilindungi."
+    }
+  },
+  "localeSwitcher": {
+    "label": "Bahasa",
+    "id": "Bahasa Indonesia",
+    "en": "English"
   }
 }

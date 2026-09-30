@@ -28,6 +28,7 @@ Nodemailer → Gmail SMTP
 - Landing, learner UI, admin UI (App Router + `[locale]`)
 - Better Auth (`/api/auth/*`) — identity & session (lihat [AUTH.md](./AUTH.md))
 - Halaman auth: login / register / forgot / reset / verify-email; dashboard per role (`USER`→`/dashboard`, `ADMIN`→`/admin`)
+- Route group `(app)` memakai **AppShell** tersendiri (sidebar collapsible, topbar + breadcrumb, footer workspace) — terpisah dari landing `SiteHeader` / `SiteFooter`
 - Drizzle schema/migrations untuk auth (+ domain tables bertahap)
 - Validasi Zod di trust boundary web
 - Email transactional modular (`src/lib/email/templates/`) — verifikasi, reset, notifikasi password

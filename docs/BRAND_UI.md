@@ -124,6 +124,25 @@ Komponen: `src/components/landing/*`.
 
 
 
+## Authenticated workspace (AppShell)
+
+Dashboard peserta (`/dashboard`), admin (`/admin`), dan settings (`/settings`) **tidak** memakai chrome marketing (`SiteHeader` / `SiteFooter`).
+
+Mereka memakai route group `src/app/[locale]/(app)/` + komponen `src/components/app-shell/*`:
+
+| Bagian | Perilaku |
+| --- | --- |
+| Sidebar | Collapsible (toggle hover di tepi + tombol di topbar kiri breadcrumb pada `md+`); drawer mobile dengan tombol **Close (X)** di header; active item solid brand; footer sidebar = copyright singkat |
+| Topbar | Breadcrumb dinamis, tombol collapse/expand (desktop), tombol ke situs publik, locale switcher (`auto`: dropdown di mobile / pills di desktop), avatar/`UserMenu` |
+| Footer | Footer ringkas workspace (tanpa frasa JP) |
+| Atmosfer | Token `.app-workspace` (surface lebih lembut), `jp-rail`, mesh lembut — nyaman untuk sesi panjang |
+
+Copy chrome: namespace i18n `appShell` + `localeSwitcher` (ID/EN mengikuti switcher bahasa).
+
+**Eye comfort:** workspace memakai background stone-warm (`--workspace-*`) bukan pure white, agar glare berkurang saat user lama di dashboard. Landing tetap memakai canvas branding PRD.
+
+
+
 ## 404 / Not found
 
 Tampilan sederhana: kode **404** besar, judul singkat, satu paragraf, CTA utama ke beranda (+ link login). Tanpa card berat / hint ekstra.

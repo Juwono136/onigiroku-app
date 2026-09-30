@@ -9,12 +9,12 @@ import {
 } from "@/lib/auth/lockout";
 import { getDb } from "@/lib/db";
 import { schema } from "@/lib/db/schema";
-import { sendBrandedEmail } from "@/lib/email";
+import { dispatchBrandedEmail } from "@/lib/email/dispatch";
+import { localeFromCookieHeader, resolveEmailLocale } from "@/lib/email/locale";
 import {
   buildPasswordChangedEmail,
   buildPasswordResetEmail,
   buildVerificationEmail,
-  type AuthEmailLocale,
 } from "@/lib/email/templates/index";
 import { logger } from "@/lib/logger";
 
@@ -31,6 +31,17 @@ function buildSocialProviders() {
       clientId,
       clientSecret,
       prompt: "select_account" as const,
+      // Refresh name/avatar from Google on every sign-in (fixes missing image).
+      overrideUserInfoOnSignIn: true,
+      mapProfileToUser: (profile: {
+        name?: string | null;
+        email?: string | null;
+        picture?: string | null;
+      }) => ({
+        name: profile.name ?? undefined,
+        image: profile.picture ?? undefined,
+        email: profile.email ?? undefined,
+      }),
     },
   };
 }
@@ -58,10 +69,6 @@ function resolveAppOrigin() {
   ).replace(/\/$/, "");
 }
 
-function localeFromUser(user: { locale?: string | null }): AuthEmailLocale {
-  return user.locale === "en" ? "en" : "id";
-}
-
 function isSelfRegistrationEnabled() {
   return (
     (process.env.SELF_REGISTRATION_ENABLED ?? "true").toLowerCase() !== "false"
@@ -86,51 +93,57 @@ export const auth = betterAuth({
     requireEmailVerification: true,
     minPasswordLength: 6,
     maxPasswordLength: 128,
-    sendResetPassword: async ({ user, url }) => {
+    sendResetPassword: async ({ user, url }, request) => {
+      const locale = resolveEmailLocale(
+        user as { locale?: string },
+        request ?? null,
+      );
       const payload = buildPasswordResetEmail({
         user: { name: user.name, email: user.email },
         url,
-        locale: localeFromUser(user as { locale?: string }),
+        locale,
       });
-      await sendBrandedEmail({
+      // Non-blocking — Gmail SMTP must not stall the auth API response.
+      dispatchBrandedEmail({
         to: user.email,
         subject: payload.subject,
         content: payload.content,
         text: payload.text,
       });
     },
-    onPasswordReset: async ({ user }) => {
+    onPasswordReset: async ({ user }, request) => {
       const loginUrl = `${resolveAppOrigin()}/login`;
+      const locale = resolveEmailLocale(
+        user as { locale?: string },
+        request ?? null,
+      );
       const payload = buildPasswordChangedEmail({
         user: { name: user.name, email: user.email },
         loginUrl,
-        locale: localeFromUser(user as { locale?: string }),
+        locale,
       });
-      try {
-        await sendBrandedEmail({
-          to: user.email,
-          subject: payload.subject,
-          content: payload.content,
-          text: payload.text,
-        });
-      } catch (error) {
-        logger.error("Failed to send password-changed email", {
-          email: user.email,
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
+      dispatchBrandedEmail({
+        to: user.email,
+        subject: payload.subject,
+        content: payload.content,
+        text: payload.text,
+      });
     },
   },
   emailVerification: {
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
-    sendVerificationEmail: async ({ user, url }) => {
+    sendVerificationEmail: async ({ user, url }, request) => {
+      const locale = resolveEmailLocale(
+        user as { locale?: string },
+        request ?? null,
+      );
       const payload = buildVerificationEmail({
         user: { name: user.name, email: user.email },
         url,
-        locale: localeFromUser(user as { locale?: string }),
+        locale,
       });
-      await sendBrandedEmail({
+      dispatchBrandedEmail({
         to: user.email,
         subject: payload.subject,
         content: payload.content,
@@ -155,11 +168,6 @@ export const auth = betterAuth({
       },
     },
   },
-  /**
-   * Sliding session: expires 7 days after last refresh.
-   * Activity refreshes expiry at most once per hour (updateAge).
-   * Idle ≥ 7 days → user must sign in again.
-   */
   session: {
     expiresIn: 60 * 60 * 24 * 7,
     updateAge: 60 * 60,
@@ -185,10 +193,23 @@ export const auth = betterAuth({
   },
   hooks: {
     before: createAuthMiddleware(async (ctx) => {
-      if (ctx.path === "/sign-up/email" && !isSelfRegistrationEnabled()) {
-        throw new APIError("FORBIDDEN", {
-          message: "SELF_REGISTRATION_DISABLED",
-        });
+      if (ctx.path === "/sign-up/email") {
+        if (!isSelfRegistrationEnabled()) {
+          throw new APIError("FORBIDDEN", {
+            message: "SELF_REGISTRATION_DISABLED",
+          });
+        }
+
+        // Ensure locale follows website preference when client omits it.
+        const body = ctx.body as Record<string, unknown> | undefined;
+        if (body && (body.locale === undefined || body.locale === "")) {
+          const fromCookie = localeFromCookieHeader(
+            ctx.headers?.get("cookie") ?? null,
+          );
+          if (fromCookie) {
+            body.locale = fromCookie;
+          }
+        }
       }
 
       if (ctx.path === "/sign-in/email") {

@@ -3,9 +3,7 @@ import { setRequestLocale } from "next-intl/server";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
 import { isGoogleAuthConfigured } from "@/lib/auth/flags";
-import { getServerSession, getSessionRole } from "@/lib/auth/session";
-import { getDashboardPath } from "@/lib/auth/roles";
-import { redirect } from "@/i18n/routing";
+import { redirectIfAuthenticated } from "@/lib/auth/session";
 
 export default async function LoginPage({
   params,
@@ -17,14 +15,7 @@ export default async function LoginPage({
   const { locale } = await params;
   const { callbackUrl } = await searchParams;
   setRequestLocale(locale);
-
-  const session = await getServerSession();
-  if (session) {
-    redirect({
-      href: getDashboardPath(getSessionRole(session)),
-      locale,
-    });
-  }
+  await redirectIfAuthenticated(locale);
 
   return (
     <AuthShell>

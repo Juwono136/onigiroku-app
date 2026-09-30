@@ -32,6 +32,29 @@ export async function getServerSession(): Promise<AuthSession | null> {
   return session ?? null;
 }
 
+function loginPathForLocale(locale?: string, callbackPath?: string) {
+  const base = locale && locale !== "id" ? `/${locale}/login` : "/login";
+  const callback = callbackPath
+    ? `?callbackUrl=${encodeURIComponent(callbackPath)}`
+    : "";
+  return `${base}${callback}`;
+}
+
+/**
+ * Guest-only pages (login/register/forgot/reset).
+ * Authenticated users are sent to their role dashboard.
+ */
+export async function redirectIfAuthenticated(locale?: string) {
+  const session = await getServerSession();
+  if (session) {
+    const path = getDashboardPath(getSessionRole(session));
+    if (locale && locale !== "id") {
+      redirect(`/${locale}${path}`);
+    }
+    redirect(path);
+  }
+}
+
 export async function requireSession(options?: {
   locale?: string;
   /** Absolute app path without locale prefix, e.g. /dashboard */
@@ -39,25 +62,23 @@ export async function requireSession(options?: {
 }): Promise<AuthSession> {
   const session = await getServerSession();
   if (!session) {
-    const locale = options?.locale;
-    const loginPath =
-      locale && locale !== "id" ? `/${locale}/login` : "/login";
-    const callback = options?.callbackPath
-      ? `?callbackUrl=${encodeURIComponent(options.callbackPath)}`
-      : "";
-    redirect(`${loginPath}${callback}`);
+    redirect(loginPathForLocale(options?.locale, options?.callbackPath));
   }
   return session;
 }
 
 export async function requireRole(
   role: UserRole,
-  options?: { locale?: string },
+  options?: { locale?: string; callbackPath?: string },
 ): Promise<AuthSession> {
   const session = await requireSession(options);
   const current = getSessionRole(session);
   if (current !== role) {
-    redirect(getDashboardPath(current));
+    const path = getDashboardPath(current);
+    if (options?.locale && options.locale !== "id") {
+      redirect(`/${options.locale}${path}`);
+    }
+    redirect(path);
   }
   return session;
 }

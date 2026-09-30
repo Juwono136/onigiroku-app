@@ -28,7 +28,12 @@ export function BrandLogo({
       priority={priority}
       unoptimized
       className={cn("bg-transparent object-contain", className)}
-      style={{ backgroundColor: "transparent", mixBlendMode: "normal" }}
+      style={{
+        width: size,
+        height: size,
+        backgroundColor: "transparent",
+        mixBlendMode: "normal",
+      }}
     />
   );
 }
