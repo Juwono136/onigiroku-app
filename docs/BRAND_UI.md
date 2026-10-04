@@ -132,9 +132,10 @@ Mereka memakai route group `src/app/[locale]/(app)/` + komponen `src/components/
 
 | Bagian | Perilaku |
 | --- | --- |
-| Sidebar | Collapsible (toggle hover di tepi + tombol di topbar kiri breadcrumb pada `md+`); drawer mobile dengan tombol **Close (X)** di header; active item solid brand; footer sidebar = copyright singkat |
+| Sidebar | **Sticky** `h-svh`; toggle collapse di **tengah vertikal** tepi sidebar, **muncul saat hover** (tetap ada tombol di topbar); drawer mobile dengan **Close (X)**; active item solid brand |
 | Topbar | Breadcrumb dinamis, tombol collapse/expand (desktop), tombol ke situs publik, locale switcher (`auto`: dropdown di mobile / pills di desktop), avatar/`UserMenu` |
-| Footer | Footer ringkas workspace (tanpa frasa JP) |
+| Content width | Workspace content memakai `max-w-[96rem]` agar dashboard/settings lebar dan nyaman di layar besar |
+| Footer | Footer ringkas workspace (lebar sama dengan content) |
 | Atmosfer | Token `.app-workspace` (surface lebih lembut), `jp-rail`, mesh lembut — nyaman untuk sesi panjang |
 
 Copy chrome: namespace i18n `appShell` + `localeSwitcher` (ID/EN mengikuti switcher bahasa).

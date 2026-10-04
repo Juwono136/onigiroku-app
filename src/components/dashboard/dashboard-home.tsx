@@ -80,8 +80,8 @@ export async function DashboardHome({ session, locale, role }: Props) {
         aria-hidden
       />
 
-      <div className="relative mx-auto flex w-full max-w-6xl flex-1 flex-col gap-7 px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-        <div className="max-w-2xl">
+      <div className="relative mx-auto flex w-full max-w-[96rem] flex-1 flex-col gap-6 px-4 py-6 sm:gap-7 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
+        <div className="max-w-3xl">
           <p className="text-xs font-semibold tracking-[0.14em] text-brand uppercase">
             {eyebrow}
           </p>
@@ -93,7 +93,7 @@ export async function DashboardHome({ session, locale, role }: Props) {
           </p>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           {stats.map((stat) => (
             <div
               key={stat.label}
@@ -114,16 +114,16 @@ export async function DashboardHome({ session, locale, role }: Props) {
           ))}
         </div>
 
-        <div className="grid gap-4 lg:grid-cols-[1.4fr_1fr]">
-          <section className="jp-rail rounded-2xl border border-charcoal/10 bg-[var(--workspace-card)] p-5 shadow-[0_14px_36px_-30px_rgba(67,64,64,0.5)] sm:p-7">
+        <div className="grid auto-rows-fr gap-4 lg:grid-cols-12">
+          <section className="jp-rail rounded-2xl border border-charcoal/10 bg-[var(--workspace-card)] p-5 shadow-[0_14px_36px_-30px_rgba(67,64,64,0.5)] sm:p-7 lg:col-span-7 xl:col-span-8">
             <h2 className="text-lg font-bold text-ink">
               {isAdmin ? t("admin.cardTitle") : t("student.cardTitle")}
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-charcoal/70">
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-charcoal/70">
               {isAdmin ? t("admin.cardBody") : t("student.cardBody")}
             </p>
 
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid gap-3 sm:grid-cols-2 sm:max-w-xl">
               <Link
                 href="/settings"
                 className={cn(
@@ -147,15 +147,15 @@ export async function DashboardHome({ session, locale, role }: Props) {
             </div>
           </section>
 
-          <aside className="overflow-hidden rounded-2xl border border-charcoal/10 bg-[var(--workspace-card)] shadow-[0_14px_36px_-30px_rgba(67,64,64,0.5)]">
+          <aside className="overflow-hidden rounded-2xl border border-charcoal/10 bg-[var(--workspace-card)] shadow-[0_14px_36px_-30px_rgba(67,64,64,0.5)] lg:col-span-5 xl:col-span-4">
             <div
               className="h-10 border-b border-charcoal/8 bg-[var(--workspace-surface)] bg-asanoha opacity-80"
               aria-hidden
             />
-            <div className="p-5 sm:p-7">
+            <div className="p-5 sm:p-6">
               <h2 className="text-lg font-bold text-ink">{t("account.title")}</h2>
               <p className="mt-1 text-sm text-charcoal/65">{t("account.subtitle")}</p>
-              <dl className="mt-5 space-y-4">
+              <dl className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2">
                 <div>
                   <dt className="text-xs font-semibold tracking-wide text-charcoal/50 uppercase">
                     {t("labels.name")}

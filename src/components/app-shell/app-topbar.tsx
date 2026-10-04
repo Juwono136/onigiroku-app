@@ -15,6 +15,8 @@ import { LocaleSwitcher } from "@/components/layout/locale-switcher";
 import { UserMenu } from "@/components/layout/user-menu";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
+import { useSession } from "@/lib/auth/client";
+import { toBrowserMediaUrl } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -30,6 +32,17 @@ export function AppTopbar({ user }: Props) {
   const t = useTranslations("appShell");
   const { collapsed, mobileOpen, toggleCollapsed, toggleMobileOpen } =
     useSidebar();
+  const { data: liveSession } = useSession();
+
+  // Prefer live client session so avatar/name update immediately after Settings edits.
+  const liveUser = liveSession?.user;
+  const displayUser = {
+    name: liveUser?.name ?? user.name,
+    email: liveUser?.email ?? user.email,
+    image: toBrowserMediaUrl(liveUser?.image ?? user.image),
+    role:
+      (liveUser as { role?: string | null } | undefined)?.role ?? user.role,
+  };
 
   return (
     <header className="sticky top-0 z-20 border-b border-charcoal/10 bg-[var(--workspace-elevated)]/95 backdrop-blur-md">
@@ -95,7 +108,7 @@ export function AppTopbar({ user }: Props) {
           </Link>
 
           <LocaleSwitcher variant="auto" />
-          <UserMenu user={user} />
+          <UserMenu user={displayUser} />
         </div>
       </div>
     </header>

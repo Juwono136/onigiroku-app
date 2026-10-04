@@ -315,6 +315,7 @@
       "PASSWORD_SYMBOL": "Password harus mengandung simbol (mis. !@#$).",
       "CONFIRM_REQUIRED": "Konfirmasi password wajib diisi.",
       "PASSWORD_MISMATCH": "Password tidak cocok.",
+      "PASSWORD_SAME": "Password baru harus berbeda dari password saat ini.",
       "TOKEN_REQUIRED": "Token reset tidak ada."
     },
     "errors": {
@@ -337,7 +338,10 @@
       "SOCIAL_ACCOUNT_ALREADY_LINKED": "Akun Google ini sudah terhubung.",
       "FAILED_TO_CREATE_USER": "Gagal membuat akun. Coba lagi.",
       "FAILED_TO_CREATE_SESSION": "Gagal memulai sesi. Coba lagi.",
-      "CREDENTIAL_ACCOUNT_NOT_FOUND": "Akun ini tidak punya login password. Coba masuk dengan Google."
+      "CREDENTIAL_ACCOUNT_NOT_FOUND": "Akun ini tidak punya login password. Coba masuk dengan Google.",
+      "USE_GOOGLE_OR_RESET_PASSWORD": "Email ini memakai masuk Google. Lanjut dengan Google, atau gunakan Lupa password untuk membuat password.",
+      "ACCOUNT_NOT_LINKED": "Email ini sudah terdaftar. Verifikasi email dulu lalu coba Google lagi — atau masuk dengan password.",
+      "UNABLE_TO_LINK_ACCOUNT": "Gagal menghubungkan akun Google ke profil yang ada. Masuk dengan password atau hubungi dukungan."
     }
   },
   "dashboard": {
@@ -388,31 +392,107 @@
   },
   "settings": {
     "eyebrow": "Akun",
-    "title": "Pengaturan saya",
-    "subtitle": "Tinjau detail profil Anda. Preferensi yang bisa diedit akan datang di tahap berikutnya.",
-    "profileTitle": "Profil",
+    "title": "Pengaturan",
+    "subtitle": "Kelola profil, password, dan aktivitas masuk terbaru Anda.",
     "fields": {
       "name": "Nama",
       "email": "Email",
       "role": "Peran",
       "locale": "Bahasa"
     },
-    "comingSoon": "Pengeditan profil, preferensi notifikasi, dan opsi keamanan akan berada di sini.",
-    "backToDashboard": "Kembali ke dashboard"
+    "backToDashboard": "Kembali ke dashboard",
+    "profile": {
+      "title": "Edit profil",
+      "subtitle": "Perbarui nama dan foto yang tampil di Onigiroku.",
+      "namePlaceholder": "Nama tampilan Anda",
+      "emailLocked": "Email tidak bisa diubah di sini demi keamanan.",
+      "changePhoto": "Ganti foto",
+      "removePhoto": "Hapus",
+      "photoHint": "JPG, PNG, WEBP, atau GIF. Maks. 5 MB.",
+      "save": "Simpan perubahan",
+      "saving": "Menyimpan…",
+      "saved": "Profil diperbarui.",
+      "avatarSaved": "Foto profil diperbarui.",
+      "avatarRemoved": "Foto profil dihapus.",
+      "cancel": "Batal",
+      "uploading": "Mengunggah…",
+      "removing": "Menghapus…",
+      "confirmSaveTitle": "Simpan perubahan profil?",
+      "confirmSaveBody": "Nama tampilan Anda akan diubah menjadi “{name}”.",
+      "confirmSave": "Simpan perubahan",
+      "confirmPhotoTitle": "Perbarui foto profil?",
+      "confirmPhotoBody": "Foto saat ini akan diganti. File sebelumnya akan dihapus dari storage.",
+      "confirmPhoto": "Perbarui foto",
+      "confirmRemoveTitle": "Hapus foto profil?",
+      "confirmRemoveBody": "Foto akan dihapus dari akun dan storage. Tindakan ini tidak bisa dibatalkan.",
+      "confirmRemove": "Hapus foto"
+    },
+    "password": {
+      "title": "Perbarui password",
+      "subtitle": "Gunakan password yang kuat. Anda akan menerima email konfirmasi setelah berhasil diubah.",
+      "current": "Password saat ini",
+      "currentPlaceholder": "Masukkan password saat ini",
+      "new": "Password baru",
+      "newPlaceholder": "Buat password baru",
+      "confirm": "Konfirmasi password baru",
+      "confirmPlaceholder": "Ulangi password baru",
+      "submit": "Perbarui password",
+      "submitting": "Memperbarui…",
+      "success": "Password diperbarui. Cek email untuk konfirmasi.",
+      "currentWrong": "Password saat ini salah.",
+      "noCredential": "Akun ini masuk dengan Google dan tidak punya password untuk diubah."
+    },
+    "history": {
+      "title": "Riwayat login",
+      "subtitle": "Masuk terbaru 7 hari terakhir — perangkat, waktu, dan jaringan sekilas.",
+      "windowBadge": "7 hari terakhir",
+      "loading": "Memuat riwayat…",
+      "empty": "Belum ada login dalam 7 hari terakhir.",
+      "unknownIp": "Jaringan tidak diketahui",
+      "ipLocal": "Komputer ini (lokal)",
+      "ipPrivate": "Jaringan pribadi / rumah",
+      "deviceDesktop": "Desktop",
+      "deviceMobile": "Ponsel",
+      "deviceTablet": "Tablet",
+      "deviceUnknown": "Perangkat",
+      "current": "Perangkat ini",
+      "active": "Aktif",
+      "expired": "Kedaluwarsa",
+      "lastActive": "Terakhir aktif {when}",
+      "prev": "Sebelumnya",
+      "next": "Berikutnya",
+      "pageInfo": "Halaman {page} dari {totalPages} · {total} sesi",
+      "cols": {
+        "when": "Waktu masuk",
+        "device": "Perangkat",
+        "ip": "Jaringan",
+        "status": "Status"
+      }
+    },
+    "errors": {
+      "GENERIC": "Terjadi kesalahan. Coba lagi.",
+      "VALIDATION_ERROR": "Periksa input Anda lalu coba lagi.",
+      "UPDATE_FAILED": "Gagal memperbarui profil.",
+      "AVATAR_TYPE_INVALID": "Gunakan JPG, PNG, WEBP, atau GIF saja.",
+      "AVATAR_SIZE_INVALID": "Foto maksimal 5 MB.",
+      "AVATAR_UPLOAD_FAILED": "Gagal mengunggah foto. Coba lagi.",
+      "AVATAR_DELETE_FAILED": "Gagal menghapus foto. Coba lagi.",
+      "HISTORY_FAILED": "Gagal memuat riwayat login."
+    }
   },
   "appShell": {
     "breadcrumb": {
       "label": "Breadcrumb",
       "home": "Beranda",
       "dashboard": "Dashboard",
-      "admin": "Admin",
+      "admin": "Ringkasan",
       "settings": "Pengaturan",
       "app": "Ruang kerja"
     },
     "nav": {
       "label": "Navigasi ruang kerja",
       "dashboard": "Dashboard",
-      "admin": "Konsol admin",
+      "admin": "Ringkasan",
       "settings": "Pengaturan",
       "sectionLearn": "Belajar",
       "sectionAdmin": "Administrasi",
@@ -421,7 +501,7 @@
       "openMenu": "Buka navigasi",
       "closeMenu": "Tutup navigasi"
     },
-      "sidebar": {
+    "sidebar": {
       "copyright": "© {year} Onigiroku"
     },
     "topbar": {

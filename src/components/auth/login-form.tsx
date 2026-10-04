@@ -25,9 +25,11 @@ import { cn } from "@/lib/utils";
 type Props = {
   googleEnabled: boolean;
   callbackUrl?: string;
+  /** OAuth callback error query (e.g. account_not_linked). */
+  oauthError?: string;
 };
 
-export function LoginForm({ googleEnabled, callbackUrl }: Props) {
+export function LoginForm({ googleEnabled, callbackUrl, oauthError }: Props) {
   const t = useTranslations("auth");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -38,16 +40,27 @@ export function LoginForm({ googleEnabled, callbackUrl }: Props) {
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    const saved = loadRememberMe();
-    if (saved) {
-      setEmail(saved.email);
-      setPassword(saved.password);
-      setRememberMe(true);
-    } else {
-      setRememberMe(false);
-    }
-    setHydrated(true);
+    const frame = requestAnimationFrame(() => {
+      const saved = loadRememberMe();
+      if (saved) {
+        setEmail(saved.email);
+        setPassword(saved.password);
+        setRememberMe(true);
+      } else {
+        setRememberMe(false);
+      }
+      setHydrated(true);
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
+
+  useEffect(() => {
+    if (!oauthError) return;
+    const frame = requestAnimationFrame(() => {
+      toast.error(t(`errors.${mapAuthError(oauthError)}`));
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [oauthError, t]);
 
   function translateFieldError(code: string) {
     return t(`fieldErrors.${code}`);

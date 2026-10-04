@@ -8,6 +8,7 @@ export {
 } from "@/lib/email/templates/layout";
 
 export {
+  buildExistingAccountSignUpEmail,
   buildPasswordChangedEmail,
   buildPasswordResetEmail,
   buildVerificationEmail,

@@ -42,6 +42,7 @@ function normalizeCode(raw: string): string {
     "INVALID_PASSWORD",
     "USER_NOT_FOUND",
     "USER_ALREADY_EXISTS",
+    "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL",
     "EMAIL_NOT_VERIFIED",
     "EMAIL_ALREADY_VERIFIED",
     "SELF_REGISTRATION_DISABLED",
@@ -57,13 +58,33 @@ function normalizeCode(raw: string): string {
     "FAILED_TO_CREATE_USER",
     "FAILED_TO_CREATE_SESSION",
     "CREDENTIAL_ACCOUNT_NOT_FOUND",
+    "USE_GOOGLE_OR_RESET_PASSWORD",
+    "ACCOUNT_NOT_LINKED",
+    "UNABLE_TO_LINK_ACCOUNT",
     "GENERIC",
   ]);
 
-  if (known.has(upper)) return upper;
+  if (known.has(upper)) {
+    if (upper === "USER_ALREADY_EXISTS_USE_ANOTHER_EMAIL") {
+      return "USER_ALREADY_EXISTS";
+    }
+    return upper;
+  }
 
-  // Better Auth often returns human sentences.
+  // Better Auth often returns human sentences / oauth query codes.
   const lower = value.toLowerCase();
+  if (lower.includes("use_google_or_reset_password")) {
+    return "USE_GOOGLE_OR_RESET_PASSWORD";
+  }
+  if (
+    lower.includes("account_not_linked") ||
+    lower.includes("account not linked")
+  ) {
+    return "ACCOUNT_NOT_LINKED";
+  }
+  if (lower.includes("unable_to_link") || lower.includes("unable to link")) {
+    return "UNABLE_TO_LINK_ACCOUNT";
+  }
   if (lower.includes("invalid email or password") || lower.includes("invalid password")) {
     return "INVALID_EMAIL_OR_PASSWORD";
   }

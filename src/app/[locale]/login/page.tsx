@@ -10,10 +10,10 @@ export default async function LoginPage({
   searchParams,
 }: {
   params: Promise<{ locale: string }>;
-  searchParams: Promise<{ callbackUrl?: string }>;
+  searchParams: Promise<{ callbackUrl?: string; error?: string }>;
 }) {
   const { locale } = await params;
-  const { callbackUrl } = await searchParams;
+  const { callbackUrl, error } = await searchParams;
   setRequestLocale(locale);
   await redirectIfAuthenticated(locale);
 
@@ -22,6 +22,7 @@ export default async function LoginPage({
       <LoginForm
         googleEnabled={isGoogleAuthConfigured()}
         callbackUrl={callbackUrl}
+        oauthError={error}
       />
     </AuthShell>
   );

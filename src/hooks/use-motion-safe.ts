@@ -34,7 +34,8 @@ export function useMotionSafe() {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setReady(true);
+    const frame = requestAnimationFrame(() => setReady(true));
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   return ready && !reduceMotion;

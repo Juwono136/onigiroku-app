@@ -28,13 +28,16 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw === "1") setCollapsedState(true);
-    } catch {
-      // ignore
-    }
-    setHydrated(true);
+    const frame = requestAnimationFrame(() => {
+      try {
+        const raw = window.localStorage.getItem(STORAGE_KEY);
+        if (raw === "1") setCollapsedState(true);
+      } catch {
+        // ignore
+      }
+      setHydrated(true);
+    });
+    return () => cancelAnimationFrame(frame);
   }, []);
 
   const setCollapsed = useCallback((value: boolean) => {

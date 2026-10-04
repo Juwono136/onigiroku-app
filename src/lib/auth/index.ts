@@ -3,6 +3,11 @@ import { APIError, createAuthMiddleware } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
 import {
+  getAuthIdentityByEmail,
+  isSocialOnlyIdentity,
+  normalizeAuthEmail,
+} from "@/lib/auth/account-identity";
+import {
   assertNotLockedOut,
   clearLockout,
   recordFailedLogin,
@@ -12,6 +17,7 @@ import { schema } from "@/lib/db/schema";
 import { dispatchBrandedEmail } from "@/lib/email/dispatch";
 import { localeFromCookieHeader, resolveEmailLocale } from "@/lib/email/locale";
 import {
+  buildExistingAccountSignUpEmail,
   buildPasswordChangedEmail,
   buildPasswordResetEmail,
   buildVerificationEmail,
@@ -31,8 +37,12 @@ function buildSocialProviders() {
       clientId,
       clientSecret,
       prompt: "select_account" as const,
-      // Refresh name/avatar from Google on every sign-in (fixes missing image).
-      overrideUserInfoOnSignIn: true,
+      /**
+       * Settings is the source of truth for profile photo/name after first signup.
+       * Keep false so Google sign-in never restores a cleared/custom avatar.
+       * First-time Google users still get picture via mapProfileToUser on create.
+       */
+      overrideUserInfoOnSignIn: false,
       mapProfileToUser: (profile: {
         name?: string | null;
         email?: string | null;
@@ -40,7 +50,7 @@ function buildSocialProviders() {
       }) => ({
         name: profile.name ?? undefined,
         image: profile.picture ?? undefined,
-        email: profile.email ?? undefined,
+        email: profile.email ? normalizeAuthEmail(profile.email) : undefined,
       }),
     },
   };
@@ -88,11 +98,77 @@ export const auth = betterAuth({
       verification: schema.verification,
     },
   }),
+  /**
+   * One person = one `user` row. Google + email/password are linked accounts
+   * on the same user (never a second user for the same email).
+   * @see https://www.better-auth.com/docs/concepts/users-accounts#account-linking
+   */
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google"],
+      allowDifferentEmails: false,
+      // Keep true (OWASP): blocks takeover if attacker registered unverified email
+      // then victim signs in with Google. Victim must verify email first, or use Google-first.
+      requireLocalEmailVerified: true,
+      // Don't overwrite Settings edits when linking Google to an existing user.
+      updateUserInfoOnLink: false,
+      disableImplicitLinking: false,
+    },
+    updateAccountOnSignIn: true,
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        before: async (data) => {
+          if (typeof data.email === "string") {
+            data.email = normalizeAuthEmail(data.email);
+          }
+          return { data };
+        },
+      },
+      update: {
+        before: async (data) => {
+          if (typeof data.email === "string") {
+            data.email = normalizeAuthEmail(data.email);
+          }
+          return { data };
+        },
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: true,
     minPasswordLength: 6,
     maxPasswordLength: 128,
+    /**
+     * When email already exists (often Google-first), Better Auth returns a
+     * generic sign-up success (anti-enumeration). Notify the real owner instead
+     * of creating a duplicate user.
+     */
+    onExistingUserSignUp: async ({ user }, request) => {
+      const identity = await getAuthIdentityByEmail(user.email);
+      const locale = resolveEmailLocale(
+        user as { locale?: string },
+        request ?? null,
+      );
+      const origin = resolveAppOrigin();
+      const payload = buildExistingAccountSignUpEmail({
+        user: { name: user.name, email: user.email },
+        loginUrl: `${origin}/login`,
+        forgotPasswordUrl: `${origin}/forgot-password`,
+        hasGoogle: identity?.hasGoogle ?? false,
+        hasCredential: identity?.hasCredential ?? false,
+        locale,
+      });
+      dispatchBrandedEmail({
+        to: user.email,
+        subject: payload.subject,
+        content: payload.content,
+        text: payload.text,
+      });
+    },
     sendResetPassword: async ({ user, url }, request) => {
       const locale = resolveEmailLocale(
         user as { locale?: string },
@@ -200,8 +276,10 @@ export const auth = betterAuth({
           });
         }
 
-        // Ensure locale follows website preference when client omits it.
         const body = ctx.body as Record<string, unknown> | undefined;
+        if (body && typeof body.email === "string") {
+          body.email = normalizeAuthEmail(body.email);
+        }
         if (body && (body.locale === undefined || body.locale === "")) {
           const fromCookie = localeFromCookieHeader(
             ctx.headers?.get("cookie") ?? null,
@@ -213,8 +291,13 @@ export const auth = betterAuth({
       }
 
       if (ctx.path === "/sign-in/email") {
-        const email =
+        const emailRaw =
           typeof ctx.body?.email === "string" ? ctx.body.email : "";
+        const email = normalizeAuthEmail(emailRaw);
+        if (email && ctx.body && typeof ctx.body === "object") {
+          (ctx.body as { email?: string }).email = email;
+        }
+
         if (email) {
           try {
             await assertNotLockedOut(email);
@@ -223,6 +306,28 @@ export const auth = betterAuth({
               error instanceof Error ? error.message : "ACCOUNT_LOCKED";
             throw new APIError("FORBIDDEN", { message });
           }
+
+          // Google-only account: guide user instead of opaque invalid-password.
+          try {
+            const identity = await getAuthIdentityByEmail(email);
+            if (identity && isSocialOnlyIdentity(identity)) {
+              throw new APIError("BAD_REQUEST", {
+                message: "USE_GOOGLE_OR_RESET_PASSWORD",
+              });
+            }
+          } catch (error) {
+            if (error instanceof APIError) throw error;
+            logger.warn("Identity lookup failed during sign-in", {
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
+        }
+      }
+
+      if (ctx.path === "/request-password-reset") {
+        const body = ctx.body as Record<string, unknown> | undefined;
+        if (body && typeof body.email === "string") {
+          body.email = normalizeAuthEmail(body.email);
         }
       }
     }),
@@ -230,7 +335,9 @@ export const auth = betterAuth({
       if (ctx.path !== "/sign-in/email") return;
 
       const email =
-        typeof ctx.body?.email === "string" ? ctx.body.email : "";
+        typeof ctx.body?.email === "string"
+          ? normalizeAuthEmail(ctx.body.email)
+          : "";
       if (!email) return;
 
       const newSession = ctx.context.newSession;
@@ -241,11 +348,21 @@ export const auth = betterAuth({
 
       const returnedError = ctx.context.returned;
       if (returnedError) {
+        // Don't count guided social-only errors as lockout failures.
+        const message =
+          returnedError instanceof Error
+            ? returnedError.message
+            : String(
+                (returnedError as { message?: string } | null)?.message ?? "",
+              );
+        if (message.includes("USE_GOOGLE_OR_RESET_PASSWORD")) return;
         await recordFailedLogin(email);
       }
     }),
   },
   onAPIError: {
+    // OAuth failures (e.g. account_not_linked) land on login with ?error=
+    errorURL: `${resolveAppOrigin()}/login`,
     onError(error) {
       logger.error("Better Auth API error", {
         error: error instanceof Error ? error.message : String(error),

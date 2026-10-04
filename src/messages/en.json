@@ -315,6 +315,7 @@
       "PASSWORD_SYMBOL": "Password must include a symbol (e.g. !@#$).",
       "CONFIRM_REQUIRED": "Please confirm your password.",
       "PASSWORD_MISMATCH": "Passwords do not match.",
+      "PASSWORD_SAME": "New password must be different from your current password.",
       "TOKEN_REQUIRED": "Reset token is missing."
     },
     "errors": {
@@ -337,7 +338,10 @@
       "SOCIAL_ACCOUNT_ALREADY_LINKED": "This Google account is already linked.",
       "FAILED_TO_CREATE_USER": "Could not create your account. Please try again.",
       "FAILED_TO_CREATE_SESSION": "Could not start a session. Please try again.",
-      "CREDENTIAL_ACCOUNT_NOT_FOUND": "No password login is set for this account. Try Google sign-in."
+      "CREDENTIAL_ACCOUNT_NOT_FOUND": "No password login is set for this account. Try Google sign-in.",
+      "USE_GOOGLE_OR_RESET_PASSWORD": "This email uses Google sign-in. Continue with Google, or use Forgot password to create a password.",
+      "ACCOUNT_NOT_LINKED": "This email is already registered. Verify your email first, then try Google again — or sign in with your password.",
+      "UNABLE_TO_LINK_ACCOUNT": "Could not link this Google account to your existing profile. Sign in with your password or contact support."
     }
   },
   "dashboard": {
@@ -388,31 +392,107 @@
   },
   "settings": {
     "eyebrow": "Account",
-    "title": "My settings",
-    "subtitle": "Review your profile details. Editable preferences arrive in the next milestone.",
-    "profileTitle": "Profile",
+    "title": "Settings",
+    "subtitle": "Manage your profile, password, and recent sign-in activity.",
     "fields": {
       "name": "Name",
       "email": "Email",
       "role": "Role",
       "locale": "Language"
     },
-    "comingSoon": "Profile editing, notification preferences, and security options will live here.",
-    "backToDashboard": "Back to dashboard"
+    "backToDashboard": "Back to dashboard",
+    "profile": {
+      "title": "Edit profile",
+      "subtitle": "Update how your name and photo appear across Onigiroku.",
+      "namePlaceholder": "Your display name",
+      "emailLocked": "Email cannot be changed here for security.",
+      "changePhoto": "Change photo",
+      "removePhoto": "Remove",
+      "photoHint": "JPG, PNG, WEBP, or GIF. Max 5 MB.",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "saved": "Profile updated.",
+      "avatarSaved": "Profile photo updated.",
+      "avatarRemoved": "Profile photo removed.",
+      "cancel": "Cancel",
+      "uploading": "Uploading…",
+      "removing": "Removing…",
+      "confirmSaveTitle": "Save profile changes?",
+      "confirmSaveBody": "Your display name will be updated to “{name}”.",
+      "confirmSave": "Save changes",
+      "confirmPhotoTitle": "Update profile photo?",
+      "confirmPhotoBody": "This will replace your current photo. The previous file will be removed from storage.",
+      "confirmPhoto": "Update photo",
+      "confirmRemoveTitle": "Remove profile photo?",
+      "confirmRemoveBody": "Your photo will be removed from your account and deleted from storage. This cannot be undone.",
+      "confirmRemove": "Remove photo"
+    },
+    "password": {
+      "title": "Update password",
+      "subtitle": "Use a strong password. You will receive an email confirmation after a successful change.",
+      "current": "Current password",
+      "currentPlaceholder": "Enter your current password",
+      "new": "New password",
+      "newPlaceholder": "Create a new password",
+      "confirm": "Confirm new password",
+      "confirmPlaceholder": "Repeat the new password",
+      "submit": "Update password",
+      "submitting": "Updating…",
+      "success": "Password updated. Check your email for confirmation.",
+      "currentWrong": "Current password is incorrect.",
+      "noCredential": "This account signs in with Google and has no password to change."
+    },
+    "history": {
+      "title": "Login history",
+      "subtitle": "Recent sign-ins from the last 7 days — device, time, and network at a glance.",
+      "windowBadge": "Last 7 days",
+      "loading": "Loading history…",
+      "empty": "No sign-ins in the last 7 days.",
+      "unknownIp": "Network unknown",
+      "ipLocal": "This computer (local)",
+      "ipPrivate": "Private / home network",
+      "deviceDesktop": "Desktop",
+      "deviceMobile": "Mobile",
+      "deviceTablet": "Tablet",
+      "deviceUnknown": "Device",
+      "current": "This device",
+      "active": "Active",
+      "expired": "Expired",
+      "lastActive": "Last active {when}",
+      "prev": "Previous",
+      "next": "Next",
+      "pageInfo": "Page {page} of {totalPages} · {total} sessions",
+      "cols": {
+        "when": "Signed in",
+        "device": "Device",
+        "ip": "Network",
+        "status": "Status"
+      }
+    },
+    "errors": {
+      "GENERIC": "Something went wrong. Please try again.",
+      "VALIDATION_ERROR": "Please check your input and try again.",
+      "UPDATE_FAILED": "Could not update your profile.",
+      "AVATAR_TYPE_INVALID": "Use JPG, PNG, WEBP, or GIF only.",
+      "AVATAR_SIZE_INVALID": "Photo must be 5 MB or smaller.",
+      "AVATAR_UPLOAD_FAILED": "Could not upload photo. Try again.",
+      "AVATAR_DELETE_FAILED": "Could not remove photo. Try again.",
+      "HISTORY_FAILED": "Could not load login history."
+    }
   },
   "appShell": {
     "breadcrumb": {
       "label": "Breadcrumb",
       "home": "Home",
       "dashboard": "Dashboard",
-      "admin": "Admin",
+      "admin": "Overview",
       "settings": "Settings",
       "app": "Workspace"
     },
     "nav": {
       "label": "Workspace navigation",
       "dashboard": "Dashboard",
-      "admin": "Admin console",
+      "admin": "Overview",
       "settings": "Settings",
       "sectionLearn": "Learning",
       "sectionAdmin": "Administration",

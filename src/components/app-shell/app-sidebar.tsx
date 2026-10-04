@@ -163,15 +163,15 @@ export function AppSidebar({ role }: Props) {
 
   return (
     <>
-      {/* Desktop sidebar */}
+      {/* Desktop sidebar — sticky viewport height so collapse control never scrolls away */}
       <aside
         className={cn(
-          "group/sidebar relative z-30 hidden shrink-0 flex-col border-r border-charcoal/10 bg-[var(--workspace-sidebar)] transition-[width] duration-300 ease-out md:flex",
+          "group/sidebar sticky top-0 z-30 hidden h-svh shrink-0 self-start flex-col border-r border-charcoal/10 bg-[var(--workspace-sidebar)] transition-[width] duration-300 ease-out md:flex",
           collapsed ? "w-[4.5rem]" : "w-64",
         )}
         data-collapsed={collapsed || undefined}
       >
-        <div className="jp-rail flex h-full min-h-svh flex-col bg-[linear-gradient(180deg,rgba(255,255,255,0.35)_0%,transparent_28%)]">
+        <div className="jp-rail flex h-full min-h-0 flex-col bg-[linear-gradient(180deg,rgba(255,255,255,0.35)_0%,transparent_28%)]">
           {renderNav({ compact: collapsed })}
         </div>
 
@@ -181,9 +181,9 @@ export function AppSidebar({ role }: Props) {
           aria-expanded={!collapsed}
           aria-label={collapsed ? t("nav.expand") : t("nav.collapse")}
           className={cn(
-            "absolute top-1/2 -right-3 z-40 flex size-6 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-charcoal/15 bg-[var(--workspace-elevated)] text-charcoal/70 shadow-md transition-all duration-200",
+            "absolute top-1/2 -right-3 z-40 flex size-7 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full border border-charcoal/15 bg-[var(--workspace-elevated)] text-charcoal/70 shadow-md transition-all duration-200",
             "pointer-events-none opacity-0 group-hover/sidebar:pointer-events-auto group-hover/sidebar:opacity-100",
-            "focus-visible:pointer-events-auto focus-visible:opacity-100",
+            "focus-visible:pointer-events-auto focus-visible:opacity-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2",
             "hover:border-brand/40 hover:bg-brand hover:text-white",
           )}
         >

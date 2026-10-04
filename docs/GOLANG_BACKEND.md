@@ -163,4 +163,4 @@ Header `X-Internal-Secret` dikirim otomatis jika `INTERNAL_API_SECRET` terset di
 3. Learning events collector (idempotent)
 4. Analytics projections / dashboard
 5. Xendit checkout + webhook verification
-6. Media presign + finalize + scan status
+6. Media presign + delete + replace-confirm (SeaweedFS) — lihat [STORAGE.md](./STORAGE.md)

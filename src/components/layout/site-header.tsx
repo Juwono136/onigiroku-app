@@ -17,6 +17,7 @@ import {
   normalizeRole,
   ROLE_LABELS,
 } from "@/lib/auth/roles";
+import { toBrowserMediaUrl } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 const NAV_KEYS = ["features", "howItWorks", "pricing", "faq"] as const;
@@ -69,7 +70,7 @@ export function SiteHeader() {
     ? {
         name: session.user.name,
         email: session.user.email,
-        image: session.user.image,
+        image: toBrowserMediaUrl(session.user.image),
         role: (session.user as { role?: string | null }).role,
       }
     : null;

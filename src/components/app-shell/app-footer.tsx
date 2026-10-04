@@ -17,7 +17,7 @@ export function AppFooter({ role }: Props) {
 
   return (
     <footer className="relative mt-auto border-t border-charcoal/10 bg-[var(--workspace-footer)]">
-      <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
+      <div className="relative mx-auto flex w-full max-w-[96rem] flex-col gap-4 px-4 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8 xl:px-10">
         <div className="flex min-w-0 flex-col gap-1.5">
           <BrandWordmark
             href={homeHref}

@@ -55,6 +55,8 @@ export function GoogleAuthButton({
       const result = await authClient.signIn.social({
         provider: "google",
         callbackURL,
+        errorCallbackURL: "/login",
+        newUserCallbackURL: callbackURL,
       });
       if (result.error) {
         toast.error(t(`errors.${mapAuthError(result.error)}`));

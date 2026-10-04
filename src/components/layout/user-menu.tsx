@@ -28,6 +28,7 @@ import {
   normalizeRole,
   ROLE_LABELS,
 } from "@/lib/auth/roles";
+import { toBrowserMediaUrl } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -55,6 +56,7 @@ export function UserMenu({ user, compact }: Props) {
   const role = normalizeRole(user.role);
   const dashboardHref = getDashboardPath(role);
   const roleLabel = locale === "en" ? ROLE_LABELS[role].en : ROLE_LABELS[role].id;
+  const avatarSrc = toBrowserMediaUrl(user.image);
 
   return (
     <>
@@ -68,12 +70,8 @@ export function UserMenu({ user, compact }: Props) {
           aria-label={t("accountMenu")}
         >
           <Avatar size={compact ? "sm" : "default"} className="size-full">
-            {user.image ? (
-              <AvatarImage
-                key={user.image}
-                src={user.image}
-                alt={user.name}
-              />
+            {avatarSrc ? (
+              <AvatarImage key={avatarSrc} src={avatarSrc} alt={user.name} />
             ) : null}
             <AvatarFallback className="bg-brand/10 font-semibold text-brand">
               {initials(user.name) || <UserRound className="size-4" />}

@@ -78,7 +78,7 @@ Template email memakai `EMAIL_LOGO_URL` lewat `src/lib/email/templates/` (layout
 
 Lihat `.env.example` untuk daftar lengkap key (template). Ringkas:
 
-- SeaweedFS: `STORAGE_*`, `USERNAME_STORAGE`, `PASSWORD_STORAGE`
+- SeaweedFS: `STORAGE_*`, `USERNAME_STORAGE`, `PASSWORD_STORAGE` — lifecycle lengkap di [STORAGE.md](./STORAGE.md)
 - `LOG_LEVEL`, `HEALTH_CHECK_TOKEN`
 - Go: `GIN_MODE`, `API_*_TIMEOUT`, `API_RATE_LIMIT_MAX`, `INTERNAL_API_SECRET`
 - Xendit: `XENDIT_SECRET_KEY`, `XENDIT_CALLBACK_TOKEN`, `XENDIT_PUBLIC_KEY`

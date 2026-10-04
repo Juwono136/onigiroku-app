@@ -37,10 +37,13 @@ Nodemailer → Gmail SMTP
 
 ### Go Gin (`backend/`)
 
-- Domain API berperforma tinggi: catalog, attempts, scoring, analytics projections, billing webhooks, media presign
+- Domain API berperforma tinggi: catalog, attempts, scoring, analytics projections, billing webhooks, media presign/delete (SeaweedFS)
 - Middleware: request ID, CORS, recovery, security headers, Redis rate limit
 - Envelope JSON konsisten + typed errors (EN/ID)
 - Health `/health` + readiness `/ready`
+
+Media lifecycle (create / replace / delete tanpa orphan): [STORAGE.md](./STORAGE.md).  
+Account settings (profil, password, login history): [SETTINGS.md](./SETTINGS.md).
 
 ### Shared infrastructure
 

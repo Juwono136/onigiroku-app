@@ -64,10 +64,32 @@ Jika `GOOGLE_CLIENT_ID` + `GOOGLE_CLIENT_SECRET` terisi:
 
 - Tombol Google muncul di login & register.
 - Profile Google (nama, email, foto) dipetakan otomatis.
-- Password credential tidak dibuat (akun sosial).
+- Password credential tidak dibuat (akun sosial) sampai user membuat password via **Forgot password**.
 - Callback: `{BETTER_AUTH_URL}/api/auth/callback/google`
+- Error OAuth (mis. `account_not_linked`) diarahkan ke `/login?error=…` dan ditampilkan sebagai toast.
 
 Jika kosong (lokal default), tombol Google disembunyikan — email/password tetap jalan.
+
+### 4b. Satu email = satu user (account linking)
+
+**Masalah yang dicegah:** user yang pernah masuk dengan Google lalu mencoba form email/password (atau sebaliknya) tidak boleh menciptakan baris `user` kedua.
+
+| Skenario | Perilaku |
+| --- | --- |
+| Google dulu → form sign-up email sama | Tidak membuat user baru. UI anti-enumeration (sukses generik); owner mendapat email “akun sudah ada” + cara masuk / lupa password |
+| Google dulu → form login password | Error `USE_GOOGLE_OR_RESET_PASSWORD` — arahkan ke Google atau Forgot password |
+| Google dulu → Forgot / Reset password | Reset membuat akun `credential` pada **user yang sama** (bukan user baru) |
+| Email/password dulu (terverifikasi) → Google | Account linking: baris `account` Google ditambahkan ke user yang sama |
+| Email/password dulu (**belum** verifikasi) → Google | Linking ditolak (`requireLocalEmailVerified: true`) — cegah account takeover; user verifikasi dulu lalu coba Google lagi, atau login dengan password setelah verifikasi |
+
+Implementasi kunci:
+
+- `account.accountLinking` di `src/lib/auth/index.ts` (`trustedProviders: ["google"]`, `allowDifferentEmails: false`, `requireLocalEmailVerified: true`)
+- Normalisasi email (`trim` + `lower`) di hooks + `src/lib/auth/account-identity.ts`
+- Unique `(provider_id, account_id)` pada tabel `account` (migrasi `drizzle/0001_account_identity_unique.sql`)
+- Ops cleanup duplikat legacy: `node --env-file=.env ./scripts/dedupe-auth-users.mjs` (dry-run) / `--apply`
+
+Berlaku di **local** dan **production** selama `BETTER_AUTH_URL` / redirect Google / `DATABASE_URL` konsisten dengan environment tersebut.
 
 ### 5. Session & idle expiry (7 hari)
 
@@ -91,16 +113,21 @@ Cookie: `httpOnly`, `sameSite=lax`, `secure` di production.
 
 | Path | Fungsi |
 | --- | --- |
-| `src/lib/auth/index.ts` | Server Better Auth |
+| `src/lib/auth/index.ts` | Server Better Auth (+ account linking) |
+| `src/lib/auth/account-identity.ts` | Normalisasi email + lookup provider linked |
 | `src/lib/auth/client.ts` | Client React |
 | `src/lib/auth/session.ts` | `getServerSession` / `requireRole` |
 | `src/lib/auth/lockout.ts` | Account lockout |
-| `src/lib/email/templates/*` | Layout modular + template auth |
+| `src/lib/auth/errors.ts` | Mapping kode error → i18n |
+| `src/lib/email/templates/*` | Layout modular + template auth (termasuk existing-account) |
+| `scripts/dedupe-auth-users.mjs` | Ops: merge user email duplikat (legacy) |
 | `src/components/auth/*` | UI forms |
 | `src/app/api/auth/[...all]/route.ts` | Catch-all Better Auth |
 | `src/app/[locale]/{login,register,forgot-password,reset-password,verify-email}` | Halaman auth |
 | `src/app/[locale]/(app)/{dashboard,admin,settings}` | Workspace app shell (sidebar + topbar + footer) per role |
 | `src/components/app-shell/*` | Chrome dashboard (collapsible sidebar, breadcrumb, avatar) |
+| `src/components/settings/*` | Edit profil, password, riwayat login |
+| `src/app/api/settings/*` | BFF profil / avatar / password / login-history |
 
 ## Template email (modular)
 
@@ -111,6 +138,7 @@ Template auth: `src/lib/email/templates/auth.ts`
 - Verifikasi email
 - Reset password
 - Password changed
+- Existing account (sign-up ulang pada email yang sudah ada — anti-enumeration + panduan masuk)
 
 Template non-auth (billing, CMS, dll.) cukup memakai `renderBrandedEmail` + `sendBrandedEmail` tanpa menyentuh auth.
 
@@ -193,7 +221,8 @@ Asumsi `npm run dev` (:3000) dan `npm run dev:api` (:8080) sudah berjalan:
 2. `/login` → masuk → harus ke `/dashboard`.
 3. `/forgot-password` → email reset → `/reset-password?token=…`.
 4. (Opsional) isi Google credentials → tombol Google muncul → uji callback.
-5. Untuk uji ADMIN: update `user.role = 'ADMIN'` di DB, login ulang → `/admin`.
+5. **Anti-duplikat:** Google sign-in → logout → register form email sama → tidak ada user kedua; cek email “akun sudah ada”. Login form pada akun Google-only → toast arahkan Google / forgot password. Setelah reset password, login form dan Google memakai **satu** `user.id`.
+6. Untuk uji ADMIN: update `user.role = 'ADMIN'` di DB, login ulang → `/admin`.
 
 Jangan menjalankan ulang API jika port 8080 sudah aktif.
 
@@ -218,11 +247,12 @@ Validasi client: Zod di `src/lib/validations/auth.ts`. Server: Better Auth `minP
 - Uncheck manual juga menghapus data tersimpan.
 - Hanya untuk perangkat pribadi tepercaya (bukan sandi server-side).
 
-### Google profile image
+### Google profile image & Settings as source of truth
 
-- Provider Google memakai `overrideUserInfoOnSignIn` + `mapProfileToUser` agar `user.image` terisi dari foto Google.
-- Avatar memakai `referrerPolicy="no-referrer"` agar foto Googleusercontent bisa dimuat.
-- Setelah deploy/perubahan ini, **login ulang dengan Google** sekali agar foto tersinkron ke DB untuk akun lama.
+- **Pertama kali** daftar/masuk Google: `mapProfileToUser` mengisi nama + foto Google.
+- **Login Google berikutnya:** `overrideUserInfoOnSignIn: false` dan `updateUserInfoOnLink: false` — **tidak** menimpa nama/foto yang sudah diubah atau dihapus di Settings.
+- Hapus foto di Settings → `user.image = null` + object SeaweedFS dihapus → login Google tidak mengembalikan foto Google.
+- Avatar Googleusercontent memakai `referrerPolicy="no-referrer"` bila masih dipakai.
 
 - Bahasa email mengikuti **locale website** (`NEXT_LOCALE` cookie) dan/atau `user.locale` yang disimpan saat register.
 - Layout chrome (tagline, help footer, `html lang`) ikut locale yang sama — tidak mencampur ID/EN.
@@ -236,11 +266,13 @@ Semua toast Sonner memakai `position="top-center"` (global di `AppProviders`) ag
 
 - Password hashing via Better Auth
 - Email verification wajib sebelum login credential
+- Account linking aman (`requireLocalEmailVerified`) — cegah ATO via email belum terverifikasi
+- Satu email / satu identitas provider → satu user (unique + normalisasi)
 - Rate limit + lockout
 - Session sliding 7 hari
 - Cookies httpOnly / secure (prod)
 - Role tidak bisa di-escalate dari form registrasi
-- Anti-enumeration pada forgot-password UI
+- Anti-enumeration pada forgot-password dan sign-up email yang sudah ada
 
 Roadmap: MFA admin (PRD), CSP ketat, granular permission matrix.
 

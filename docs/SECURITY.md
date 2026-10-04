@@ -19,11 +19,14 @@ Panduan keamanan untuk setup config Onigiroku (development → production).
 | Auth rate limit | `API_AUTH_RATE_LIMIT_MAX` |
 | Account lockout | `AUTH_LOCKOUT_*` + tabel `auth_lockout` (hooks Better Auth) |
 | Email verification | Wajib sebelum login credential |
+| Account linking | Google ↔ credential pada **satu** `user`; `trustedProviders: google`; `requireLocalEmailVerified: true` (OWASP ATO) |
+| Identity uniqueness | Email dinormalisasi (lower/trim); unique `(provider_id, account_id)`; ops `scripts/dedupe-auth-users.mjs` |
 | Session idle | Sliding 7 hari (`expiresIn` + `updateAge`) — lihat [AUTH.md](./AUTH.md) |
 | CORS | Allowlist `CORS_ORIGINS` saja; OPTIONS dari origin asing ditolak |
 | Security headers | nosniff, frame deny, referrer, permissions, COOP/CORP, HSTS (prod) |
 | Health endpoints | Production wajib `HEALTH_CHECK_TOKEN` (timing-safe compare) |
 | Internal API | Mutating `/api/v1/*` butuh header `X-Internal-Secret` |
+| Media / SeaweedFS | Presign + delete idempotent; replace = key baru lalu hapus key lama (lihat [STORAGE.md](./STORAGE.md)) |
 | Webhooks | Dikecualikan dari internal secret; verifikasi token provider |
 | Rate limit | Redis-backed per IP (`API_RATE_LIMIT_MAX`) |
 | Body limits | Gin multipart max 8 MiB |
@@ -68,6 +71,8 @@ npm run dev:api    # terminal 2
 ## Ancaman yang dimitigasi (baseline)
 
 - Credential stuffing / brute force → rate limit + lockout knobs + strong secrets
+- Account takeover via unverified email + OAuth link → `requireLocalEmailVerified`
+- Split / duplicate identities (Google vs form) → account linking + email normalize + unique provider index
 - Session theft via XSS → httpOnly cookies + CSP-friendly headers baseline
 - Clickjacking → `X-Frame-Options: DENY`
 - MIME sniffing → `X-Content-Type-Options: nosniff`

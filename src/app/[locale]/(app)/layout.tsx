@@ -6,6 +6,7 @@ import {
   getSessionUser,
   requireSession,
 } from "@/lib/auth/session";
+import { toBrowserMediaUrl } from "@/lib/storage";
 
 export default async function AppWorkspaceLayout({
   children,
@@ -27,7 +28,7 @@ export default async function AppWorkspaceLayout({
       user={{
         name: user.name,
         email: user.email,
-        image: user.image,
+        image: toBrowserMediaUrl(user.image),
         role: user.role,
       }}
     >

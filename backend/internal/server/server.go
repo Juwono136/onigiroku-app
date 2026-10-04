@@ -62,7 +62,17 @@ func NewEngine(deps Dependencies) *gin.Engine {
 	assessment.NewHandler().Register(v1)
 	analytics.NewHandler().Register(v1)
 	billing.NewHandler(deps.Config.XenditWebhookToken).Register(v1)
-	media.NewHandler(deps.Config.StorageEndpoint, deps.Config.StorageBucket).Register(v1)
+	// Browser-facing public URLs go through the Next.js media proxy so nginx
+	// basic-auth credentials are never requested from end users.
+	mediaPublicBase := strings.TrimRight(deps.Config.AppURL, "/") + "/api/media"
+	media.NewHandler(
+		deps.Config.StorageEndpoint,
+		mediaPublicBase,
+		deps.Config.StorageBucket,
+		deps.Config.StorageAccessKey,
+		deps.Config.StorageSecretKey,
+		!deps.Config.IsProd,
+	).Register(v1)
 
 	engine.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{

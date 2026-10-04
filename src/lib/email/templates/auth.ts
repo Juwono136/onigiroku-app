@@ -127,11 +127,18 @@ export function buildPasswordChangedEmail(input: {
       : "Password Onigiroku Anda telah diubah",
     bodyHtml: `
       ${greet(input.user.name, locale)}
-      <p style="margin:0;">
+      <p style="margin:0 0 12px;">
         ${
           isEn
-            ? "Your password was changed successfully. You can now sign in with your new password."
-            : "Password Anda berhasil diubah. Anda sekarang dapat masuk dengan password baru."
+            ? "Your password was changed successfully from account settings. You can now sign in with your new password."
+            : "Password Anda berhasil diubah dari pengaturan akun. Anda sekarang dapat masuk dengan password baru."
+        }
+      </p>
+      <p style="margin:0;padding:10px 12px;background:#ffffff;border-radius:10px;border:1px solid #f0e9e9;color:#6b7280;font-size:13px;">
+        ${
+          isEn
+            ? "If this wasn’t you, reset your password immediately and contact support."
+            : "Jika bukan Anda yang mengubahnya, segera reset password dan hubungi dukungan."
         }
       </p>
     `,
@@ -145,6 +152,89 @@ export function buildPasswordChangedEmail(input: {
   const text = isEn
     ? `Your Onigiroku password was updated. Sign in: ${input.loginUrl}`
     : `Password Onigiroku Anda diperbarui. Masuk: ${input.loginUrl}`;
+
+  return { subject, content, text };
+}
+
+/**
+ * Sent when someone tries to register an email that already belongs to an account
+ * (e.g. Google-first user later using the email/password form). Anti-enumeration
+ * still returns a generic success to the browser; this email guides the real owner.
+ */
+export function buildExistingAccountSignUpEmail(input: {
+  user: AuthEmailUser;
+  loginUrl: string;
+  forgotPasswordUrl: string;
+  hasGoogle: boolean;
+  hasCredential: boolean;
+  locale?: AuthEmailLocale;
+}): { subject: string; content: BrandedEmailContent; text: string } {
+  const locale = input.locale ?? "id";
+  const isEn = locale === "en";
+
+  const subject = isEn
+    ? "You already have an Onigiroku account"
+    : "Anda sudah punya akun Onigiroku";
+
+  const methods: string[] = [];
+  if (input.hasGoogle) {
+    methods.push(isEn ? "Continue with Google" : "Lanjut dengan Google");
+  }
+  if (input.hasCredential) {
+    methods.push(
+      isEn ? "Email and password" : "Email dan password",
+    );
+  }
+  if (!input.hasCredential) {
+    methods.push(
+      isEn
+        ? "Forgot password (to create a password for this account)"
+        : "Lupa password (untuk membuat password pada akun ini)",
+    );
+  }
+
+  const methodsHtml = methods
+    .map(
+      (m) =>
+        `<li style="margin:0 0 6px;">${escapeHtml(m)}</li>`,
+    )
+    .join("");
+
+  const content: BrandedEmailContent = {
+    title: isEn ? "Account already registered" : "Akun sudah terdaftar",
+    locale,
+    preheader: isEn
+      ? "Sign in with your existing Onigiroku account"
+      : "Masuk dengan akun Onigiroku yang sudah ada",
+    bodyHtml: `
+      ${greet(input.user.name, locale)}
+      <p style="margin:0 0 12px;">
+        ${
+          isEn
+            ? "Someone tried to create a new Onigiroku account with this email. You already have an account — no duplicate was created."
+            : "Seseorang mencoba membuat akun Onigiroku baru dengan email ini. Anda sudah punya akun — tidak ada data duplikat yang dibuat."
+        }
+      </p>
+      <p style="margin:0 0 8px;font-weight:600;">
+        ${isEn ? "How to sign in:" : "Cara masuk:"}
+      </p>
+      <ul style="margin:0 0 12px;padding-left:18px;color:#434040;">
+        ${methodsHtml}
+      </ul>
+      <p style="margin:0;padding:10px 12px;background:#ffffff;border-radius:10px;border:1px solid #f0e9e9;color:#6b7280;font-size:13px;">
+        ${escapeHtml(input.user.email)}
+      </p>
+    `,
+    ctaLabel: isEn ? "Go to sign in" : "Ke halaman masuk",
+    ctaUrl: input.loginUrl,
+    footerNote: isEn
+      ? `Need a password for a Google account? Use forgot password: ${input.forgotPasswordUrl}`
+      : `Butuh password untuk akun Google? Gunakan lupa password: ${input.forgotPasswordUrl}`,
+  };
+
+  const text = isEn
+    ? `You already have an Onigiroku account for ${input.user.email}. Sign in: ${input.loginUrl}. Forgot password: ${input.forgotPasswordUrl}`
+    : `Anda sudah punya akun Onigiroku untuk ${input.user.email}. Masuk: ${input.loginUrl}. Lupa password: ${input.forgotPasswordUrl}`;
 
   return { subject, content, text };
 }
