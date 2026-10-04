@@ -7,6 +7,7 @@ import {
   isSocialOnlyIdentity,
   normalizeAuthEmail,
 } from "@/lib/auth/account-identity";
+import { throwAuthApiError } from "@/lib/auth/api-error";
 import {
   assertNotLockedOut,
   clearLockout,
@@ -146,9 +147,14 @@ export const auth = betterAuth({
             );
             await assertUserIdCanAuthenticate(sessionData.userId);
           } catch (error) {
-            const message =
+            const code =
               error instanceof Error ? error.message : "ACCOUNT_INACTIVE";
-            throw new APIError("FORBIDDEN", { message });
+            // Must include `code` so OAuth callback redirects to login UI
+            // instead of rendering raw JSON in the browser.
+            throwAuthApiError(
+              "FORBIDDEN",
+              code === "ACCOUNT_DELETED" ? "ACCOUNT_DELETED" : "ACCOUNT_INACTIVE",
+            );
           }
           return { data: sessionData };
         },
@@ -355,10 +361,8 @@ export const auth = betterAuth({
         if (email) {
           try {
             await assertNotLockedOut(email);
-          } catch (error) {
-            const message =
-              error instanceof Error ? error.message : "ACCOUNT_LOCKED";
-            throw new APIError("FORBIDDEN", { message });
+          } catch {
+            throwAuthApiError("FORBIDDEN", "ACCOUNT_LOCKED");
           }
 
           try {
@@ -367,18 +371,19 @@ export const auth = betterAuth({
             );
             await assertUserCanAuthenticate(email);
           } catch (error) {
-            const message =
+            const code =
               error instanceof Error ? error.message : "ACCOUNT_INACTIVE";
-            throw new APIError("FORBIDDEN", { message });
+            throwAuthApiError(
+              "FORBIDDEN",
+              code === "ACCOUNT_DELETED" ? "ACCOUNT_DELETED" : "ACCOUNT_INACTIVE",
+            );
           }
 
           // Google-only account: guide user instead of opaque invalid-password.
           try {
             const identity = await getAuthIdentityByEmail(email);
             if (identity && isSocialOnlyIdentity(identity)) {
-              throw new APIError("BAD_REQUEST", {
-                message: "USE_GOOGLE_OR_RESET_PASSWORD",
-              });
+              throwAuthApiError("BAD_REQUEST", "USE_GOOGLE_OR_RESET_PASSWORD");
             }
           } catch (error) {
             if (error instanceof APIError) throw error;

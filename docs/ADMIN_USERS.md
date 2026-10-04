@@ -76,9 +76,18 @@ Migrasi: `drizzle/0003_user_status_soft_delete.sql`
 | `src/components/admin/*` | UI |
 | `src/messages/{id,en}.json` → `adminUsers` | i18n |
 
-## UI width
+## UI
 
 Workspace content memakai `max-w-[96rem]` + padding `xl:px-10` (selaras Overview / Settings).
+
+| Elemen | Catatan desain |
+| --- | --- |
+| Role badges | Palet **PRD §13.2** — Student = Info `#1D4ED8`, Super Admin = Charcoal `#434040`; **bukan** brand merah (supaya tidak terbaca sebagai error). Komponen: `src/components/admin/user-badges.tsx` |
+| Status badges | Active = Success `#15803D`, Inactive = charcoal soft, Trash = Error `#B91C1C` + indicator dot |
+| List | Tab segmented (ink), baris dengan accent kiri per role, tombol Details dengan ikon |
+| Detail modal | Hero profil bergradien role, tile overview ber-ikon, footer UX: **bahaya kiri** · **Close + aksi primer kanan** (Save / Restore) |
+
+Komponen: `users-management.tsx`, `user-detail-dialog.tsx`, `user-badges.tsx`.
 
 ## Keamanan (hardening)
 

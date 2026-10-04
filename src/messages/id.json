@@ -535,6 +535,7 @@
       "title": "Detail pengguna",
       "subtitle": "Informasi profil bersifat baca saja. Admin hanya dapat mengubah role, status, atau menghapus.",
       "you": "Anda",
+      "overviewTitle": "Ringkasan akun",
       "manageTitle": "Kelola akun",
       "manageHint": "Nama, email, dan avatar tidak dapat diubah di sini. Pengguna nonaktif tidak dapat masuk sampai diaktifkan lagi.",
       "selfGuard": "Anda tidak dapat mengubah role, menonaktifkan, atau menghapus akun yang sedang Anda gunakan."

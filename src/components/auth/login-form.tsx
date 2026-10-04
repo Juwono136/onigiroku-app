@@ -1,7 +1,7 @@
 "use client";
 
-import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { AlertTriangle, Loader2 } from "lucide-react";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 
@@ -29,8 +29,17 @@ type Props = {
   oauthError?: string;
 };
 
+const BANNER_ERROR_CODES = new Set([
+  "ACCOUNT_INACTIVE",
+  "ACCOUNT_DELETED",
+  "ACCOUNT_LOCKED",
+  "ACCOUNT_NOT_LINKED",
+  "USE_GOOGLE_OR_RESET_PASSWORD",
+]);
+
 export function LoginForm({ googleEnabled, callbackUrl, oauthError }: Props) {
   const t = useTranslations("auth");
+  const locale = useLocale();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [email, setEmail] = useState("");
@@ -38,6 +47,7 @@ export function LoginForm({ googleEnabled, callbackUrl, oauthError }: Props) {
   const [rememberMe, setRememberMe] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [bannerCode, setBannerCode] = useState<string | null>(null);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
@@ -55,8 +65,12 @@ export function LoginForm({ googleEnabled, callbackUrl, oauthError }: Props) {
 
   useEffect(() => {
     if (!oauthError) return;
+    const code = mapAuthError(oauthError);
     const frame = requestAnimationFrame(() => {
-      toast.error(t(`errors.${mapAuthError(oauthError)}`));
+      if (BANNER_ERROR_CODES.has(code)) {
+        setBannerCode(code);
+      }
+      toast.error(t(`errors.${code}`));
     });
     return () => cancelAnimationFrame(frame);
   }, [oauthError, t]);
@@ -81,6 +95,7 @@ export function LoginForm({ googleEnabled, callbackUrl, oauthError }: Props) {
     }
 
     startTransition(async () => {
+      setBannerCode(null);
       const result = await authClient.signIn.email({
         email: parsed.data.email,
         password: parsed.data.password,
@@ -88,6 +103,9 @@ export function LoginForm({ googleEnabled, callbackUrl, oauthError }: Props) {
 
       if (result.error) {
         const code = mapAuthError(result.error);
+        if (BANNER_ERROR_CODES.has(code)) {
+          setBannerCode(code);
+        }
         toast.error(t(`errors.${code}`));
         if (code === "EMAIL_NOT_VERIFIED") {
           router.push(
@@ -132,6 +150,16 @@ export function LoginForm({ googleEnabled, callbackUrl, oauthError }: Props) {
         </p>
       </div>
 
+      {bannerCode ? (
+        <div
+          role="alert"
+          className="flex gap-3 rounded-xl border border-[color-mix(in_oklab,var(--warning)_35%,white)] bg-[color-mix(in_oklab,var(--warning)_10%,white)] px-3.5 py-3 text-sm leading-relaxed text-[var(--warning)]"
+        >
+          <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden />
+          <p className="min-w-0 font-medium">{t(`errors.${bannerCode}`)}</p>
+        </div>
+      ) : null}
+
       {googleEnabled ? (
         <>
           <GoogleAuthButton
@@ -141,6 +169,7 @@ export function LoginForm({ googleEnabled, callbackUrl, oauthError }: Props) {
                 ? callbackUrl
                 : "/dashboard"
             }
+            errorCallbackURL={`/${locale}/login`}
             disabled={pending}
           />
           <div className="relative py-1 text-center text-xs font-medium tracking-wide text-charcoal/45 uppercase">

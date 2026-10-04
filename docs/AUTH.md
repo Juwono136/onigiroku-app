@@ -41,6 +41,9 @@ Blokir autentikasi:
 
 - Hook before `/sign-in/email` → `assertUserCanAuthenticate`
 - `databaseHooks.session.create` → `assertUserIdCanAuthenticate` (termasuk OAuth)
+- Error memakai `APIError` dengan **`code` + `message`** (`throwAuthApiError`) agar OAuth callback **redirect ke `/login?error=…`**, bukan menampilkan JSON mentah di browser
+- Safety net: `src/app/api/auth/[...all]/route.ts` mengalihkan browser navigation pada callback JSON error → halaman login berbrand
+- UI login menampilkan banner + toast untuk `ACCOUNT_INACTIVE` / `ACCOUNT_DELETED` / `ACCOUNT_LOCKED`
 
 Admin mengubah status/role/delete hanya lewat `/admin/users` (lihat [ADMIN_USERS.md](./ADMIN_USERS.md)).
 

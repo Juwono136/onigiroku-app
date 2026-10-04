@@ -44,7 +44,12 @@ Sumber: **PRD & SRS v1.0 §13** (`docs/Onigiroku_PRD_SRS_v1.0.pdf`) + mark Onigi
 
 | Soft Gray | `#F3F4F6` | Secondary panels (features, FAQ) |
 
-| Success / Warning / Error / Info | PRD §13.2 | Semantic only |
+| Success | `#15803D` | Active status, positive states |
+| Warning | `#B45309` | Pending / account notices |
+| Error | `#B91C1C` | Destructive / trash / form errors |
+| Info | `#1D4ED8` | Informational + Student role badge |
+
+Admin Users role chips memakai Info (Student) dan Charcoal (Super Admin) — brand red hanya untuk CTA/nav aktif, bukan badge role.
 
 
 

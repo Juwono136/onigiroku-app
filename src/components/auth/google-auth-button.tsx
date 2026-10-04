@@ -12,9 +12,23 @@ import { cn } from "@/lib/utils";
 type Props = {
   mode: "login" | "register";
   callbackURL: string;
+  /** Absolute or app-relative URL for OAuth failures (inactive, not linked, …). */
+  errorCallbackURL?: string;
   disabled?: boolean;
   className?: string;
 };
+
+function toAbsoluteAppUrl(pathOrUrl: string) {
+  if (/^https?:\/\//i.test(pathOrUrl)) return pathOrUrl;
+  const origin =
+    typeof window !== "undefined"
+      ? window.location.origin
+      : (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").replace(
+          /\/$/,
+          "",
+        );
+  return `${origin}${pathOrUrl.startsWith("/") ? pathOrUrl : `/${pathOrUrl}`}`;
+}
 
 /** Official multicolor Google "G" mark */
 function GoogleMark({ className }: { className?: string }) {
@@ -43,6 +57,7 @@ function GoogleMark({ className }: { className?: string }) {
 export function GoogleAuthButton({
   mode,
   callbackURL,
+  errorCallbackURL = "/login",
   disabled,
   className,
 }: Props) {
@@ -55,7 +70,9 @@ export function GoogleAuthButton({
       const result = await authClient.signIn.social({
         provider: "google",
         callbackURL,
-        errorCallbackURL: "/login",
+        // Absolute URL so Better Auth OAuth state always redirects to the UI
+        // (relative paths can fall back to raw /api/auth JSON errors).
+        errorCallbackURL: toAbsoluteAppUrl(errorCallbackURL),
         newUserCallbackURL: callbackURL,
       });
       if (result.error) {

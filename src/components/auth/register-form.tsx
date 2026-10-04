@@ -120,6 +120,7 @@ export function RegisterForm({ googleEnabled, registrationEnabled }: Props) {
           <GoogleAuthButton
             mode="register"
             callbackURL="/dashboard"
+            errorCallbackURL={`/${locale}/login`}
             disabled={pending}
           />
           <div className="relative py-1 text-center text-xs font-medium tracking-wide text-charcoal/45 uppercase">

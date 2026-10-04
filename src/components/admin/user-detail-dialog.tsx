@@ -1,19 +1,30 @@
 "use client";
 
 import {
+  CalendarClock,
+  CheckCircle2,
+  Globe2,
+  KeyRound,
   Loader2,
   Mail,
+  MonitorSmartphone,
+  Save,
   Shield,
   Trash2,
-  UserRound,
+  Undo2,
+  XCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 
 import { AdminConfirmDialog } from "@/components/admin/admin-confirm-dialog";
+import {
+  RoleBadge,
+  StatusBadge,
+  roleAvatarFallbackClass,
+} from "@/components/admin/user-badges";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -57,6 +68,13 @@ function formatDate(value: string | null, locale: string) {
   } catch {
     return value;
   }
+}
+
+function providerLabel(provider: string) {
+  const value = provider.trim().toLowerCase();
+  if (value === "credential") return "Email";
+  if (value === "google") return "Google";
+  return provider;
 }
 
 export function UserDetailDialog({
@@ -195,9 +213,8 @@ export function UserDetailDialog({
     }
   }
 
-  const roleLabel =
-    locale === "en" ? ROLE_LABELS[role].en : ROLE_LABELS[role].id;
   const avatarSrc = toBrowserMediaUrl(detail?.image ?? null);
+  const displayRole = detail?.role ?? role;
 
   return (
     <>
@@ -208,155 +225,182 @@ export function UserDetailDialog({
           onOpenChange(next);
         }}
       >
-        <DialogContent className="flex max-h-[min(92vh,720px)] w-[calc(100%-1.5rem)] max-w-xl flex-col gap-0 overflow-hidden rounded-2xl border-charcoal/10 p-0 shadow-xl sm:max-w-xl">
-          <DialogHeader className="gap-1 border-b border-charcoal/10 px-5 pt-5 pb-4 sm:px-6 sm:pt-6">
-            <DialogTitle className="pr-8 text-lg font-bold tracking-tight text-ink">
+        <DialogContent className="flex max-h-[min(92vh,760px)] w-[calc(100%-1.5rem)] max-w-xl flex-col gap-0 overflow-hidden rounded-[1.35rem] border-charcoal/10 p-0 shadow-[0_28px_80px_-28px_rgba(15,23,42,0.55)] sm:max-w-xl">
+          <DialogHeader className="relative gap-1 overflow-hidden border-b border-charcoal/10 px-5 pt-5 pb-4 sm:px-6 sm:pt-6">
+            <div
+              className={cn(
+                "pointer-events-none absolute inset-0 opacity-90",
+                displayRole === "ADMIN"
+                  ? "bg-[radial-gradient(ellipse_at_top_left,color-mix(in_oklab,var(--charcoal)_16%,transparent),transparent_55%)]"
+                  : "bg-[radial-gradient(ellipse_at_top_left,color-mix(in_oklab,var(--info)_16%,transparent),transparent_55%)]",
+              )}
+              aria-hidden
+            />
+            <DialogTitle className="relative pr-8 text-lg font-bold tracking-tight text-ink">
               {t("detail.title")}
             </DialogTitle>
-            <DialogDescription className="text-sm text-charcoal/70">
+            <DialogDescription className="relative text-sm text-charcoal/70">
               {t("detail.subtitle")}
             </DialogDescription>
           </DialogHeader>
 
           <div className="min-h-0 flex-1 overflow-y-auto px-5 py-5 sm:px-6">
             {loading || !detail ? (
-              <div className="flex min-h-48 items-center justify-center text-charcoal/55">
+              <div className="flex min-h-52 items-center justify-center text-charcoal/55">
                 <Loader2 className="size-6 animate-spin" aria-hidden />
               </div>
             ) : (
               <div className="space-y-5">
-                <div className="flex items-start gap-4">
-                  <Avatar
-                    size="lg"
-                    className="size-16 rounded-2xl after:rounded-2xl"
-                  >
-                    {avatarSrc ? (
-                      <AvatarImage src={avatarSrc} alt={detail.name} />
-                    ) : null}
-                    <AvatarFallback className="rounded-2xl bg-brand/10 text-base font-bold text-brand">
-                      {initials(detail.name) || "U"}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-lg font-bold text-ink">
-                      {detail.name}
-                    </p>
-                    <p className="mt-0.5 flex items-center gap-1.5 truncate text-sm text-charcoal/70">
-                      <Mail className="size-3.5 shrink-0" aria-hidden />
-                      {detail.email}
-                    </p>
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      <Badge className="rounded-full border-transparent bg-brand/10 px-2.5 py-0.5 text-brand">
-                        {roleLabel}
-                      </Badge>
-                      <Badge
+                <section
+                  className={cn(
+                    "relative overflow-hidden rounded-2xl border bg-gradient-to-br from-[var(--canvas)] via-white to-white p-4 sm:p-5",
+                    displayRole === "ADMIN"
+                      ? "border-[color-mix(in_oklab,var(--charcoal)_22%,white)]"
+                      : "border-[color-mix(in_oklab,var(--info)_22%,white)]",
+                  )}
+                >
+                  <div className="flex items-start gap-4">
+                    <Avatar
+                      size="lg"
+                      className="size-[4.25rem] rounded-2xl shadow-md ring-2 ring-white after:rounded-2xl"
+                    >
+                      {avatarSrc ? (
+                        <AvatarImage src={avatarSrc} alt={detail.name} />
+                      ) : null}
+                      <AvatarFallback
                         className={cn(
-                          "rounded-full border-transparent px-2.5 py-0.5",
-                          detail.status === "ACTIVE"
-                            ? "bg-emerald-500/10 text-emerald-700"
-                            : "bg-charcoal/10 text-charcoal/70",
+                          "rounded-2xl text-base font-bold",
+                          roleAvatarFallbackClass(displayRole),
                         )}
                       >
-                        {t(`status.${detail.status}`)}
-                      </Badge>
-                      {inTrash ? (
-                        <Badge className="rounded-full border-transparent bg-destructive/10 px-2.5 py-0.5 text-destructive">
-                          {t("status.TRASH")}
-                        </Badge>
-                      ) : null}
-                      {isSelf ? (
-                        <Badge className="rounded-full border-transparent bg-soft px-2.5 py-0.5 text-charcoal/70">
-                          {t("detail.you")}
-                        </Badge>
-                      ) : null}
+                        {initials(detail.name) || "U"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-lg font-bold tracking-tight text-ink">
+                        {detail.name}
+                      </p>
+                      <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-charcoal/70">
+                        <Mail className="size-3.5 shrink-0 opacity-70" aria-hidden />
+                        {detail.email}
+                      </p>
+                      <div className="mt-3 flex flex-wrap gap-1.5">
+                        <RoleBadge role={displayRole} locale={locale} />
+                        <StatusBadge
+                          status={detail.status}
+                          label={t(`status.${detail.status}`)}
+                        />
+                        {inTrash ? (
+                          <StatusBadge
+                            status="TRASH"
+                            label={t("status.TRASH")}
+                          />
+                        ) : null}
+                        {isSelf ? (
+                          <span className="inline-flex items-center rounded-full border border-charcoal/10 bg-white px-2.5 py-0.5 text-[11px] font-semibold tracking-wide text-charcoal/65 uppercase">
+                            {t("detail.you")}
+                          </span>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
-                </div>
+                </section>
 
-                <dl className="grid gap-3 rounded-2xl border border-charcoal/10 bg-soft/40 p-4 sm:grid-cols-2">
-                  <div>
-                    <dt className="text-[11px] font-semibold tracking-wide text-charcoal/45 uppercase">
-                      {t("fields.emailVerified")}
-                    </dt>
-                    <dd className="mt-1 text-sm font-medium text-ink">
-                      {detail.emailVerified
-                        ? t("fields.verified")
-                        : t("fields.unverified")}
-                    </dd>
+                <section>
+                  <p className="mb-2.5 text-[11px] font-semibold tracking-[0.12em] text-charcoal/45 uppercase">
+                    {t("detail.overviewTitle")}
+                  </p>
+                  <div className="grid gap-2.5 sm:grid-cols-2">
+                    <MetaTile
+                      icon={
+                        detail.emailVerified ? (
+                          <CheckCircle2 className="size-4 text-[var(--success)]" />
+                        ) : (
+                          <XCircle className="size-4 text-[var(--warning)]" />
+                        )
+                      }
+                      label={t("fields.emailVerified")}
+                      value={
+                        detail.emailVerified
+                          ? t("fields.verified")
+                          : t("fields.unverified")
+                      }
+                    />
+                    <MetaTile
+                      icon={
+                        <Globe2 className="size-4 text-[var(--info)]" />
+                      }
+                      label={t("fields.locale")}
+                      value={detail.locale.toUpperCase()}
+                    />
+                    <MetaTile
+                      icon={
+                        <KeyRound className="size-4 text-[var(--charcoal)]" />
+                      }
+                      label={t("fields.providers")}
+                      value={
+                        detail.providers.length
+                          ? detail.providers.map(providerLabel).join(" · ")
+                          : "—"
+                      }
+                    />
+                    <MetaTile
+                      icon={
+                        <MonitorSmartphone className="size-4 text-charcoal/70" />
+                      }
+                      label={t("fields.sessions")}
+                      value={String(detail.sessionCount)}
+                    />
+                    <MetaTile
+                      icon={
+                        <CalendarClock className="size-4 text-charcoal/70" />
+                      }
+                      label={t("fields.lastLogin")}
+                      value={formatDate(detail.lastLoginAt, locale)}
+                    />
+                    <MetaTile
+                      icon={
+                        <CalendarClock className="size-4 text-charcoal/70" />
+                      }
+                      label={t("fields.createdAt")}
+                      value={formatDate(detail.createdAt, locale)}
+                    />
+                    {inTrash ? (
+                      <>
+                        <MetaTile
+                          icon={
+                            <Trash2 className="size-4 text-[var(--destructive)]" />
+                          }
+                          label={t("fields.deletedAt")}
+                          value={formatDate(detail.deletedAt, locale)}
+                        />
+                        <MetaTile
+                          icon={
+                            <Trash2 className="size-4 text-[var(--destructive)]" />
+                          }
+                          label={t("fields.trashExpires")}
+                          value={formatDate(detail.trashExpiresAt, locale)}
+                        />
+                      </>
+                    ) : null}
                   </div>
-                  <div>
-                    <dt className="text-[11px] font-semibold tracking-wide text-charcoal/45 uppercase">
-                      {t("fields.locale")}
-                    </dt>
-                    <dd className="mt-1 text-sm font-medium text-ink uppercase">
-                      {detail.locale}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] font-semibold tracking-wide text-charcoal/45 uppercase">
-                      {t("fields.providers")}
-                    </dt>
-                    <dd className="mt-1 text-sm font-medium text-ink">
-                      {detail.providers.length
-                        ? detail.providers.join(", ")
-                        : "—"}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] font-semibold tracking-wide text-charcoal/45 uppercase">
-                      {t("fields.sessions")}
-                    </dt>
-                    <dd className="mt-1 text-sm font-medium text-ink">
-                      {detail.sessionCount}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] font-semibold tracking-wide text-charcoal/45 uppercase">
-                      {t("fields.lastLogin")}
-                    </dt>
-                    <dd className="mt-1 text-sm font-medium text-ink">
-                      {formatDate(detail.lastLoginAt, locale)}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-[11px] font-semibold tracking-wide text-charcoal/45 uppercase">
-                      {t("fields.createdAt")}
-                    </dt>
-                    <dd className="mt-1 text-sm font-medium text-ink">
-                      {formatDate(detail.createdAt, locale)}
-                    </dd>
-                  </div>
-                  {inTrash ? (
-                    <>
-                      <div>
-                        <dt className="text-[11px] font-semibold tracking-wide text-charcoal/45 uppercase">
-                          {t("fields.deletedAt")}
-                        </dt>
-                        <dd className="mt-1 text-sm font-medium text-ink">
-                          {formatDate(detail.deletedAt, locale)}
-                        </dd>
-                      </div>
-                      <div>
-                        <dt className="text-[11px] font-semibold tracking-wide text-charcoal/45 uppercase">
-                          {t("fields.trashExpires")}
-                        </dt>
-                        <dd className="mt-1 text-sm font-medium text-ink">
-                          {formatDate(detail.trashExpiresAt, locale)}
-                        </dd>
-                      </div>
-                    </>
-                  ) : null}
-                </dl>
+                </section>
 
                 {!inTrash && !isSelf ? (
-                  <div className="space-y-3 rounded-2xl border border-charcoal/10 p-4">
-                    <p className="flex items-center gap-2 text-sm font-semibold text-ink">
-                      <Shield className="size-4 text-brand" aria-hidden />
-                      {t("detail.manageTitle")}
-                    </p>
-                    <p className="text-xs leading-relaxed text-charcoal/60">
-                      {t("detail.manageHint")}
-                    </p>
+                  <section className="space-y-3 rounded-2xl border border-charcoal/10 bg-white p-4 shadow-sm">
+                    <div className="flex items-start gap-2.5">
+                      <span className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-xl bg-ink/5 text-ink">
+                        <Shield className="size-4" aria-hidden />
+                      </span>
+                      <div>
+                        <p className="text-sm font-semibold text-ink">
+                          {t("detail.manageTitle")}
+                        </p>
+                        <p className="mt-0.5 text-xs leading-relaxed text-charcoal/60">
+                          {t("detail.manageHint")}
+                        </p>
+                      </div>
+                    </div>
                     <div className="grid gap-3 sm:grid-cols-2">
                       <label className="space-y-1.5">
                         <span className="text-xs font-semibold text-charcoal/60">
@@ -367,7 +411,7 @@ export function UserDetailDialog({
                           onChange={(e) =>
                             setRole(e.target.value as UserRole)
                           }
-                          className="h-10 w-full cursor-pointer rounded-xl border border-charcoal/15 bg-white px-3 text-sm font-medium text-ink outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30"
+                          className="h-11 w-full cursor-pointer rounded-xl border border-charcoal/12 bg-[var(--workspace-surface)] px-3 text-sm font-medium text-ink outline-none transition-colors focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30"
                         >
                           <option value="USER">
                             {locale === "en"
@@ -390,7 +434,7 @@ export function UserDetailDialog({
                           onChange={(e) =>
                             setStatus(e.target.value as UserStatus)
                           }
-                          className="h-10 w-full cursor-pointer rounded-xl border border-charcoal/15 bg-white px-3 text-sm font-medium text-ink outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30"
+                          className="h-11 w-full cursor-pointer rounded-xl border border-charcoal/12 bg-[var(--workspace-surface)] px-3 text-sm font-medium text-ink outline-none transition-colors focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30"
                         >
                           <option value="ACTIVE">{t("status.ACTIVE")}</option>
                           <option value="INACTIVE">
@@ -399,11 +443,11 @@ export function UserDetailDialog({
                         </select>
                       </label>
                     </div>
-                  </div>
+                  </section>
                 ) : null}
 
                 {isSelf ? (
-                  <p className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs leading-relaxed text-amber-900">
+                  <p className="rounded-2xl border border-amber-200/80 bg-amber-50/90 px-3.5 py-3 text-xs leading-relaxed text-amber-950">
                     {t("detail.selfGuard")}
                   </p>
                 ) : null}
@@ -412,63 +456,77 @@ export function UserDetailDialog({
           </div>
 
           {detail ? (
-            <div className="flex flex-col gap-2 border-t border-charcoal/10 bg-soft/60 px-5 py-4 sm:flex-row sm:flex-wrap sm:justify-end sm:px-6">
-              {!inTrash && !isSelf ? (
-                <>
+            <div className="border-t border-charcoal/10 bg-[color-mix(in_oklab,var(--workspace-elevated)_70%,white)] px-4 py-3.5 sm:px-6">
+              {/*
+                UX: destructive left · dismiss + primary right.
+                Mobile stacks primary/dismiss first, danger last.
+              */}
+              <div className="flex flex-col-reverse gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex w-full sm:w-auto">
+                  {!inTrash && !isSelf ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={pending}
+                      className="h-10 w-full cursor-pointer rounded-xl border-[color-mix(in_oklab,var(--destructive)_35%,white)] bg-[color-mix(in_oklab,var(--destructive)_8%,white)] font-semibold text-[var(--destructive)] hover:bg-[color-mix(in_oklab,var(--destructive)_12%,white)] sm:w-auto"
+                      onClick={() => setConfirm("softDelete")}
+                    >
+                      <Trash2 className="size-4" aria-hidden />
+                      {t("actions.moveToTrash")}
+                    </Button>
+                  ) : null}
+                  {inTrash && !isSelf ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={pending}
+                      className="h-10 w-full cursor-pointer rounded-xl border-[color-mix(in_oklab,var(--destructive)_35%,white)] bg-[color-mix(in_oklab,var(--destructive)_8%,white)] font-semibold text-[var(--destructive)] hover:bg-[color-mix(in_oklab,var(--destructive)_12%,white)] sm:w-auto"
+                      onClick={() => setConfirm("hardDelete")}
+                    >
+                      <Trash2 className="size-4" aria-hidden />
+                      {t("actions.hardDelete")}
+                    </Button>
+                  ) : null}
+                </div>
+
+                <div className="flex w-full flex-col-reverse gap-2 sm:w-auto sm:flex-row sm:items-center">
                   <Button
                     type="button"
-                    variant="outline"
-                    disabled={pending || !dirty}
-                    className="h-10 cursor-pointer rounded-xl font-semibold"
-                    onClick={() => setConfirm("save")}
-                  >
-                    <UserRound className="size-4" aria-hidden />
-                    {t("actions.save")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
+                    variant="ghost"
                     disabled={pending}
-                    className="h-10 cursor-pointer rounded-xl font-semibold"
-                    onClick={() => setConfirm("softDelete")}
+                    className="h-10 w-full cursor-pointer rounded-xl font-semibold text-charcoal/70 hover:text-ink sm:w-auto"
+                    onClick={() => onOpenChange(false)}
                   >
-                    <Trash2 className="size-4" aria-hidden />
-                    {t("actions.moveToTrash")}
+                    {t("actions.close")}
                   </Button>
-                </>
-              ) : null}
-              {inTrash && !isSelf ? (
-                <>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    disabled={pending}
-                    className="h-10 cursor-pointer rounded-xl font-semibold"
-                    onClick={() => setConfirm("restore")}
-                  >
-                    {t("actions.restore")}
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    disabled={pending}
-                    className="h-10 cursor-pointer rounded-xl font-semibold"
-                    onClick={() => setConfirm("hardDelete")}
-                  >
-                    <Trash2 className="size-4" aria-hidden />
-                    {t("actions.hardDelete")}
-                  </Button>
-                </>
-              ) : null}
-              <Button
-                type="button"
-                variant="ghost"
-                disabled={pending}
-                className="h-10 cursor-pointer rounded-xl font-semibold"
-                onClick={() => onOpenChange(false)}
-              >
-                {t("actions.close")}
-              </Button>
+                  {!inTrash && !isSelf ? (
+                    <Button
+                      type="button"
+                      disabled={pending || !dirty}
+                      className="h-10 w-full cursor-pointer rounded-xl bg-ink font-semibold text-white hover:bg-ink/90 disabled:opacity-45 sm:min-w-36 sm:w-auto"
+                      onClick={() => setConfirm("save")}
+                    >
+                      {pending ? (
+                        <Loader2 className="size-4 animate-spin" aria-hidden />
+                      ) : (
+                        <Save className="size-4" aria-hidden />
+                      )}
+                      {t("actions.save")}
+                    </Button>
+                  ) : null}
+                  {inTrash && !isSelf ? (
+                    <Button
+                      type="button"
+                      disabled={pending}
+                      className="h-10 w-full cursor-pointer rounded-xl bg-ink font-semibold text-white hover:bg-ink/90 sm:min-w-36 sm:w-auto"
+                      onClick={() => setConfirm("restore")}
+                    >
+                      <Undo2 className="size-4" aria-hidden />
+                      {t("actions.restore")}
+                    </Button>
+                  ) : null}
+                </div>
+              </div>
             </div>
           ) : null}
         </DialogContent>
@@ -521,5 +579,33 @@ export function UserDetailDialog({
         onConfirm={() => void runAction("hardDelete")}
       />
     </>
+  );
+}
+
+function MetaTile({
+  icon,
+  label,
+  value,
+}: {
+  icon: ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl border border-charcoal/8 bg-white/90 px-3.5 py-3 shadow-[0_8px_20px_-18px_rgba(15,23,42,0.5)]">
+      <div className="flex items-start gap-2.5">
+        <span className="mt-0.5 flex size-7 shrink-0 items-center justify-center rounded-lg bg-soft/90">
+          {icon}
+        </span>
+        <div className="min-w-0">
+          <p className="text-[10px] font-semibold tracking-[0.1em] text-charcoal/45 uppercase">
+            {label}
+          </p>
+          <p className="mt-0.5 truncate text-sm font-semibold text-ink">
+            {value}
+          </p>
+        </div>
+      </div>
+    </div>
   );
 }

@@ -535,6 +535,7 @@
       "title": "User details",
       "subtitle": "Profile information is read-only. Admins may only change role, status, or delete.",
       "you": "You",
+      "overviewTitle": "Account overview",
       "manageTitle": "Manage account",
       "manageHint": "Name, email, and avatar cannot be edited here. Inactive users cannot sign in until reactivated.",
       "selfGuard": "You cannot change role, deactivate, or delete the account you are currently signed in with."
