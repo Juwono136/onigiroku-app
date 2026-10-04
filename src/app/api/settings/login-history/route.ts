@@ -1,17 +1,21 @@
 import { NextResponse } from "next/server";
 
-import { getServerSession } from "@/lib/auth/session";
+import {
+  getServerSession,
+  getSessionRole,
+  getSessionUser,
+} from "@/lib/auth/session";
 import { logger } from "@/lib/logger";
-import { getLoginHistoryPage } from "@/lib/settings/login-history";
+import { goGetLoginHistory } from "@/lib/settings/go-settings";
 import { loginHistoryQuerySchema } from "@/lib/validations/settings";
 
 export const runtime = "nodejs";
 
 /**
- * Paginated login / session history for the last 7 days.
+ * Paginated login / session history for the last 7 days (via Go domain API).
  */
 export async function GET(request: Request) {
-  const session = await getServerSession();
+  const session = await getServerSession({ fresh: true });
   if (!session) {
     return NextResponse.json(
       { success: false, error: { code: "UNAUTHORIZED", message: "Unauthorized" } },
@@ -36,8 +40,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    const data = await getLoginHistoryPage({
-      userId: session.user.id,
+    const user = getSessionUser(session);
+    const data = await goGetLoginHistory({
+      actorId: user.id,
+      role: getSessionRole(session),
       currentSessionToken: session.session.token,
       page: parsed.data.page,
       pageSize: parsed.data.pageSize,
@@ -45,9 +51,22 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ success: true, data });
   } catch (error) {
-    logger.error("Login history query failed", {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    const code = error instanceof Error ? error.message : "HISTORY_FAILED";
+    logger.error("Login history query failed", { error: code });
+
+    if (code === "GO_API_UNAVAILABLE" || code === "SERVICE_UNAVAILABLE") {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: "GO_API_UNAVAILABLE",
+            message: "Domain API is temporarily unavailable",
+          },
+        },
+        { status: 503 },
+      );
+    }
+
     return NextResponse.json(
       {
         success: false,

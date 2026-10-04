@@ -15,15 +15,15 @@ func TestRequireInternalSecret(t *testing.T) {
 
 	engine := gin.New()
 	engine.Use(middleware.RequireInternalSecret("super-secret-value", true))
-	engine.POST("/api/v1/media/presign", func(c *gin.Context) {
+	engine.POST("/api/media/presign", func(c *gin.Context) {
 		c.Status(http.StatusOK)
 	})
-	engine.GET("/api/v1/catalog", func(c *gin.Context) {
+	engine.GET("/api/catalog", func(c *gin.Context) {
 		c.Status(http.StatusOK)
 	})
 
 	// GET remains open
-	getReq := httptest.NewRequest(http.MethodGet, "/api/v1/catalog", nil)
+	getReq := httptest.NewRequest(http.MethodGet, "/api/catalog", nil)
 	getRec := httptest.NewRecorder()
 	engine.ServeHTTP(getRec, getReq)
 	if getRec.Code != http.StatusOK {
@@ -31,7 +31,7 @@ func TestRequireInternalSecret(t *testing.T) {
 	}
 
 	// POST without secret rejected
-	postReq := httptest.NewRequest(http.MethodPost, "/api/v1/media/presign", nil)
+	postReq := httptest.NewRequest(http.MethodPost, "/api/media/presign", nil)
 	postRec := httptest.NewRecorder()
 	engine.ServeHTTP(postRec, postReq)
 	if postRec.Code != http.StatusUnauthorized {
@@ -39,7 +39,7 @@ func TestRequireInternalSecret(t *testing.T) {
 	}
 
 	// POST with secret accepted
-	okReq := httptest.NewRequest(http.MethodPost, "/api/v1/media/presign", nil)
+	okReq := httptest.NewRequest(http.MethodPost, "/api/media/presign", nil)
 	okReq.Header.Set("X-Internal-Secret", "super-secret-value")
 	okRec := httptest.NewRecorder()
 	engine.ServeHTTP(okRec, okReq)

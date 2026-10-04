@@ -86,7 +86,7 @@ npm run dev
 npm run dev:api
 ```
 
-→ [http://localhost:8080](http://localhost:8080) (`GET /health`, `GET /api/v1/catalog`)
+→ [http://localhost:8080](http://localhost:8080) (`GET /health`, `GET /api/catalog`)
 
 ### Satu terminal (opsional)
 
@@ -182,7 +182,7 @@ Detail lengkap: [SECURITY.md](./SECURITY.md).
 - Rate limit Redis di API + auth rate limit
 - Security headers (Next + Gin), HSTS di production
 - Health token wajib di production (timing-safe)
-- Internal secret Next ↔ Go untuk mutating `/api/v1`
+- Internal secret Next ↔ Go untuk mutating `/api/*` (+ trusted GET admin/settings)
 - Cookie auth: httpOnly + secure (production)
 - CORS allowlist; OPTIONS dari origin asing ditolak
 - Structured logging tanpa secret/jawaban assessment

@@ -17,17 +17,36 @@ import {
 
 export const userRoleEnum = pgEnum("user_role", ["USER", "ADMIN"]);
 
-export const user = pgTable("user", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  email: text("email").notNull().unique(),
-  emailVerified: boolean("email_verified").notNull().default(false),
-  image: text("image"),
-  role: userRoleEnum("role").notNull().default("USER"),
-  locale: text("locale").notNull().default("id"),
-  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-});
+/** Account operational status (independent from soft-delete). */
+export const userStatusEnum = pgEnum("user_status", ["ACTIVE", "INACTIVE"]);
+
+export const user = pgTable(
+  "user",
+  {
+    id: text("id").primaryKey(),
+    name: text("name").notNull(),
+    email: text("email").notNull().unique(),
+    emailVerified: boolean("email_verified").notNull().default(false),
+    image: text("image"),
+    role: userRoleEnum("role").notNull().default("USER"),
+    status: userStatusEnum("status").notNull().default("ACTIVE"),
+    locale: text("locale").notNull().default("id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    /** Soft-delete timestamp; null = not in trash. Purge after 30 days. */
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    deletedBy: text("deleted_by"),
+  },
+  (t) => [
+    index("user_status_idx").on(t.status),
+    index("user_deleted_at_idx").on(t.deletedAt),
+    index("user_role_idx").on(t.role),
+  ],
+);
 
 export const session = pgTable(
   "session",

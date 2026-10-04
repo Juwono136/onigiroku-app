@@ -137,6 +137,23 @@ export const auth = betterAuth({
         },
       },
     },
+    session: {
+      create: {
+        before: async (sessionData) => {
+          try {
+            const { assertUserIdCanAuthenticate } = await import(
+              "@/lib/admin/users"
+            );
+            await assertUserIdCanAuthenticate(sessionData.userId);
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : "ACCOUNT_INACTIVE";
+            throw new APIError("FORBIDDEN", { message });
+          }
+          return { data: sessionData };
+        },
+      },
+    },
   },
   emailAndPassword: {
     enabled: true,
@@ -237,6 +254,12 @@ export const auth = betterAuth({
         defaultValue: "USER",
         input: false,
       },
+      status: {
+        type: "string",
+        required: false,
+        defaultValue: "ACTIVE",
+        input: false,
+      },
       locale: {
         type: "string",
         required: false,
@@ -335,6 +358,17 @@ export const auth = betterAuth({
           } catch (error) {
             const message =
               error instanceof Error ? error.message : "ACCOUNT_LOCKED";
+            throw new APIError("FORBIDDEN", { message });
+          }
+
+          try {
+            const { assertUserCanAuthenticate } = await import(
+              "@/lib/admin/users"
+            );
+            await assertUserCanAuthenticate(email);
+          } catch (error) {
+            const message =
+              error instanceof Error ? error.message : "ACCOUNT_INACTIVE";
             throw new APIError("FORBIDDEN", { message });
           }
 

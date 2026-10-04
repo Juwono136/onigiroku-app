@@ -7,6 +7,7 @@ import { dispatchBrandedEmail } from "@/lib/email/dispatch";
 import { resolveEmailLocale } from "@/lib/email/locale";
 import { buildPasswordChangedEmail } from "@/lib/email/templates/index";
 import { logger } from "@/lib/logger";
+import { assertTrustedMutationOrigin } from "@/lib/security/request-origin";
 import { changePasswordSchema } from "@/lib/validations/settings";
 
 export const runtime = "nodejs";
@@ -31,6 +32,10 @@ function jsonError(message: string, status = 400, code = "BAD_REQUEST") {
  * New password is required on the next sign-in.
  */
 export async function POST(request: Request) {
+  if (!assertTrustedMutationOrigin(request)) {
+    return jsonError("Forbidden origin", 403, "FORBIDDEN_ORIGIN");
+  }
+
   const session = await getServerSession({ fresh: true });
   if (!session) return jsonError("Unauthorized", 401, "UNAUTHORIZED");
 

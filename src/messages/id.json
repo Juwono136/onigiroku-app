@@ -328,6 +328,8 @@
       "EMAIL_ALREADY_VERIFIED": "Email sudah diverifikasi.",
       "SELF_REGISTRATION_DISABLED": "Pendaftaran mandiri saat ini dinonaktifkan.",
       "ACCOUNT_LOCKED": "Terlalu banyak percobaan gagal. Akun sementara dikunci.",
+      "ACCOUNT_INACTIVE": "Akun Anda nonaktif. Hubungi administrator untuk mengaktifkannya kembali.",
+      "ACCOUNT_DELETED": "Akun ini tidak lagi tersedia. Hubungi administrator.",
       "TOO_MANY_REQUESTS": "Terlalu banyak permintaan. Tunggu sebentar.",
       "RATE_LIMIT": "Terlalu banyak permintaan. Tunggu sebentar.",
       "INVALID_TOKEN": "Link tidak valid atau sudah kedaluwarsa.",
@@ -480,12 +482,131 @@
       "HISTORY_FAILED": "Gagal memuat riwayat login."
     }
   },
+  "adminUsers": {
+    "eyebrow": "Administrasi",
+    "title": "Manajemen pengguna",
+    "subtitle": "Lihat semua akun terdaftar, ubah role atau status, dan kelola pengguna yang dihapus sementara di tempat sampah hingga 30 hari.",
+    "totalLabel": "{count} pengguna",
+    "searchPlaceholder": "Cari nama atau email…",
+    "tabs": {
+      "active": "Semua pengguna",
+      "trash": "Tempat sampah"
+    },
+    "filters": {
+      "allRoles": "Semua role",
+      "allStatus": "Semua status",
+      "sort": "Urutkan"
+    },
+    "sort": {
+      "newest": "Terbaru",
+      "oldest": "Terlama",
+      "nameAsc": "Nama A–Z",
+      "nameDesc": "Nama Z–A",
+      "lastLogin": "Login terbaru",
+      "emailAsc": "Email A–Z"
+    },
+    "columns": {
+      "user": "Pengguna",
+      "role": "Role",
+      "status": "Status",
+      "lastLogin": "Login terakhir",
+      "actions": "Aksi"
+    },
+    "status": {
+      "ACTIVE": "Aktif",
+      "INACTIVE": "Nonaktif",
+      "TRASH": "Di tempat sampah"
+    },
+    "fields": {
+      "role": "Role",
+      "status": "Status",
+      "emailVerified": "Status email",
+      "verified": "Terverifikasi",
+      "unverified": "Belum verifikasi",
+      "locale": "Bahasa",
+      "providers": "Metode masuk",
+      "sessions": "Sesi aktif",
+      "lastLogin": "Login terakhir",
+      "createdAt": "Dibuat",
+      "deletedAt": "Dipindah ke sampah",
+      "trashExpires": "Hapus permanen setelah"
+    },
+    "detail": {
+      "title": "Detail pengguna",
+      "subtitle": "Informasi profil bersifat baca saja. Admin hanya dapat mengubah role, status, atau menghapus.",
+      "you": "Anda",
+      "manageTitle": "Kelola akun",
+      "manageHint": "Nama, email, dan avatar tidak dapat diubah di sini. Pengguna nonaktif tidak dapat masuk sampai diaktifkan lagi.",
+      "selfGuard": "Anda tidak dapat mengubah role, menonaktifkan, atau menghapus akun yang sedang Anda gunakan."
+    },
+    "actions": {
+      "details": "Detail",
+      "save": "Simpan perubahan",
+      "saving": "Menyimpan…",
+      "moveToTrash": "Pindah ke sampah",
+      "restore": "Pulihkan",
+      "restoring": "Memulihkan…",
+      "hardDelete": "Hapus permanen",
+      "deleting": "Menghapus…",
+      "close": "Tutup",
+      "cancel": "Batal",
+      "clearSearch": "Hapus pencarian",
+      "showFilters": "Tampilkan filter",
+      "hideFilters": "Sembunyikan filter"
+    },
+    "confirm": {
+      "saveTitle": "Simpan perubahan pengguna?",
+      "saveBody": "Perubahan role dan status berlaku segera. Status Nonaktif akan mengakhiri sesi pengguna dan memblokir login.",
+      "saveConfirm": "Simpan",
+      "softDeleteTitle": "Pindahkan pengguna ke tempat sampah?",
+      "softDeleteBody": "Akun dinonaktifkan dan disimpan 30 hari. Anda dapat memulihkannya dari Tempat sampah, atau akun akan dihapus permanen setelah masa retensi.",
+      "softDeleteConfirm": "Pindah ke sampah",
+      "restoreTitle": "Pulihkan pengguna ini?",
+      "restoreBody": "Akun akan keluar dari Tempat sampah dan menjadi Aktif sehingga pengguna dapat masuk kembali.",
+      "restoreConfirm": "Pulihkan",
+      "hardDeleteTitle": "Hapus permanen pengguna ini?",
+      "hardDeleteBody": "Tindakan ini tidak dapat dibatalkan. Data user, sesi, akun terhubung, dan avatar di storage akan dihapus.",
+      "hardDeleteConfirm": "Hapus selamanya"
+    },
+    "toast": {
+      "updated": "Pengguna diperbarui.",
+      "softDeleted": "Pengguna dipindah ke tempat sampah.",
+      "restored": "Pengguna dipulihkan.",
+      "hardDeleted": "Pengguna dihapus permanen."
+    },
+    "empty": {
+      "active": "Tidak ada pengguna yang cocok dengan filter.",
+      "trash": "Tempat sampah kosong."
+    },
+    "pagination": {
+      "showing": "Menampilkan {from}–{to} dari {total}",
+      "pageSize": "Baris per halaman",
+      "perPage": "{count} / halaman",
+      "prev": "Halaman sebelumnya",
+      "next": "Halaman berikutnya"
+    },
+    "errors": {
+      "loadList": "Gagal memuat daftar pengguna.",
+      "loadDetail": "Gagal memuat detail pengguna.",
+      "ACTION_FAILED": "Aksi gagal. Silakan coba lagi.",
+      "CANNOT_MODIFY_SELF": "Anda tidak dapat mengubah atau menghapus akun sendiri di sini.",
+      "USER_NOT_FOUND": "Pengguna tidak ditemukan.",
+      "USER_NOT_IN_TRASH": "Pindahkan pengguna ke tempat sampah sebelum hapus permanen.",
+      "LAST_ADMIN": "Tidak dapat menghapus atau menurunkan role admin aktif terakhir.",
+      "FORBIDDEN": "Anda tidak punya izin untuk aksi ini.",
+      "FORBIDDEN_ORIGIN": "Permintaan diblokir demi keamanan.",
+      "UNAUTHORIZED": "Silakan masuk kembali.",
+      "VALIDATION_ERROR": "Permintaan tidak valid.",
+      "INTERNAL_ERROR": "Terjadi kesalahan. Silakan coba lagi."
+    }
+  },
   "appShell": {
     "breadcrumb": {
       "label": "Breadcrumb",
       "home": "Beranda",
       "dashboard": "Dashboard",
       "admin": "Ringkasan",
+      "users": "Pengguna",
       "settings": "Pengaturan",
       "app": "Ruang kerja"
     },
@@ -493,6 +614,7 @@
       "label": "Navigasi ruang kerja",
       "dashboard": "Dashboard",
       "admin": "Ringkasan",
+      "users": "Pengguna",
       "settings": "Pengaturan",
       "sectionLearn": "Belajar",
       "sectionAdmin": "Administrasi",

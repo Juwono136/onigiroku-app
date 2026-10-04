@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { checkGoReady } from "@/lib/api/go-client";
 import { isProduction } from "@/lib/env";
 import { logger } from "@/lib/logger";
 
@@ -15,7 +16,6 @@ function timingSafeEqual(a: string, b: string) {
 function isAuthorized(request: NextRequest) {
   const token = process.env.HEALTH_CHECK_TOKEN?.trim();
 
-  // Production must always require a configured health token.
   if (isProduction()) {
     if (!token || token.length < 16) {
       return false;
@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
     web: "ok",
     database: "skipped",
     redis: "skipped",
+    goApi: "skipped",
   };
 
   try {
@@ -82,10 +83,24 @@ export async function GET(request: NextRequest) {
     });
   }
 
+  try {
+    const go = await checkGoReady();
+    checks.goApi = go.status;
+    if (!go.ok && go.status === "degraded") {
+      logger.warn("Health check Go API degraded", { detail: go.detail });
+    }
+  } catch (error) {
+    checks.goApi = "degraded";
+    logger.warn("Health check Go API failed", {
+      error: error instanceof Error ? error.message : String(error),
+    });
+  }
+
   const healthy =
     checks.web === "ok" &&
     checks.database !== "degraded" &&
-    checks.redis !== "degraded";
+    checks.redis !== "degraded" &&
+    checks.goApi !== "degraded";
 
   return NextResponse.json(
     {

@@ -29,7 +29,11 @@ export function AppBreadcrumb({ items, className }: Props) {
       const crumbs: BreadcrumbItem[] = [
         { label: t("breadcrumb.home"), href: "/dashboard" },
       ];
-      if (pathname.startsWith("/admin")) {
+      if (pathname.startsWith("/admin/users")) {
+        crumbs[0] = { label: t("breadcrumb.home"), href: "/admin" };
+        crumbs.push({ label: t("breadcrumb.admin"), href: "/admin" });
+        crumbs.push({ label: t("breadcrumb.users") });
+      } else if (pathname.startsWith("/admin")) {
         crumbs[0] = { label: t("breadcrumb.home"), href: "/admin" };
         crumbs.push({ label: t("breadcrumb.admin") });
       } else if (pathname.startsWith("/settings")) {

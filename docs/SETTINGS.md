@@ -27,25 +27,25 @@ Profil disusun rapat (avatar + form tanpa ruang kosong berlebih). Password new/c
 - Navbar avatar dropdown: **My settings**
 - Admin sidebar item overview: label **Overview** / **Ringkasan** (bukan “Admin console”)
 
-## API (Next BFF)
+## API (Next BFF → Go domain)
 
-| Method | Path | Fungsi |
-| --- | --- | --- |
-| `PATCH` | `/api/settings/profile` | Update nama via Better Auth `updateUser` |
-| `POST` | `/api/settings/profile` | Upload avatar → SeaweedFS → update `user.image` → hapus object lama |
-| `DELETE` | `/api/settings/profile` | Hapus avatar DB + object SeaweedFS (jika owned) |
-| `POST` | `/api/settings/password` | `changePassword` + email `buildPasswordChangedEmail` |
-| `GET` | `/api/settings/login-history?page=&pageSize=` | Query sesi 7 hari dari Postgres (paginated) |
+| Method | Path | Backend | Fungsi |
+| --- | --- | --- | --- |
+| `PATCH` | `/api/settings/profile` | Next / Better Auth | Update nama (CSRF Origin; fresh session) |
+| `POST` | `/api/settings/profile` | Next BFF → Go media + Better Auth | Upload avatar (CSRF) |
+| `DELETE` | `/api/settings/profile` | Next BFF → Go media + Better Auth | Hapus avatar (CSRF) |
+| `POST` | `/api/settings/password` | Next / Better Auth | Ganti password + email notifikasi (CSRF) |
+| `GET` | `/api/settings/login-history` | Next BFF → Go `/api/settings/login-history` | Sesi 7 hari (paginated; `callGoApiWithActor`) |
 
-Semua endpoint membutuhkan session cookie; error dikembalikan sebagai JSON `{ success, error }` dan ditampilkan lewat toast di UI.
+Semua endpoint browser membutuhkan session cookie. Identity (nama/password/`user.image`) tetap Better Auth di Next; query session history & storage orchestration di Go. Kontrak header/env: [INTEGRATION.md](./INTEGRATION.md).
 
 ## Avatar & SeaweedFS
 
-1. Validasi MIME + size di server  
-2. `createPresignedUpload({ folder: "avatars", previousObjectKey })`  
-3. Server `PUT` ke gateway (basic auth **hanya di server**)  
-4. Simpan `image` = `/api/media/avatars/…` (bukan `localhost:8333`)  
-5. `confirmObjectReplacement(previousKey)` — tidak meninggalkan file lama  
+1. Validasi MIME + size di Next BFF  
+2. `createPresignedUpload` → Go `POST /api/media/presign` (`folder: avatars`, `previousObjectKey`)  
+3. Next server `PUT` ke gateway (basic auth **hanya di server**)  
+4. Simpan `image` = `/api/media/avatars/…` via Better Auth  
+5. `confirmObjectReplacement` → Go `POST /api/media/delete` — tidak meninggalkan file lama  
 6. Browser menampilkan avatar lewat proxy `/api/media/*` — tidak ada dialog login SeaweedFS  
 
 URL lama yang masih menunjuk gateway di-rewrite oleh `toBrowserMediaUrl`. Google avatar URL tidak dihapus dari SeaweedFS (hanya key owned Onigiroku).
@@ -80,7 +80,11 @@ Helper: `src/lib/settings/ip-display.ts` → field `ipLabel` / `ipKind` di API h
 
 ## Modul kode
 
-- UI: `src/components/settings/*` (bento di `settings-workspace.tsx`)  
-- Validasi: `src/lib/validations/settings.ts`  
-- History: `src/lib/settings/login-history.ts` + `device.ts` + `ip-display.ts`  
+- UI: `src/components/settings/*` (bento di `settings-workspace.tsx`)
+- BFF: `src/app/api/settings/{profile,password,login-history}/route.ts`
+- Go client: `src/lib/settings/go-settings.ts` → `callGoApiWithActor`
+- Go domain: `backend/internal/domain/settings/*` (device label + `ipKind` dihitung di Go)
+- Types history: `src/lib/settings/login-history.ts` + kind helper `ip-display.ts`
+- Validasi: `src/lib/validations/settings.ts`
+- Storage: `src/lib/storage` (presign/delete via Go)
 - i18n: namespace `settings` di `src/messages/{id,en}.json`

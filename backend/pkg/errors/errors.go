@@ -9,15 +9,19 @@ import (
 type Code string
 
 const (
-	CodeInternal       Code = "INTERNAL_ERROR"
-	CodeValidation     Code = "VALIDATION_ERROR"
-	CodeNotFound       Code = "NOT_FOUND"
-	CodeUnauthorized   Code = "UNAUTHORIZED"
-	CodeForbidden      Code = "FORBIDDEN"
-	CodeConflict       Code = "CONFLICT"
-	CodeRateLimited    Code = "RATE_LIMITED"
-	CodeBadRequest     Code = "BAD_REQUEST"
-	CodeServiceUnavail Code = "SERVICE_UNAVAILABLE"
+	CodeInternal         Code = "INTERNAL_ERROR"
+	CodeValidation       Code = "VALIDATION_ERROR"
+	CodeNotFound         Code = "NOT_FOUND"
+	CodeUnauthorized     Code = "UNAUTHORIZED"
+	CodeForbidden        Code = "FORBIDDEN"
+	CodeConflict         Code = "CONFLICT"
+	CodeRateLimited      Code = "RATE_LIMITED"
+	CodeBadRequest       Code = "BAD_REQUEST"
+	CodeServiceUnavail   Code = "SERVICE_UNAVAILABLE"
+	CodeCannotModifySelf Code = "CANNOT_MODIFY_SELF"
+	CodeUserNotInTrash   Code = "USER_NOT_IN_TRASH"
+	CodeUserNotFound     Code = "USER_NOT_FOUND"
+	CodeLastAdmin        Code = "LAST_ADMIN"
 )
 
 // AppError is the domain/API error type returned to handlers and middleware.
@@ -109,6 +113,42 @@ func RateLimited() *AppError {
 
 func ServiceUnavailable(messageEN, messageID string) *AppError {
 	return New(CodeServiceUnavail, http.StatusServiceUnavailable, messageEN, messageID)
+}
+
+func CannotModifySelf() *AppError {
+	return New(
+		CodeCannotModifySelf,
+		http.StatusForbidden,
+		"You cannot change or delete your own account from Users Management.",
+		"Anda tidak dapat mengubah atau menghapus akun sendiri dari Users Management.",
+	)
+}
+
+func UserNotInTrash() *AppError {
+	return New(
+		CodeUserNotInTrash,
+		http.StatusConflict,
+		"User must be in trash before permanent delete.",
+		"Pengguna harus berada di tempat sampah sebelum dihapus permanen.",
+	)
+}
+
+func UserNotFound() *AppError {
+	return New(
+		CodeUserNotFound,
+		http.StatusNotFound,
+		"User not found",
+		"Pengguna tidak ditemukan",
+	)
+}
+
+func LastAdmin() *AppError {
+	return New(
+		CodeLastAdmin,
+		http.StatusConflict,
+		"Cannot remove or demote the last active admin.",
+		"Tidak dapat menghapus atau menurunkan role admin aktif terakhir.",
+	)
 }
 
 func FromError(err error) *AppError {

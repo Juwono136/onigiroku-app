@@ -5,7 +5,7 @@ import {
   ChevronRight,
   LayoutDashboard,
   Settings,
-  Shield,
+  Users,
   X,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -22,9 +22,9 @@ type Props = {
 };
 
 type NavItem = {
-  href: "/dashboard" | "/admin" | "/settings";
+  href: "/dashboard" | "/admin" | "/admin/users" | "/settings";
   icon: typeof LayoutDashboard;
-  labelKey: "dashboard" | "admin" | "settings";
+  labelKey: "dashboard" | "admin" | "users" | "settings";
 };
 
 export function AppSidebar({ role }: Props) {
@@ -38,7 +38,8 @@ export function AppSidebar({ role }: Props) {
   const items: NavItem[] =
     role === "ADMIN"
       ? [
-          { href: "/admin", icon: Shield, labelKey: "admin" },
+          { href: "/admin", icon: LayoutDashboard, labelKey: "admin" },
+          { href: "/admin/users", icon: Users, labelKey: "users" },
           { href: "/settings", icon: Settings, labelKey: "settings" },
         ]
       : [
@@ -54,6 +55,9 @@ export function AppSidebar({ role }: Props) {
     role === "ADMIN" ? t("nav.sectionAdmin") : t("nav.sectionLearn");
 
   function isActive(href: string) {
+    if (href === "/admin") {
+      return pathname === "/admin";
+    }
     return pathname === href || pathname.startsWith(`${href}/`);
   }
 

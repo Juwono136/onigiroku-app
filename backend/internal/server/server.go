@@ -10,11 +10,13 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/onigiroku/onigiroku-app/backend/internal/config"
+	"github.com/onigiroku/onigiroku-app/backend/internal/domain/adminusers"
 	"github.com/onigiroku/onigiroku-app/backend/internal/domain/analytics"
 	"github.com/onigiroku/onigiroku-app/backend/internal/domain/assessment"
 	"github.com/onigiroku/onigiroku-app/backend/internal/domain/billing"
 	"github.com/onigiroku/onigiroku-app/backend/internal/domain/content"
 	"github.com/onigiroku/onigiroku-app/backend/internal/domain/media"
+	"github.com/onigiroku/onigiroku-app/backend/internal/domain/settings"
 	"github.com/onigiroku/onigiroku-app/backend/internal/health"
 	"github.com/onigiroku/onigiroku-app/backend/internal/middleware"
 )
@@ -57,23 +59,37 @@ func NewEngine(deps Dependencies) *gin.Engine {
 	}
 	healthHandler.Register(engine)
 
-	v1 := engine.Group("/api/v1")
-	v1.Use(middleware.RequireInternalSecret(deps.Config.InternalAPISecret, deps.Config.IsProd))
-	content.NewHandler().Register(v1)
-	assessment.NewHandler().Register(v1)
-	analytics.NewHandler().Register(v1)
-	billing.NewHandler(deps.Config.XenditWebhookToken).Register(v1)
+	// Unversioned /api/* — evolve via additive routes / deprecation headers, not /v1 /v2.
+	api := engine.Group("/api")
+	api.Use(middleware.RequireInternalSecret(deps.Config.InternalAPISecret, deps.Config.IsProd))
+	content.NewHandler().Register(api)
+	assessment.NewHandler().Register(api)
+	analytics.NewHandler().Register(api)
+	billing.NewHandler(deps.Config.XenditWebhookToken).Register(api)
 	// Browser-facing public URLs go through the Next.js media proxy so nginx
 	// basic-auth credentials are never requested from end users.
 	mediaPublicBase := strings.TrimRight(deps.Config.AppURL, "/") + "/api/media"
-	media.NewHandler(
+	mediaHandler := media.NewHandler(
 		deps.Config.StorageEndpoint,
 		mediaPublicBase,
 		deps.Config.StorageBucket,
 		deps.Config.StorageAccessKey,
 		deps.Config.StorageSecretKey,
 		!deps.Config.IsProd,
-	).Register(v1)
+	)
+	mediaHandler.Register(api)
+
+	// Trusted BFF routes: always require internal secret (including GET).
+	trusted := api.Group("/")
+	trusted.Use(middleware.RequireInternalSecretAlways(deps.Config.InternalAPISecret, deps.Config.IsProd))
+
+	admin := trusted.Group("/")
+	admin.Use(middleware.RequireAdminActor(deps.Pool))
+	adminusers.NewHandler(deps.Pool, mediaHandler.Service, deps.Log).Register(admin)
+
+	account := trusted.Group("/")
+	account.Use(middleware.RequireActor(deps.Pool))
+	settings.NewHandler(deps.Pool, deps.Log).Register(account)
 
 	engine.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{

@@ -1,3 +1,4 @@
+import { callGoApi } from "@/lib/api/go-client";
 import { logger } from "@/lib/logger";
 import { buildPublicMediaUrl } from "@/lib/storage/public-url";
 
@@ -31,6 +32,16 @@ export type PresignUploadResult = {
   headers: HeadersInit;
 };
 
+type GoPresignData = {
+  uploadUrl: string;
+  publicUrl: string;
+  objectKey: string;
+  method: string;
+  expiresIn: number;
+  previousObjectKey?: string;
+  deletePreviousAfterConfirm?: boolean;
+};
+
 const ALLOWED_MIME = new Set([
   "image/jpeg",
   "image/png",
@@ -49,6 +60,27 @@ const ALLOWED_KEY_ROOTS = [
   "avatars/",
 ] as const;
 
+/** Validates object keys for the Next media proxy (browser → SeaweedFS). */
+export function assertOwnedObjectKey(objectKey: string, bucket?: string) {
+  const key = objectKey.trim();
+  if (!key) throw new Error("objectKey is required");
+  if (
+    key.includes("..") ||
+    key.startsWith("/") ||
+    key.includes("\\") ||
+    key !== key.replace(/\\/g, "/")
+  ) {
+    throw new Error("Invalid objectKey");
+  }
+
+  const expectedBucket = (bucket ?? process.env.STORAGE_BUCKET ?? "onigiroku")
+    .replace(/^\/+|\/+$/g, "");
+  const allowed = [`${expectedBucket}/`, ...ALLOWED_KEY_ROOTS];
+  if (!allowed.some((root) => key.startsWith(root))) {
+    throw new Error("objectKey outside allowed storage namespace");
+  }
+}
+
 function getAuthHeader() {
   const mode = process.env.STORAGE_AUTH_MODE ?? "nginx-basic";
   if (mode !== "nginx-basic") return undefined;
@@ -61,23 +93,6 @@ function getAuthHeader() {
 
   const token = Buffer.from(`${username}:${password}`).toString("base64");
   return `Basic ${token}`;
-}
-
-function assertSafeEndpoint(endpoint: string) {
-  const allowLocalhost =
-    (process.env.STORAGE_ALLOW_LOCALHOST ?? "true") === "true";
-  const url = new URL(endpoint);
-
-  if (
-    !allowLocalhost &&
-    (url.hostname === "localhost" ||
-      url.hostname === "127.0.0.1" ||
-      url.hostname === "::1")
-  ) {
-    throw new Error(
-      "Localhost storage endpoint is not allowed in this environment",
-    );
-  }
 }
 
 export function validateUploadInput(input: PresignUploadInput) {
@@ -97,49 +112,13 @@ export function validateUploadInput(input: PresignUploadInput) {
   }
 }
 
-/**
- * Creates a SeaweedFS object key. UUID prefix prevents collisions / overwrites.
- */
-export function buildObjectKey(filename: string, folder = "uploads") {
-  const safeName = filename.replace(/[^a-zA-Z0-9._-]/g, "_").toLowerCase();
-  const id = crypto.randomUUID();
-  const cleanFolder = folder.replace(/^\/+|\/+$/g, "");
-  if (!cleanFolder || cleanFolder.includes("..")) {
-    throw new Error("Invalid folder");
-  }
-  return `${cleanFolder}/${id}-${safeName}`;
-}
-
-export function assertOwnedObjectKey(objectKey: string, bucket?: string) {
-  const key = objectKey.trim();
-  if (!key) throw new Error("objectKey is required");
-  if (
-    key.includes("..") ||
-    key.startsWith("/") ||
-    key.includes("\\") ||
-    key !== key.replace(/\\/g, "/")
-  ) {
-    throw new Error("Invalid objectKey");
-  }
-
-  const expectedBucket = (bucket ?? process.env.STORAGE_BUCKET ?? "onigiroku")
-    .replace(/^\/+|\/+$/g, "");
-  const allowed = [
-    `${expectedBucket}/`,
-    ...ALLOWED_KEY_ROOTS,
-  ];
-  if (!allowed.some((root) => key.startsWith(root))) {
-    throw new Error("objectKey outside allowed storage namespace");
-  }
-}
-
 export function getStorageAuthHeaders(): HeadersInit {
   const authorization = getAuthHeader();
   return authorization ? { Authorization: authorization } : {};
 }
 
 /**
- * Creates upload target metadata for SeaweedFS (via nginx gateway).
+ * Creates upload target metadata via Go media domain (`POST /api/media/presign`).
  * Pass `previousObjectKey` when replacing; delete the old object only after
  * the new PUT succeeds (`confirmObjectReplacement`).
  */
@@ -148,79 +127,72 @@ export async function createPresignedUpload(
 ): Promise<PresignUploadResult> {
   validateUploadInput(input);
 
-  const endpoint = process.env.STORAGE_ENDPOINT;
-  const bucket = process.env.STORAGE_BUCKET ?? "onigiroku";
+  const result = await callGoApi<GoPresignData>("/api/media/presign", {
+    method: "POST",
+    body: {
+      filename: input.filename,
+      contentType: input.contentType,
+      sizeBytes: input.sizeBytes,
+      folder: input.folder ?? "uploads",
+      previousObjectKey: input.previousObjectKey,
+      replaceAfterUpload: Boolean(input.previousObjectKey),
+    },
+  });
 
-  if (!endpoint) {
-    throw new Error("Storage endpoint is not configured");
+  if (!result.success || !result.data) {
+    throw new Error(result.error?.code ?? "STORAGE_PRESIGN_FAILED");
   }
 
-  assertSafeEndpoint(endpoint);
-
-  if (input.previousObjectKey) {
-    assertOwnedObjectKey(input.previousObjectKey, bucket);
-  }
-
-  const objectKey = buildObjectKey(input.filename, input.folder ?? bucket);
-  // Upload URL is server-only (may require basic auth). Never hand this to browsers.
-  const uploadUrl = `${endpoint.replace(/\/$/, "")}/${objectKey}`;
-  // Browser-safe URL (proxied when STORAGE_AUTH_MODE=nginx-basic).
-  const publicUrl = buildPublicMediaUrl(objectKey);
-
-  logger.info("Created storage upload target", {
-    objectKey,
+  const data = result.data;
+  logger.info("Created storage upload target via Go", {
+    objectKey: data.objectKey,
     contentType: input.contentType,
     sizeBytes: input.sizeBytes,
     replacing: Boolean(input.previousObjectKey),
   });
 
+  // Prefer relative proxy URL for DB storage (portable across local/prod hosts).
+  const publicUrl = buildPublicMediaUrl(data.objectKey);
+
   return {
-    uploadUrl,
+    uploadUrl: data.uploadUrl,
     publicUrl,
-    objectKey,
+    objectKey: data.objectKey,
     method: "PUT",
-    expiresIn: 900,
-    previousObjectKey: input.previousObjectKey,
-    deletePreviousAfterConfirm: Boolean(input.previousObjectKey),
+    expiresIn: data.expiresIn ?? 900,
+    previousObjectKey: data.previousObjectKey ?? input.previousObjectKey,
+    deletePreviousAfterConfirm: Boolean(
+      data.deletePreviousAfterConfirm ?? input.previousObjectKey,
+    ),
     headers: getStorageAuthHeaders(),
   };
 }
 
 /**
- * Deletes an object from SeaweedFS. Missing objects (404/410) are success
- * so callers can safely retry (idempotent cleanup).
+ * Deletes an object via Go media domain (`POST /api/media/delete`).
+ * Missing objects are treated as success (idempotent).
  */
 export async function deleteObject(objectKey: string): Promise<void> {
-  const endpoint = process.env.STORAGE_ENDPOINT;
-  if (!endpoint) {
-    throw new Error("Storage endpoint is not configured");
+  const key = objectKey.trim();
+  if (!key) throw new Error("objectKey is required");
+
+  const result = await callGoApi<{ deleted?: boolean; objectKey?: string }>(
+    "/api/media/delete",
+    {
+      method: "POST",
+      body: { objectKey: key },
+    },
+  );
+
+  if (!result.success) {
+    logger.error("Failed to delete storage object via Go", {
+      objectKey: key,
+      code: result.error?.code,
+    });
+    throw new Error(result.error?.code ?? "STORAGE_DELETE_FAILED");
   }
 
-  assertSafeEndpoint(endpoint);
-  assertOwnedObjectKey(objectKey);
-
-  const url = `${endpoint.replace(/\/$/, "")}/${objectKey}`;
-  const response = await fetch(url, {
-    method: "DELETE",
-    headers: getStorageAuthHeaders(),
-    cache: "no-store",
-  });
-
-  if (
-    response.ok ||
-    response.status === 404 ||
-    response.status === 410 ||
-    response.status === 204
-  ) {
-    logger.info("Deleted storage object", { objectKey, status: response.status });
-    return;
-  }
-
-  logger.error("Failed to delete storage object", {
-    objectKey,
-    status: response.status,
-  });
-  throw new Error(`Storage delete failed with status ${response.status}`);
+  logger.info("Deleted storage object via Go", { objectKey: key });
 }
 
 /**

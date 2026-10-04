@@ -22,6 +22,13 @@
       "when": 1790800000000,
       "tag": "0002_session_account_indexes",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790900000000,
+      "tag": "0003_user_status_soft_delete",
+      "breakpoints": true
     }
   ]
 }

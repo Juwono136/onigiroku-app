@@ -34,6 +34,9 @@ npm run db:migrate
 | Avatar lifecycle | PUT baru → update DB → hapus lama; orphan cleanup bila updateUser gagal |
 | Go rate limit | Production fail-closed jika Redis error |
 | Security headers | nosniff, frame deny, referrer, permissions, HSTS (prod) |
+| CSRF BFF mutations | Origin/Referer allowlist (admin users + settings) |
+| Health includes Go | `GET /api/health` → `checkGoReady()` → Go `/ready` |
+| Next↔Go contract | [INTEGRATION.md](./INTEGRATION.md) up to date |
 
 ## Performa & skala
 

@@ -90,7 +90,29 @@ async function proxyFromStorage(
       return new NextResponse(null, { status: 502 });
     }
 
-    return new NextResponse(upstream.body, {
+    // Enforce byte cap even when Content-Length is missing (chunked upstream).
+    const reader = upstream.body.getReader();
+    const chunks: Uint8Array[] = [];
+    let total = 0;
+    for (;;) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      if (!value) continue;
+      total += value.byteLength;
+      if (total > MAX_PROXY_BYTES) {
+        try {
+          await reader.cancel();
+        } catch {
+          // ignore
+        }
+        return new NextResponse(null, { status: 413 });
+      }
+      chunks.push(value);
+    }
+    const body = Buffer.concat(chunks.map((c) => Buffer.from(c)));
+    headers.set("Content-Length", String(body.byteLength));
+
+    return new NextResponse(body, {
       status: 200,
       headers,
     });

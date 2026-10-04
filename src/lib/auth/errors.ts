@@ -61,6 +61,8 @@ function normalizeCode(raw: string): string {
     "USE_GOOGLE_OR_RESET_PASSWORD",
     "ACCOUNT_NOT_LINKED",
     "UNABLE_TO_LINK_ACCOUNT",
+    "ACCOUNT_INACTIVE",
+    "ACCOUNT_DELETED",
     "GENERIC",
   ]);
 
@@ -102,6 +104,12 @@ function normalizeCode(raw: string): string {
   }
   if (lower.includes("locked")) {
     return "ACCOUNT_LOCKED";
+  }
+  if (lower.includes("account_inactive")) {
+    return "ACCOUNT_INACTIVE";
+  }
+  if (lower.includes("account_deleted")) {
+    return "ACCOUNT_DELETED";
   }
 
   return "GENERIC";

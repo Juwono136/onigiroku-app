@@ -83,6 +83,13 @@ func NewService(endpoint, publicBase, bucket, username, password string, allowLo
 	}
 }
 
+var allowedFolders = map[string]struct{}{
+	"uploads": {},
+	"media":   {},
+	"cms":     {},
+	"avatars": {},
+}
+
 func ValidatePresign(req PresignRequest) error {
 	if strings.TrimSpace(req.Filename) == "" {
 		return fmt.Errorf("filename is required")
@@ -95,6 +102,13 @@ func ValidatePresign(req PresignRequest) error {
 	}
 	if req.SizeBytes <= 0 || req.SizeBytes > MaxUploadBytes {
 		return fmt.Errorf("file size must be between 1 byte and %d bytes", MaxUploadBytes)
+	}
+	folder := strings.Trim(strings.TrimSpace(req.Folder), "/")
+	if folder != "" {
+		root := strings.Split(folder, "/")[0]
+		if _, ok := allowedFolders[root]; !ok {
+			return fmt.Errorf("folder is not allowed")
+		}
 	}
 	return nil
 }

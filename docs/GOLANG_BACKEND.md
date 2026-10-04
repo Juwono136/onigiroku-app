@@ -85,7 +85,7 @@ make run
 
 ```bash
 curl http://localhost:8080/health
-curl http://localhost:8080/api/v1/catalog
+curl http://localhost:8080/api/catalog
 ```
 
 Frontend di terminal terpisah: `npm run dev`.
@@ -99,7 +99,7 @@ Frontend di terminal terpisah: `npm run dev`.
 
 ## Menambah endpoint baru
 
-Contoh: `GET /api/v1/materials/:id`
+Contoh: `GET /api/materials/:id`
 
 1. Tambah method di `internal/domain/content/handler.go`
 2. Register di `internal/server/server.go`
@@ -127,22 +127,31 @@ func (h *Handler) GetMaterial(c *gin.Context) {
 
 ## Integrasi dari Next.js
 
+Kontrak lengkap: [INTEGRATION.md](./INTEGRATION.md).
+
 Gunakan `src/lib/api/go-client.ts`:
 
 ```ts
-import { callGoApi } from "@/lib/api/go-client";
+import { callGoApi, callGoApiWithActor } from "@/lib/api/go-client";
 
-const result = await callGoApi("/api/v1/catalog");
+// Domain publik internal (secret saja), mis. media / stub catalog
+const catalog = await callGoApi("/api/catalog");
+
+// Trusted actor routes (admin / settings)
+const users = await callGoApiWithActor("/api/admin/users?page=1&pageSize=10", {
+  userId: actorId,
+  role: "ADMIN",
+});
 ```
 
-Header `X-Internal-Secret` dikirim otomatis jika `INTERNAL_API_SECRET` terset di kedua sisi.
+Header `X-Internal-Secret` dikirim otomatis jika `INTERNAL_API_SECRET` terset di kedua sisi. Actor headers diverifikasi di PostgreSQL oleh middleware Go.
 
 ## Development tips
 
 - Restart Go setelah ubah kode (`go run` tidak hot-reload; pertimbangkan [Air](https://github.com/air-verse/air) nanti)
 - Jangan commit `.env`
 - Di production, Go API hanya expose di private network / reverse proxy
-- Stub domain saat ini **belum** menulis ke DB — aman untuk smoke test routing
+- Domain **admin users**, **settings/login-history**, dan **media** sudah menulis ke DB / storage; catalog/assessment/dll masih stub routing
 
 ## Troubleshooting Go
 
@@ -156,11 +165,25 @@ Header `X-Internal-Secret` dikirim otomatis jika `INTERNAL_API_SECRET` terset di
 | Module not found | `npm run api:tidy` atau `go mod tidy` di `backend/` |
 | `Go is not available` (npm) | Install Go ≥ 1.25 dan pastikan ada di PATH |
 
+## Domain yang sudah hidup (bukan stub)
+
+| Domain | Path | Catatan |
+| --- | --- | --- |
+| Media | `/api/media/*` | Presign + delete SeaweedFS |
+| Admin users | `/api/admin/users*` | List/detail/update/soft/restore/hard + purge 30 hari — [ADMIN_USERS.md](./ADMIN_USERS.md) |
+| Settings | `/api/settings/login-history` | Riwayat login 7 hari |
+
+**Tidak memakai prefix versi** (`/v1`, `/v2`). Evolusi API: tambah route baru / header deprecation.
+
+Trusted routes (admin + settings) **selalu** butuh `X-Internal-Secret` (termasuk GET) + `X-Actor-User-Id` (+ `X-Actor-Role: ADMIN` untuk admin).
+
 ## Roadmap implementasi domain
 
-1. Catalog & materials read API
+1. Catalog & materials read API (+ Next BFF)
 2. Attempt state machine + autosave
 3. Learning events collector (idempotent)
 4. Analytics projections / dashboard
-5. Xendit checkout + webhook verification
-6. Media presign + delete + replace-confirm (SeaweedFS) — lihat [STORAGE.md](./STORAGE.md)
+5. Xendit checkout + webhook verification (ingress publik atau Next proxy)
+6. ~~Media presign + delete + replace-confirm (SeaweedFS)~~ — sudah ([STORAGE.md](./STORAGE.md))
+7. ~~Admin users management~~ — sudah ([ADMIN_USERS.md](./ADMIN_USERS.md))
+8. ~~Settings login-history~~ — sudah ([SETTINGS.md](./SETTINGS.md))

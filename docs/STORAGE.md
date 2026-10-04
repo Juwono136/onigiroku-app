@@ -1,6 +1,6 @@
 # Storage — SeaweedFS lifecycle
 
-Onigiroku menyimpan file media (gambar, audio, PDF) di **SeaweedFS** lewat nginx gateway (`STORAGE_ENDPOINT`, default `:8333`). Web (Next.js) dan API (Go) memakai kontrak yang sama supaya tidak ada orphan/duplikat.
+Onigiroku menyimpan file media (gambar, audio, PDF) di **SeaweedFS** lewat nginx gateway (`STORAGE_ENDPOINT`, default `:8333`). Web (Next.js) dan API (Go) memakai kontrak yang sama supaya tidak ada orphan/duplikat. Integrasi Next ↔ Go: [INTEGRATION.md](./INTEGRATION.md).
 
 ## Penting: browser tidak pernah login ke SeaweedFS
 
@@ -17,7 +17,7 @@ Legacy URL di DB yang masih `http://localhost:8333/...` di-rewrite otomatis lewa
 
 ```text
 1) CREATE
-   App (server) → createPresignedUpload / POST /api/v1/media/presign
+   App (Next BFF) → createPresignedUpload → Go `POST /api/media/presign`
    → objectKey unik: {folder}/{uuid}-{safeFilename}
    → server PUT ke STORAGE_ENDPOINT (basic auth server-side)
    → simpan publicUrl browser-safe: /api/media/{objectKey} (atau CDN bila auth=none)
@@ -44,7 +44,7 @@ Legacy URL di DB yang masih `http://localhost:8333/...` di-rewrite otomatis lewa
 
 | Layer | Path | Fungsi |
 | --- | --- | --- |
-| Next.js | `src/lib/storage/index.ts` | Presign metadata, delete, replace confirm |
+| Next.js | `src/lib/storage/index.ts` | Client ke Go media (`/api/media/presign|delete`) + auth headers PUT |
 | Next.js | `src/lib/storage/public-url.ts` | `buildPublicMediaUrl`, `toBrowserMediaUrl`, `extractOwnedObjectKey` |
 | Next.js | `src/app/api/media/[...key]/route.ts` | Proxy GET/HEAD media (no basic-auth prompt) |
 | Next.js | `src/app/api/settings/profile` | Avatar upload server-mediated |

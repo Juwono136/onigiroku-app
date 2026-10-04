@@ -3,12 +3,14 @@
 | Document | Isi |
 | --- | --- |
 | [SETUP.md](./SETUP.md) | Setup lokal, npm scripts (`dev` / `dev:api`), production checklist |
-| [AUTH.md](./AUTH.md) | Login, register, verifikasi, reset password, Google OAuth, account linking (anti-duplikat), roles, session 7 hari |
+| [AUTH.md](./AUTH.md) | Login, register, verifikasi, reset password, Google OAuth, account linking (anti-duplikat), roles, session 7 hari, akun inactive/deleted |
+| [ADMIN_USERS.md](./ADMIN_USERS.md) | Users Management admin: list/search/filter/sort/pagination, role/status, soft delete 30 hari, trash, hard delete |
 | [SETTINGS.md](./SETTINGS.md) | Edit profil, avatar SeaweedFS, ganti password, riwayat login 7 hari |
 | [SECURITY.md](./SECURITY.md) | Hardening config, secrets, CORS, health token, internal API |
 | [READINESS.md](./READINESS.md) | Baseline verifikasi sebelum fitur baru (lint / security / perf / smoke) |
 | [STORAGE.md](./STORAGE.md) | SeaweedFS upload / replace / delete (tanpa orphan/duplikat) |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Arsitektur sistem & batas domain |
+| [INTEGRATION.md](./INTEGRATION.md) | Kontrak sinkron Next.js BFF ↔ Go (fitur, header, env, media) |
 | [GOLANG_BACKEND.md](./GOLANG_BACKEND.md) | Panduan Gin API untuk pemula Go |
 | [ENVIRONMENT.md](./ENVIRONMENT.md) | Referensi environment variables (root only) |
 | [I18N.md](./I18N.md) | Skema bahasa Indonesia & Inggris |

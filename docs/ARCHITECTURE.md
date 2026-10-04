@@ -8,18 +8,20 @@ Onigiroku memakai **modular monolith** (sesuai PRD): satu produk, batas domain j
 Browser
   │
   ▼
-Next.js (UI + BFF + Better Auth)
-  │                 │
-  │ Drizzle         │ trusted HTTP (INTERNAL_API_SECRET)
+Next.js (UI + BFF + Better Auth + email)
+  │                 │ trusted HTTP
+  │ Drizzle (auth)  │ INTERNAL_API_SECRET (+ X-Actor-* bila perlu)
   ▼                 ▼
-PostgreSQL ◄──── Golang Gin API (domain: content, assessment, analytics, billing, media)
-  ▲
-Redis (cache, rate limit, queues/locks)
+PostgreSQL ◄──── Golang Gin API
+  ▲              (media, admin users, login-history;
+Redis            stub: content, assessment, analytics, billing)
   │
-SeaweedFS ◄── nginx gateway :8333
-Xendit (checkout + webhooks → Go / Next)
-Nodemailer → Gmail SMTP
+SeaweedFS ◄── nginx gateway (basic auth server-side only)
+Xendit (nanti: webhook → Go publik atau Next proxy)
+Nodemailer → SMTP (dari Next saja)
 ```
+
+Kontrak detail Next ↔ Go: **[INTEGRATION.md](./INTEGRATION.md)**.
 
 ## Pembagian tanggung jawab
 
@@ -30,20 +32,25 @@ Nodemailer → Gmail SMTP
 - Halaman auth: login / register / forgot / reset / verify-email; dashboard per role (`USER`→`/dashboard`, `ADMIN`→`/admin`)
 - Route group `(app)` memakai **AppShell** tersendiri (sidebar collapsible, topbar + breadcrumb, footer workspace) — terpisah dari landing `SiteHeader` / `SiteFooter`
 - Drizzle schema/migrations untuk auth (+ domain tables bertahap)
-- Validasi Zod di trust boundary web
+- Validasi Zod di trust boundary web + CSRF Origin/Referer pada mutasi BFF
 - Email transactional modular (`src/lib/email/templates/`) — verifikasi, reset, notifikasi password
-- Proxy/orchestration ke Go API via `callGoApi`
+- BFF domain: `/api/admin/users*`, `/api/settings/*`, `/api/media/*`, `/api/health` → `callGoApi` / `callGoApiWithActor`
 - i18n ID/EN (`next-intl`)
 
 ### Go Gin (`backend/`)
 
-- Domain API berperforma tinggi: catalog, attempts, scoring, analytics projections, billing webhooks, media presign/delete (SeaweedFS)
-- Middleware: request ID, CORS, recovery, security headers, Redis rate limit
+- Domain API berperforma tinggi di path **unversioned** `/api/*` (bukan `/api/v1`)
+- **Live:** media (presign/delete), admin users, settings/login-history
+- **Stub (belum BFF):** catalog/materials, assessment/attempts, analytics, billing/webhooks
+- Dipanggil dari Next BFF via `callGoApi` + `X-Internal-Secret` (+ `X-Actor-*` untuk trusted routes)
+- Identity (Better Auth session/password/email) tetap di Next — domain data & storage orchestration di Go
+- Middleware: request ID, CORS, recovery, security headers, Redis rate limit, actor verify
 - Envelope JSON konsisten + typed errors (EN/ID)
 - Health `/health` + readiness `/ready`
 
 Media lifecycle (create / replace / delete tanpa orphan): [STORAGE.md](./STORAGE.md).  
-Account settings (profil, password, login history): [SETTINGS.md](./SETTINGS.md).
+Account settings (profil, password, login history): [SETTINGS.md](./SETTINGS.md).  
+Admin users (list/role/status/soft-hard delete): [ADMIN_USERS.md](./ADMIN_USERS.md).
 
 ### Shared infrastructure
 
@@ -62,10 +69,10 @@ Account settings (profil, password, login history): [SETTINGS.md](./SETTINGS.md)
 onigiroku-app/
   src/                 # Next.js App Router
     app/[locale]/     # UI berbahasa
-    app/api/           # Auth + health BFF
-    components/        # UI + landing
-    lib/               # auth, db, email, redis, storage, env, logger
-    i18n/ + messages/  # lokalization
+    app/api/           # Auth, health, admin, settings, media BFF
+    components/        # UI + landing + admin + settings
+    lib/               # auth, api/go-client, admin, settings, db, email, redis, storage, env, logger
+    i18n/ + messages/  # localization
     stores/            # Zustand
   backend/             # Go Gin API
   drizzle/             # SQL migrations (generated)
@@ -78,11 +85,13 @@ onigiroku-app/
 - Secrets hanya di server env
 - Cookie session Better Auth (secure attributes di production)
 - Zod validation untuk input publik
+- CSRF Origin/Referer pada mutasi BFF (cookie session)
 - Parameterized queries (Drizzle / pgx)
 - Health token di production
-- Internal API secret untuk Next ↔ Go
+- Internal API secret + actor DB verify untuk Next ↔ Go trusted routes
 - Security headers di Next + Go
 - Tidak log password, token, atau jawaban assessment
+- Lihat [SECURITY.md](./SECURITY.md) + [INTEGRATION.md](./INTEGRATION.md)
 
 ## Error handling
 

@@ -23,13 +23,17 @@ Panduan keamanan untuk setup config Onigiroku (development → production).
 | Email verification | Wajib sebelum login credential |
 | Account linking | Google ↔ credential pada **satu** `user`; `trustedProviders: google`; `requireLocalEmailVerified: true` (OWASP ATO) |
 | Identity uniqueness | Email dinormalisasi (lower/trim); unique `(provider_id, account_id)`; ops `scripts/dedupe-auth-users.mjs` |
-| Role authz | `requireRole` memakai session fresh (bukan cookie-cache stale) |
+| Role authz | `requireRole` / admin API memakai session fresh (bukan cookie-cache stale) |
+| Users management | Admin-only CRUD; actor di-verify di DB; last-admin guard; CSRF origin check; purge advisory-lock; inactive/deleted block login; SeaweedFS cleanup — [ADMIN_USERS.md](./ADMIN_USERS.md) |
+| Media folders | Presign folder allowlist `uploads|media|cms|avatars` (cegah orphan di luar namespace) |
+| Media proxy | Byte cap streaming 25 MiB meski tanpa `Content-Length` |
 | Env boot | `src/instrumentation.ts` → `getServerEnv()` fail-closed di production |
 | Session idle | Sliding 7 hari (`expiresIn` + `updateAge`) — lihat [AUTH.md](./AUTH.md) |
 | CORS | Allowlist `CORS_ORIGINS` saja; OPTIONS dari origin asing ditolak |
 | Security headers | nosniff, frame deny, referrer, permissions, COOP/CORP, HSTS (prod) |
 | Health endpoints | Production wajib `HEALTH_CHECK_TOKEN` (timing-safe compare) |
-| Internal API | Mutating `/api/v1/*` butuh header `X-Internal-Secret` |
+| Internal API | Mutating `/api/*` butuh `X-Internal-Secret`; trusted GET (admin/settings) juga wajib secret + actor headers — [INTEGRATION.md](./INTEGRATION.md) |
+| CSRF (BFF) | Origin/Referer allowlist pada mutasi cookie (`admin/users`, `settings/profile`, `settings/password`) |
 | Media / SeaweedFS | Presign + delete idempotent; replace = key baru lalu hapus key lama (lihat [STORAGE.md](./STORAGE.md)) |
 | Webhooks | Dikecualikan dari internal secret; verifikasi token provider |
 | Rate limit | Redis-backed per IP (`API_RATE_LIMIT_MAX`) |

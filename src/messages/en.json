@@ -328,6 +328,8 @@
       "EMAIL_ALREADY_VERIFIED": "Email is already verified.",
       "SELF_REGISTRATION_DISABLED": "Self-registration is currently disabled.",
       "ACCOUNT_LOCKED": "Too many failed attempts. Your account is temporarily locked.",
+      "ACCOUNT_INACTIVE": "Your account is inactive. Please contact an administrator to reactivate it.",
+      "ACCOUNT_DELETED": "This account is no longer available. Please contact an administrator.",
       "TOO_MANY_REQUESTS": "Too many requests. Please wait and try again.",
       "RATE_LIMIT": "Too many requests. Please wait and try again.",
       "INVALID_TOKEN": "This link is invalid or has expired.",
@@ -480,12 +482,131 @@
       "HISTORY_FAILED": "Could not load login history."
     }
   },
+  "adminUsers": {
+    "eyebrow": "Administration",
+    "title": "Users management",
+    "subtitle": "View every registered account, update role or status, and manage soft-deleted users in trash for up to 30 days.",
+    "totalLabel": "{count} users",
+    "searchPlaceholder": "Search by name or email…",
+    "tabs": {
+      "active": "All users",
+      "trash": "Trash"
+    },
+    "filters": {
+      "allRoles": "All roles",
+      "allStatus": "All statuses",
+      "sort": "Sort"
+    },
+    "sort": {
+      "newest": "Newest first",
+      "oldest": "Oldest first",
+      "nameAsc": "Name A–Z",
+      "nameDesc": "Name Z–A",
+      "lastLogin": "Recent login",
+      "emailAsc": "Email A–Z"
+    },
+    "columns": {
+      "user": "User",
+      "role": "Role",
+      "status": "Status",
+      "lastLogin": "Last login",
+      "actions": "Actions"
+    },
+    "status": {
+      "ACTIVE": "Active",
+      "INACTIVE": "Inactive",
+      "TRASH": "In trash"
+    },
+    "fields": {
+      "role": "Role",
+      "status": "Status",
+      "emailVerified": "Email status",
+      "verified": "Verified",
+      "unverified": "Unverified",
+      "locale": "Locale",
+      "providers": "Sign-in providers",
+      "sessions": "Active sessions",
+      "lastLogin": "Last login",
+      "createdAt": "Created",
+      "deletedAt": "Moved to trash",
+      "trashExpires": "Permanent delete after"
+    },
+    "detail": {
+      "title": "User details",
+      "subtitle": "Profile information is read-only. Admins may only change role, status, or delete.",
+      "you": "You",
+      "manageTitle": "Manage account",
+      "manageHint": "Name, email, and avatar cannot be edited here. Inactive users cannot sign in until reactivated.",
+      "selfGuard": "You cannot change role, deactivate, or delete the account you are currently signed in with."
+    },
+    "actions": {
+      "details": "Details",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "moveToTrash": "Move to trash",
+      "restore": "Restore",
+      "restoring": "Restoring…",
+      "hardDelete": "Remove permanently",
+      "deleting": "Deleting…",
+      "close": "Close",
+      "cancel": "Cancel",
+      "clearSearch": "Clear search",
+      "showFilters": "Show filters",
+      "hideFilters": "Hide filters"
+    },
+    "confirm": {
+      "saveTitle": "Save user changes?",
+      "saveBody": "Role and status updates apply immediately. Setting Inactive ends the user’s sessions and blocks sign-in.",
+      "saveConfirm": "Save",
+      "softDeleteTitle": "Move user to trash?",
+      "softDeleteBody": "The account is deactivated and kept for 30 days. You can restore it from Trash, or it will be permanently deleted after the retention period.",
+      "softDeleteConfirm": "Move to trash",
+      "restoreTitle": "Restore this user?",
+      "restoreBody": "The account will leave Trash and become Active again so the user can sign in.",
+      "restoreConfirm": "Restore",
+      "hardDeleteTitle": "Permanently delete this user?",
+      "hardDeleteBody": "This cannot be undone. The user row, sessions, linked accounts, and owned avatar in storage will be removed.",
+      "hardDeleteConfirm": "Delete forever"
+    },
+    "toast": {
+      "updated": "User updated.",
+      "softDeleted": "User moved to trash.",
+      "restored": "User restored.",
+      "hardDeleted": "User permanently deleted."
+    },
+    "empty": {
+      "active": "No users match your filters.",
+      "trash": "Trash is empty."
+    },
+    "pagination": {
+      "showing": "Showing {from}–{to} of {total}",
+      "pageSize": "Rows per page",
+      "perPage": "{count} / page",
+      "prev": "Previous page",
+      "next": "Next page"
+    },
+    "errors": {
+      "loadList": "Could not load users.",
+      "loadDetail": "Could not load user details.",
+      "ACTION_FAILED": "Action failed. Please try again.",
+      "CANNOT_MODIFY_SELF": "You cannot change or delete your own account here.",
+      "USER_NOT_FOUND": "User not found.",
+      "USER_NOT_IN_TRASH": "Move the user to trash before permanent delete.",
+      "LAST_ADMIN": "Cannot remove or demote the last active admin.",
+      "FORBIDDEN": "You do not have permission for this action.",
+      "FORBIDDEN_ORIGIN": "Request blocked for security reasons.",
+      "UNAUTHORIZED": "Please sign in again.",
+      "VALIDATION_ERROR": "Invalid request.",
+      "INTERNAL_ERROR": "Something went wrong. Please try again."
+    }
+  },
   "appShell": {
     "breadcrumb": {
       "label": "Breadcrumb",
       "home": "Home",
       "dashboard": "Dashboard",
       "admin": "Overview",
+      "users": "Users",
       "settings": "Settings",
       "app": "Workspace"
     },
@@ -493,6 +614,7 @@
       "label": "Workspace navigation",
       "dashboard": "Dashboard",
       "admin": "Overview",
+      "users": "Users",
       "settings": "Settings",
       "sectionLearn": "Learning",
       "sectionAdmin": "Administration",
@@ -501,7 +623,7 @@
       "openMenu": "Open navigation",
       "closeMenu": "Close navigation"
     },
-      "sidebar": {
+    "sidebar": {
       "copyright": "© {year} Onigiroku"
     },
     "topbar": {

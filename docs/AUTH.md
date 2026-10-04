@@ -13,6 +13,8 @@ Panduan lengkap autentikasi (login, registrasi, verifikasi email, forgot/reset p
 
 Session user **tidak** dikirim ke Go. Next.js adalah BFF; Go dipanggil server-to-server.
 
+Kontrak lintas-stack (auth vs domain vs media): [INTEGRATION.md](./INTEGRATION.md).
+
 ## Peran (roles)
 
 | Nilai DB (`user_role`) | Nama produk | Dashboard |
@@ -23,10 +25,24 @@ Session user **tidak** dikirim ke Go. Next.js adalah BFF; Go dipanggil server-to
 Enum di `src/lib/db/schema.ts` sengaja **ekstensibel** — role baru bisa ditambahkan migrasi tanpa merombak alur auth.
 
 - Registrasi publik selalu membuat `USER` (`role` **tidak** bisa di-set dari client: `input: false`).
-- `ADMIN` di-assign secara operasional (seed / SQL / admin tool), bukan self-serve.
+- `ADMIN` di-assign secara operasional (seed / SQL / **Users Management**), bukan self-serve.
 - PRD “Super admin” = permission tier pada role `ADMIN` (granular permissions menyusul).
 
-Helper: `src/lib/auth/roles.ts`.
+Helper: `src/lib/auth/roles.ts`. Panduan manage user: [ADMIN_USERS.md](./ADMIN_USERS.md).
+
+### Status akun & soft delete
+
+| Field | Nilai | Efek login |
+| --- | --- | --- |
+| `user.status` | `ACTIVE` / `INACTIVE` | `INACTIVE` → login ditolak (`ACCOUNT_INACTIVE`), sesi dicabut |
+| `user.deleted_at` | timestamp / null | Soft-deleted → login ditolak (`ACCOUNT_DELETED`); purge hard-delete setelah 30 hari |
+
+Blokir autentikasi:
+
+- Hook before `/sign-in/email` → `assertUserCanAuthenticate`
+- `databaseHooks.session.create` → `assertUserIdCanAuthenticate` (termasuk OAuth)
+
+Admin mengubah status/role/delete hanya lewat `/admin/users` (lihat [ADMIN_USERS.md](./ADMIN_USERS.md)).
 
 ## Alur fitur
 
@@ -124,8 +140,16 @@ Cookie: `httpOnly`, `sameSite=lax`, `secure` di production.
 | `src/components/auth/*` | UI forms |
 | `src/app/api/auth/[...all]/route.ts` | Catch-all Better Auth |
 | `src/app/[locale]/{login,register,forgot-password,reset-password,verify-email}` | Halaman auth |
-| `src/app/[locale]/(app)/{dashboard,admin,settings}` | Workspace app shell (sidebar + topbar + footer) per role |
+| `src/app/[locale]/(app)/{dashboard,admin,admin/users,settings}` | Workspace app shell (sidebar + topbar + footer) per role |
 | `src/components/app-shell/*` | Chrome dashboard (collapsible sidebar, breadcrumb, avatar) |
+| `src/components/admin/*` | Users Management UI |
+| `src/lib/admin/users.ts` | Types + auth assert inactive/deleted |
+| `src/lib/admin/go-users.ts` | Next → Go `/api/admin/users*` |
+| `src/app/api/admin/users/*` | BFF admin users (proxy ke Go) |
+| `backend/internal/domain/adminusers/*` | Domain CRUD user management |
+| `backend/internal/domain/settings/*` | Login history domain |
+| `src/lib/settings/go-settings.ts` | Next → Go `/api/settings/login-history` |
+| `src/lib/storage` | Presign/delete via Go `/api/media/*` |
 | `src/components/settings/*` | Edit profil, password, riwayat login |
 | `src/app/api/settings/*` | BFF profil / avatar / password / login-history |
 
