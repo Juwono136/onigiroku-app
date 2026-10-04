@@ -47,46 +47,42 @@ export async function assertNotLockedOut(email: string) {
   }
 }
 
+/**
+ * Atomically increment failed attempts inside a short transaction so concurrent
+ * credential-stuffing requests cannot under-count the lockout threshold.
+ */
 export async function recordFailedLogin(email: string) {
   const config = lockoutConfig();
   if (!config.enabled) return;
 
   const identifier = normalizeIdentifier(email);
   const db = getDb();
-  const now = new Date();
-  const [existing] = await db
-    .select()
-    .from(authLockout)
-    .where(eq(authLockout.identifier, identifier))
-    .limit(1);
+  const windowSeconds = config.windowSeconds;
+  const maxAttempts = config.maxAttempts;
+  const durationSeconds = config.durationSeconds;
 
-  if (!existing) {
-    await db.insert(authLockout).values({
-      identifier,
-      failedAttempts: 1,
-      lockedUntil: null,
-      updatedAt: now,
-    });
-    return;
-  }
-
-  const windowMs = config.windowSeconds * 1000;
-  const withinWindow =
-    now.getTime() - existing.updatedAt.getTime() <= windowMs;
-  const nextAttempts = withinWindow ? existing.failedAttempts + 1 : 1;
-  const lockedUntil =
-    nextAttempts >= config.maxAttempts
-      ? new Date(now.getTime() + config.durationSeconds * 1000)
-      : null;
-
-  await db
-    .update(authLockout)
-    .set({
-      failedAttempts: nextAttempts,
-      lockedUntil,
-      updatedAt: now,
-    })
-    .where(eq(authLockout.identifier, identifier));
+  await db.execute(sql`
+    INSERT INTO auth_lockout (identifier, failed_attempts, locked_until, updated_at)
+    VALUES (${identifier}, 1, NULL, NOW())
+    ON CONFLICT (identifier) DO UPDATE SET
+      failed_attempts = CASE
+        WHEN auth_lockout.updated_at >= NOW() - (${windowSeconds} || ' seconds')::interval
+          THEN auth_lockout.failed_attempts + 1
+        ELSE 1
+      END,
+      locked_until = CASE
+        WHEN (
+          CASE
+            WHEN auth_lockout.updated_at >= NOW() - (${windowSeconds} || ' seconds')::interval
+              THEN auth_lockout.failed_attempts + 1
+            ELSE 1
+          END
+        ) >= ${maxAttempts}
+          THEN NOW() + (${durationSeconds} || ' seconds')::interval
+        ELSE NULL
+      END,
+      updated_at = NOW()
+  `);
 }
 
 export async function clearLockout(email: string) {

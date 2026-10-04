@@ -14,10 +14,11 @@ import (
 )
 
 type RateLimitConfig struct {
-	Limit   int
-	Window  time.Duration
-	Prefix  string
-	Enabled bool
+	Limit      int
+	Window     time.Duration
+	Prefix     string
+	Enabled    bool
+	FailClosed bool
 }
 
 func RateLimit(client *goredis.Client, cfg RateLimitConfig) gin.HandlerFunc {
@@ -41,6 +42,11 @@ func RateLimit(client *goredis.Client, cfg RateLimitConfig) gin.HandlerFunc {
 
 		count, err := client.Incr(ctx, key).Result()
 		if err != nil {
+			// Production: fail closed so Redis outages cannot bypass abuse controls.
+			if cfg.FailClosed {
+				response.AbortWithError(c, apperrors.RateLimited())
+				return
+			}
 			c.Next()
 			return
 		}

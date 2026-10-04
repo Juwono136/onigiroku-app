@@ -25,9 +25,13 @@ export function getSessionRole(session: AuthSession): UserRole {
   return normalizeRole(getSessionUser(session).role);
 }
 
-export async function getServerSession(): Promise<AuthSession | null> {
+export async function getServerSession(options?: {
+  /** Bypass cookie cache — use for authz-sensitive gates (role checks). */
+  fresh?: boolean;
+}): Promise<AuthSession | null> {
   const session = await auth.api.getSession({
     headers: await headers(),
+    query: options?.fresh ? { disableCookieCache: true } : undefined,
   });
   return session ?? null;
 }
@@ -71,7 +75,10 @@ export async function requireRole(
   role: UserRole,
   options?: { locale?: string; callbackPath?: string },
 ): Promise<AuthSession> {
-  const session = await requireSession(options);
+  const session = await getServerSession({ fresh: true });
+  if (!session) {
+    redirect(loginPathForLocale(options?.locale, options?.callbackPath));
+  }
   const current = getSessionRole(session);
   if (current !== role) {
     const path = getDashboardPath(current);

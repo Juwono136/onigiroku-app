@@ -8,18 +8,17 @@ import {
 
 export const runtime = "nodejs";
 
-/**
- * Same-origin media proxy for SeaweedFS.
- * Keeps nginx basic-auth credentials server-side so browsers never see a
- * native "Sign in to localhost:8333" dialog when loading avatars/files.
- */
-export async function GET(
-  _request: Request,
-  context: { params: Promise<{ key: string[] }> },
-) {
-  const { key: parts } = await context.params;
-  const objectKey = parts.map(decodeURIComponent).join("/");
+/** Hard cap so a huge object cannot exhaust the Node process under concurrency. */
+const MAX_PROXY_BYTES = 25 * 1024 * 1024;
 
+function resolveObjectKey(parts: string[]) {
+  return parts.map(decodeURIComponent).join("/");
+}
+
+async function proxyFromStorage(
+  objectKey: string,
+  method: "GET" | "HEAD",
+): Promise<NextResponse> {
   try {
     assertOwnedObjectKey(objectKey);
   } catch {
@@ -34,10 +33,10 @@ export async function GET(
 
   try {
     const upstream = await fetch(`${endpoint}/${objectKey}`, {
-      method: "GET",
+      method,
       headers: getStorageAuthHeaders(),
+      // Authenticated upstream fetch — browser Cache-Control below still helps.
       cache: "no-store",
-      // Do not forward browser cookies to SeaweedFS.
       redirect: "manual",
     });
 
@@ -53,7 +52,7 @@ export async function GET(
       return new NextResponse(null, { status: 502 });
     }
 
-    if (!upstream.ok || !upstream.body) {
+    if (!upstream.ok) {
       logger.error("Media proxy upstream error", {
         objectKey,
         status: upstream.status,
@@ -61,19 +60,35 @@ export async function GET(
       return new NextResponse(null, { status: 502 });
     }
 
+    const contentLengthHeader = upstream.headers.get("content-length");
+    if (contentLengthHeader) {
+      const size = Number(contentLengthHeader);
+      if (Number.isFinite(size) && size > MAX_PROXY_BYTES) {
+        return new NextResponse(null, { status: 413 });
+      }
+    }
+
     const contentType =
       upstream.headers.get("content-type") ?? "application/octet-stream";
-    const contentLength = upstream.headers.get("content-length");
     const etag = upstream.headers.get("etag");
 
     const headers = new Headers({
       "Content-Type": contentType,
-      "Cache-Control": "private, max-age=3600, stale-while-revalidate=86400",
+      // UUID object keys are immutable — safe to cache at the browser.
+      "Cache-Control": "public, max-age=86400, stale-while-revalidate=604800",
       "X-Content-Type-Options": "nosniff",
       "Referrer-Policy": "no-referrer",
     });
-    if (contentLength) headers.set("Content-Length", contentLength);
+    if (contentLengthHeader) headers.set("Content-Length", contentLengthHeader);
     if (etag) headers.set("ETag", etag);
+
+    if (method === "HEAD") {
+      return new NextResponse(null, { status: 200, headers });
+    }
+
+    if (!upstream.body) {
+      return new NextResponse(null, { status: 502 });
+    }
 
     return new NextResponse(upstream.body, {
       status: 200,
@@ -88,13 +103,23 @@ export async function GET(
   }
 }
 
-export async function HEAD(
-  request: Request,
+/**
+ * Same-origin media proxy for SeaweedFS.
+ * Keeps nginx basic-auth credentials server-side so browsers never see a
+ * native "Sign in to localhost:8333" dialog when loading avatars/files.
+ */
+export async function GET(
+  _request: Request,
   context: { params: Promise<{ key: string[] }> },
 ) {
-  const response = await GET(request, context);
-  return new NextResponse(null, {
-    status: response.status,
-    headers: response.headers,
-  });
+  const { key: parts } = await context.params;
+  return proxyFromStorage(resolveObjectKey(parts), "GET");
+}
+
+export async function HEAD(
+  _request: Request,
+  context: { params: Promise<{ key: string[] }> },
+) {
+  const { key: parts } = await context.params;
+  return proxyFromStorage(resolveObjectKey(parts), "HEAD");
 }

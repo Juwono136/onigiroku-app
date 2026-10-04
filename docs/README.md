@@ -6,6 +6,7 @@
 | [AUTH.md](./AUTH.md) | Login, register, verifikasi, reset password, Google OAuth, account linking (anti-duplikat), roles, session 7 hari |
 | [SETTINGS.md](./SETTINGS.md) | Edit profil, avatar SeaweedFS, ganti password, riwayat login 7 hari |
 | [SECURITY.md](./SECURITY.md) | Hardening config, secrets, CORS, health token, internal API |
+| [READINESS.md](./READINESS.md) | Baseline verifikasi sebelum fitur baru (lint / security / perf / smoke) |
 | [STORAGE.md](./STORAGE.md) | SeaweedFS upload / replace / delete (tanpa orphan/duplikat) |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | Arsitektur sistem & batas domain |
 | [GOLANG_BACKEND.md](./GOLANG_BACKEND.md) | Panduan Gin API untuk pemula Go |

@@ -12,7 +12,7 @@
     "dev:turbo": "node ./scripts/preflight.mjs && next dev --turbopack",
     "dev:api": "node ./scripts/dev-api.mjs",
     "dev:all": "concurrently -k -n web,api -c red,cyan \"npm:dev:web\" \"npm:dev:api\"",
-    "build": "next build",
+    "build": "node ./scripts/preflight.mjs && next build",
     "build:api": "cd backend && go build -o bin/api ./cmd/api",
     "build:all": "npm run build && npm run build:api",
     "start": "next start",

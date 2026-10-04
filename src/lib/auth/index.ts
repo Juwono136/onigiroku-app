@@ -12,6 +12,7 @@ import {
   clearLockout,
   recordFailedLogin,
 } from "@/lib/auth/lockout";
+import { assertPasswordComplexity } from "@/lib/auth/password-policy";
 import { getDb } from "@/lib/db";
 import { schema } from "@/lib/db/schema";
 import { dispatchBrandedEmail } from "@/lib/email/dispatch";
@@ -280,12 +281,42 @@ export const auth = betterAuth({
         if (body && typeof body.email === "string") {
           body.email = normalizeAuthEmail(body.email);
         }
+        if (body && typeof body.password === "string") {
+          try {
+            assertPasswordComplexity(body.password);
+          } catch (error) {
+            throw new APIError("BAD_REQUEST", {
+              message:
+                error instanceof Error ? error.message : "PASSWORD_MIN",
+            });
+          }
+        }
         if (body && (body.locale === undefined || body.locale === "")) {
           const fromCookie = localeFromCookieHeader(
             ctx.headers?.get("cookie") ?? null,
           );
           if (fromCookie) {
             body.locale = fromCookie;
+          }
+        }
+      }
+
+      if (ctx.path === "/reset-password") {
+        const body = ctx.body as Record<string, unknown> | undefined;
+        const password =
+          typeof body?.newPassword === "string"
+            ? body.newPassword
+            : typeof body?.password === "string"
+              ? body.password
+              : "";
+        if (password) {
+          try {
+            assertPasswordComplexity(password);
+          } catch (error) {
+            throw new APIError("BAD_REQUEST", {
+              message:
+                error instanceof Error ? error.message : "PASSWORD_MIN",
+            });
           }
         }
       }

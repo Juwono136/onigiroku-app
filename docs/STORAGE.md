@@ -24,8 +24,9 @@ Legacy URL di DB yang masih `http://localhost:8333/...` di-rewrite otomatis lewa
 
 2) REPLACE (update)
    → PUT file baru ke objectKey BARU
-   → setelah sukses → confirmObjectReplacement(previousObjectKey)
    → update DB ke publicUrl baru
+   → confirmObjectReplacement(previousObjectKey) best-effort
+   → jika updateUser gagal setelah PUT → hapus objectKey baru (anti-orphan)
    ⇒ file lama dihapus → tidak duplikat
 
 3) DELETE

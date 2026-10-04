@@ -81,12 +81,32 @@ const nextConfig: NextConfig = {
         source: "/(.*)",
         headers: securityHeaders,
       },
+      // Mutable API responses must not be cached.
       {
-        source: "/api/(.*)",
+        source: "/api/auth/:path*",
         headers: [
           {
             key: "Cache-Control",
             value: "no-store, max-age=0",
+          },
+        ],
+      },
+      {
+        source: "/api/settings/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "no-store, max-age=0",
+          },
+        ],
+      },
+      // Immutable media proxy keys may be cached (see route Cache-Control).
+      {
+        source: "/api/media/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
           },
         ],
       },

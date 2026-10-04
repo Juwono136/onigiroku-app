@@ -43,9 +43,10 @@ func NewEngine(deps Dependencies) *gin.Engine {
 	engine.Use(middleware.SecurityHeaders(deps.Config.IsProd))
 	engine.Use(middleware.CORS(deps.Config.CORSOrigins))
 	engine.Use(middleware.RateLimit(deps.Redis, middleware.RateLimitConfig{
-		Enabled: true,
-		Limit:   deps.Config.RateLimitMax,
-		Prefix:  "api",
+		Enabled:    true,
+		Limit:      deps.Config.RateLimitMax,
+		Prefix:     "api",
+		FailClosed: deps.Config.IsProd,
 	}))
 
 	healthHandler := &health.Handler{

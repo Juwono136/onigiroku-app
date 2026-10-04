@@ -31,7 +31,7 @@ function jsonError(message: string, status = 400, code = "BAD_REQUEST") {
  * New password is required on the next sign-in.
  */
 export async function POST(request: Request) {
-  const session = await getServerSession();
+  const session = await getServerSession({ fresh: true });
   if (!session) return jsonError("Unauthorized", 401, "UNAUTHORIZED");
 
   let body: unknown;
@@ -58,7 +58,8 @@ export async function POST(request: Request) {
       body: {
         currentPassword: parsed.data.currentPassword,
         newPassword: parsed.data.newPassword,
-        revokeOtherSessions: false,
+        // OWASP: invalidate other sessions after credential change.
+        revokeOtherSessions: true,
       },
       headers: reqHeaders,
     });

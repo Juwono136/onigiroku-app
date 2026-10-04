@@ -33,7 +33,10 @@ async function getFreshSession() {
   });
 }
 
-async function updateUserWithCookies(body: { name?: string; image?: string | null }) {
+async function updateUserWithCookies(body: {
+  name?: string;
+  image?: string | null;
+}) {
   return auth.api.updateUser({
     body,
     headers: await headers(),
@@ -83,6 +86,12 @@ export async function PATCH(request: Request) {
 
 /** Upload / replace avatar image in SeaweedFS (max 5MB). */
 export async function POST(request: Request) {
+  const contentLength = Number(request.headers.get("content-length") ?? 0);
+  // Multipart overhead; reject obviously oversized bodies early.
+  if (contentLength > AVATAR_MAX_BYTES + 256 * 1024) {
+    return jsonError("AVATAR_SIZE_INVALID", 422, "AVATAR_SIZE_INVALID");
+  }
+
   const session = await getFreshSession();
   if (!session) return jsonError("Unauthorized", 401, "UNAUTHORIZED");
 
@@ -107,6 +116,7 @@ export async function POST(request: Request) {
 
   const previousKey = extractOwnedObjectKey(session.user.image);
   const filename = file.name || `avatar.${file.type.split("/")[1] ?? "png"}`;
+  let uploadedKey: string | null = null;
 
   try {
     const target = await createPresignedUpload({
@@ -141,8 +151,19 @@ export async function POST(request: Request) {
       return jsonError("AVATAR_UPLOAD_FAILED", 502, "AVATAR_UPLOAD_FAILED");
     }
 
+    uploadedKey = target.objectKey;
+
     const updated = await updateUserWithCookies({ image: target.publicUrl });
-    await confirmObjectReplacement(previousKey);
+
+    // Best-effort old object cleanup — DB already points to the new key.
+    try {
+      await confirmObjectReplacement(previousKey);
+    } catch (error) {
+      logger.warn("Avatar previous object cleanup failed (will retry later)", {
+        previousKey,
+        error: error instanceof Error ? error.message : String(error),
+      });
+    }
 
     return jsonWithAuthCookies(
       {
@@ -155,6 +176,13 @@ export async function POST(request: Request) {
       updated.headers,
     );
   } catch (error) {
+    if (uploadedKey) {
+      try {
+        await deleteObject(uploadedKey);
+      } catch {
+        // ignore orphan cleanup failure
+      }
+    }
     logger.error("Avatar upload failed", {
       error: error instanceof Error ? error.message : String(error),
     });
@@ -177,7 +205,14 @@ export async function DELETE() {
     const updated = await updateUserWithCookies({ image: null });
 
     if (previousKey) {
-      await confirmObjectReplacement(previousKey);
+      try {
+        await confirmObjectReplacement(previousKey);
+      } catch (error) {
+        logger.warn("Avatar delete storage cleanup failed (idempotent retry ok)", {
+          previousKey,
+          error: error instanceof Error ? error.message : String(error),
+        });
+      }
     }
 
     return jsonWithAuthCookies(

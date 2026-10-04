@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { PasswordInput } from "@/components/auth/password-input";
 import { Button } from "@/components/ui/button";
 import { mapAuthError } from "@/lib/auth/errors";
+import { clearRememberMe } from "@/lib/auth/remember-me";
 import { changePasswordSchema } from "@/lib/validations/settings";
 
 export function PasswordSettingsForm() {
@@ -80,6 +81,7 @@ export function PasswordSettingsForm() {
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
+        clearRememberMe();
         toast.success(t("password.success"));
       } catch {
         toast.error(t("errors.GENERIC"));

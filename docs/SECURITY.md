@@ -17,10 +17,14 @@ Panduan keamanan untuk setup config Onigiroku (development → production).
 | Env validation | Format URL DB/Redis, panjang secret, pool bounds, production guards |
 | Auth cookies | `httpOnly`, `sameSite=lax`, `secure` di production |
 | Auth rate limit | `API_AUTH_RATE_LIMIT_MAX` |
-| Account lockout | `AUTH_LOCKOUT_*` + tabel `auth_lockout` (hooks Better Auth) |
+| Account lockout | `AUTH_LOCKOUT_*` + upsert atomik (concurrent-safe) |
+| Remember me | Email only di localStorage (password tidak disimpan) |
+| Password change | Revoke other sessions; policy kompleksitas di server |
 | Email verification | Wajib sebelum login credential |
 | Account linking | Google ↔ credential pada **satu** `user`; `trustedProviders: google`; `requireLocalEmailVerified: true` (OWASP ATO) |
 | Identity uniqueness | Email dinormalisasi (lower/trim); unique `(provider_id, account_id)`; ops `scripts/dedupe-auth-users.mjs` |
+| Role authz | `requireRole` memakai session fresh (bukan cookie-cache stale) |
+| Env boot | `src/instrumentation.ts` → `getServerEnv()` fail-closed di production |
 | Session idle | Sliding 7 hari (`expiresIn` + `updateAge`) — lihat [AUTH.md](./AUTH.md) |
 | CORS | Allowlist `CORS_ORIGINS` saja; OPTIONS dari origin asing ditolak |
 | Security headers | nosniff, frame deny, referrer, permissions, COOP/CORP, HSTS (prod) |
@@ -70,9 +74,11 @@ npm run dev:api    # terminal 2
 
 ## Ancaman yang dimitigasi (baseline)
 
-- Credential stuffing / brute force → rate limit + lockout knobs + strong secrets
+- Credential stuffing / brute force → rate limit + atomic lockout + strong secrets
 - Account takeover via unverified email + OAuth link → `requireLocalEmailVerified`
 - Split / duplicate identities (Google vs form) → account linking + email normalize + unique provider index
+- Password theft via XSS/localStorage → remember-me email-only; session httpOnly
+- Stale privilege after role change → fresh session on `requireRole`
 - Session theft via XSS → httpOnly cookies + CSP-friendly headers baseline
 - Clickjacking → `X-Frame-Options: DENY`
 - MIME sniffing → `X-Content-Type-Options: nosniff`
@@ -81,6 +87,8 @@ npm run dev:api    # terminal 2
 - Unauthorized domain API writes → `X-Internal-Secret`
 - Webhook spoofing → token provider (Xendit) terpisah
 - Secret leakage via git → `.gitignore` + placeholder detection di production boot
+- Storage credential exposure → `/api/media` proxy; never browser→`:8333` basic-auth
+- Redis outage bypassing Go limits → fail-closed rate limit in production
 
 ## Yang belum (roadmap keamanan)
 

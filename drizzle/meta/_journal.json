@@ -15,6 +15,13 @@
       "when": 1790700000000,
       "tag": "0001_account_identity_unique",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790800000000,
+      "tag": "0002_session_account_indexes",
+      "breakpoints": true
     }
   ]
 }

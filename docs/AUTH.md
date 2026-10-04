@@ -242,10 +242,9 @@ Validasi client: Zod di `src/lib/validations/auth.ts`. Server: Better Auth `minP
 
 ### Remember me (login)
 
-- Checkbox di `/login` menyimpan email + password di **localStorage perangkat** selama **1 hari**.
-- Setelah TTL habis, data dihapus otomatis dan checkbox kembali unchecked.
-- Uncheck manual juga menghapus data tersimpan.
-- Hanya untuk perangkat pribadi tepercaya (bukan sandi server-side).
+- Checkbox di `/login` hanya menyimpan **email** di localStorage perangkat selama **1 hari** (password **tidak** pernah disimpan — mitigasi XSS / shared device).
+- Key legacy `rememberMe.v1` (yang pernah menyimpan password) dibersihkan otomatis saat load.
+- Setelah TTL habus / uncheck / ganti password, data dihapus.
 
 ### Google profile image & Settings as source of truth
 

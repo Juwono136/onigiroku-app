@@ -44,7 +44,6 @@ export function LoginForm({ googleEnabled, callbackUrl, oauthError }: Props) {
       const saved = loadRememberMe();
       if (saved) {
         setEmail(saved.email);
-        setPassword(saved.password);
         setRememberMe(true);
       } else {
         setRememberMe(false);
@@ -99,10 +98,7 @@ export function LoginForm({ googleEnabled, callbackUrl, oauthError }: Props) {
       }
 
       if (rememberMe) {
-        saveRememberMe({
-          email: parsed.data.email,
-          password: parsed.data.password,
-        });
+        saveRememberMe({ email: parsed.data.email });
       } else {
         clearRememberMe();
       }
