@@ -26,6 +26,7 @@ import {
 import { UserDetailDialog } from "@/components/admin/user-detail-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { FilterSelect } from "@/components/ui/filter-select";
 import { Input } from "@/components/ui/input";
 import type {
   AdminUserListItem,
@@ -325,69 +326,68 @@ export function UsersManagement({ currentUserId }: Props) {
                   filtersOpen ? "grid" : "hidden lg:flex",
                 )}
               >
-                <label className="min-w-0">
-                  <span className="sr-only">{t("fields.role")}</span>
-                  <select
-                    value={role}
-                    onChange={(e) => {
-                      setRole(e.target.value as UserRole | "ALL");
-                      setPage(1);
-                    }}
-                    className="h-11 w-full cursor-pointer rounded-2xl border border-charcoal/12 bg-white px-3 text-sm font-medium text-ink shadow-sm outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30 lg:w-40"
-                  >
-                    <option value="ALL">{t("filters.allRoles")}</option>
-                    <option value="USER">
-                      {locale === "en"
-                        ? ROLE_LABELS.USER.en
-                        : ROLE_LABELS.USER.id}
-                    </option>
-                    <option value="ADMIN">
-                      {locale === "en"
-                        ? ROLE_LABELS.ADMIN.en
-                        : ROLE_LABELS.ADMIN.id}
-                    </option>
-                  </select>
-                </label>
-                <label className="min-w-0">
-                  <span className="sr-only">{t("fields.status")}</span>
-                  <select
-                    value={status}
-                    onChange={(e) => {
-                      setStatus(e.target.value as UserStatus | "ALL");
-                      setPage(1);
-                    }}
-                    className="h-11 w-full cursor-pointer rounded-2xl border border-charcoal/12 bg-white px-3 text-sm font-medium text-ink shadow-sm outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30 lg:w-40"
-                  >
-                    <option value="ALL">{t("filters.allStatus")}</option>
-                    <option value="ACTIVE">{t("status.ACTIVE")}</option>
-                    <option value="INACTIVE">{t("status.INACTIVE")}</option>
-                  </select>
-                </label>
-                <label className="min-w-0">
-                  <span className="sr-only">{t("filters.sort")}</span>
-                  <select
-                    value={`${sortBy}:${sortDir}`}
-                    onChange={(e) => {
-                      const [nextSort, nextDir] = e.target.value.split(":") as [
-                        SortBy,
-                        "asc" | "desc",
-                      ];
-                      setSortBy(nextSort);
-                      setSortDir(nextDir);
-                      setPage(1);
-                    }}
-                    className="h-11 w-full cursor-pointer rounded-2xl border border-charcoal/12 bg-white px-3 text-sm font-medium text-ink shadow-sm outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30 lg:w-48"
-                  >
-                    <option value="createdAt:desc">{t("sort.newest")}</option>
-                    <option value="createdAt:asc">{t("sort.oldest")}</option>
-                    <option value="name:asc">{t("sort.nameAsc")}</option>
-                    <option value="name:desc">{t("sort.nameDesc")}</option>
-                    <option value="lastLoginAt:desc">
-                      {t("sort.lastLogin")}
-                    </option>
-                    <option value="email:asc">{t("sort.emailAsc")}</option>
-                  </select>
-                </label>
+                <FilterSelect
+                  ariaLabel={t("fields.role")}
+                  value={role}
+                  onValueChange={(next) => {
+                    setRole(next as UserRole | "ALL");
+                    setPage(1);
+                  }}
+                  className="lg:w-40"
+                  options={[
+                    { value: "ALL", label: t("filters.allRoles") },
+                    {
+                      value: "USER",
+                      label:
+                        locale === "en"
+                          ? ROLE_LABELS.USER.en
+                          : ROLE_LABELS.USER.id,
+                    },
+                    {
+                      value: "ADMIN",
+                      label:
+                        locale === "en"
+                          ? ROLE_LABELS.ADMIN.en
+                          : ROLE_LABELS.ADMIN.id,
+                    },
+                  ]}
+                />
+                <FilterSelect
+                  ariaLabel={t("fields.status")}
+                  value={status}
+                  onValueChange={(next) => {
+                    setStatus(next as UserStatus | "ALL");
+                    setPage(1);
+                  }}
+                  className="lg:w-40"
+                  options={[
+                    { value: "ALL", label: t("filters.allStatus") },
+                    { value: "ACTIVE", label: t("status.ACTIVE") },
+                    { value: "INACTIVE", label: t("status.INACTIVE") },
+                  ]}
+                />
+                <FilterSelect
+                  ariaLabel={t("filters.sort")}
+                  value={`${sortBy}:${sortDir}`}
+                  onValueChange={(next) => {
+                    const [nextSort, nextDir] = next.split(":") as [
+                      SortBy,
+                      "asc" | "desc",
+                    ];
+                    setSortBy(nextSort);
+                    setSortDir(nextDir);
+                    setPage(1);
+                  }}
+                  className="lg:w-48"
+                  options={[
+                    { value: "createdAt:desc", label: t("sort.newest") },
+                    { value: "createdAt:asc", label: t("sort.oldest") },
+                    { value: "name:asc", label: t("sort.nameAsc") },
+                    { value: "name:desc", label: t("sort.nameDesc") },
+                    { value: "lastLoginAt:desc", label: t("sort.lastLogin") },
+                    { value: "email:asc", label: t("sort.emailAsc") },
+                  ]}
+                />
               </div>
             </div>
           </div>
@@ -507,21 +507,20 @@ export function UsersManagement({ currentUserId }: Props) {
               </span>
             </div>
             <div className="flex flex-wrap items-center gap-2">
-              <select
-                value={pageSize}
-                onChange={(e) => {
-                  setPageSize(Number(e.target.value));
+              <FilterSelect
+                ariaLabel={t("pagination.pageSize")}
+                value={String(pageSize)}
+                onValueChange={(next) => {
+                  setPageSize(Number(next));
                   setPage(1);
                 }}
-                className="h-9 cursor-pointer rounded-xl border border-charcoal/12 bg-white px-2.5 text-sm font-medium outline-none focus-visible:border-brand focus-visible:ring-2 focus-visible:ring-brand/30"
-                aria-label={t("pagination.pageSize")}
-              >
-                {[10, 20, 50].map((size) => (
-                  <option key={size} value={size}>
-                    {t("pagination.perPage", { count: size })}
-                  </option>
-                ))}
-              </select>
+                className="w-[7.5rem]"
+                triggerClassName="h-9 rounded-xl text-sm"
+                options={[10, 20, 50].map((size) => ({
+                  value: String(size),
+                  label: t("pagination.perPage", { count: size }),
+                }))}
+              />
               <Button
                 type="button"
                 variant="outline"

@@ -85,3 +85,5 @@ Saat menambah UI upload (CMS, avatar, soal):
 5. Delete record = hapus object storage (idempotent)
 
 Avatar akun: folder `avatars/` lewat `/api/settings/profile` — lihat [SETTINGS.md](./SETTINGS.md).
+
+Cover / gambar konten CMS: folder `cms/` lewat `/api/admin/materials/cover` (dan inline TipTap image upload yang memakai endpoint yang sama). Batas **5MB** per berkas; MIME jpeg/png/webp/gif; sampul disarankan ~1600×900. Hard-delete materi membersihkan object di SeaweedFS. Lihat [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md).

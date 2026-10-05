@@ -288,6 +288,146 @@
   .safe-pb {
     padding-bottom: max(0px, env(safe-area-inset-bottom));
   }
+
+  /* TipTap / learning material prose */
+  .material-prose,
+  .tiptap-content {
+    color: var(--ink);
+    line-height: 1.7;
+    word-break: break-word;
+  }
+
+  .material-prose p,
+  .tiptap-content p {
+    margin: 0.65em 0;
+  }
+
+  .material-prose h2,
+  .tiptap-content h2 {
+    margin: 1.25em 0 0.5em;
+    font-size: 1.35rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+
+  .material-prose h3,
+  .tiptap-content h3 {
+    margin: 1.1em 0 0.4em;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--ink);
+  }
+
+  .material-prose ul,
+  .tiptap-content ul {
+    margin: 0.75em 0;
+    padding-left: 1.35rem;
+    list-style: disc;
+  }
+
+  .material-prose ol,
+  .tiptap-content ol {
+    margin: 0.75em 0;
+    padding-left: 1.35rem;
+    list-style: decimal;
+  }
+
+  .material-prose li,
+  .tiptap-content li {
+    margin: 0.25em 0;
+  }
+
+  .material-prose a,
+  .tiptap-content a {
+    color: var(--brand);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .material-prose u,
+  .tiptap-content u {
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .material-prose blockquote,
+  .tiptap-content blockquote {
+    margin: 1rem 0;
+    padding: 0.35rem 0 0.35rem 1rem;
+    border-left: 3px solid color-mix(in oklab, var(--brand) 55%, white);
+    color: color-mix(in oklab, var(--charcoal) 78%, white);
+  }
+
+  .material-prose hr,
+  .tiptap-content hr {
+    margin: 1.35rem 0;
+    border: 0;
+    border-top: 1px solid color-mix(in oklab, var(--charcoal) 16%, white);
+  }
+
+  .material-prose img,
+  .tiptap-content img {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 1.25rem 0;
+    border-radius: 0.85rem;
+    object-fit: contain;
+    background: color-mix(in oklab, var(--soft, #f4f4f5) 70%, white);
+  }
+
+  .tiptap-viewer .material-prose img,
+  .tiptap-viewer .tiptap-content img {
+    width: 100%;
+  }
+
+  .material-prose .tableWrapper,
+  .tiptap-content .tableWrapper,
+  .material-prose,
+  .tiptap-content {
+    overflow-x: auto;
+  }
+
+  .material-prose table,
+  .tiptap-content table,
+  .material-table {
+    width: 100%;
+    min-width: 28rem;
+    margin: 1rem 0;
+    border-collapse: collapse;
+    font-size: 0.925rem;
+  }
+
+  .material-prose th,
+  .material-prose td,
+  .tiptap-content th,
+  .tiptap-content td,
+  .material-table th,
+  .material-table td {
+    border: 1px solid color-mix(in oklab, var(--charcoal) 18%, white);
+    padding: 0.55rem 0.75rem;
+    vertical-align: top;
+  }
+
+  .material-prose th,
+  .tiptap-content th,
+  .material-table th {
+    background: color-mix(in oklab, var(--workspace-elevated, var(--soft)) 85%, white);
+    font-weight: 700;
+    text-align: left;
+  }
+
+  .material-prose p.is-editor-empty:first-child::before,
+  .tiptap-content p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    float: left;
+    height: 0;
+    pointer-events: none;
+    color: color-mix(in oklab, var(--charcoal) 38%, white);
+    font-weight: 500;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

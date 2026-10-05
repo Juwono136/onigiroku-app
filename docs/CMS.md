@@ -6,7 +6,7 @@ Onigiroku treats the marketing/landing page as **CMS-managed content** (PRD **FR
 
 
 
-## Current state (Phase 0–1 bridge)
+## Current state
 
 
 
@@ -14,19 +14,21 @@ Onigiroku treats the marketing/landing page as **CMS-managed content** (PRD **FR
 
 | --- | --- |
 
-| Content contract | `src/content/cms/landing-types.ts` |
+| Landing content contract | `src/content/cms/landing-types.ts` |
 
-| Content loader | `src/content/cms/get-landing-content.ts` |
+| Landing loader | `src/content/cms/get-landing-content.ts` (i18n seeds + CMS news merge) |
 
-| Copy source | `src/messages/id.json` + `en.json` (i18n) |
+| Learning materials / News CMS | Admin TipTap + Go domain — [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md) |
+
+| Copy source (landing fallback) | `src/messages/id.json` + `en.json` |
 
 | Rendering | `src/app/[locale]/page.tsx` passes typed slices to section components |
 
-| Announcement visuals | Default: Lucide `icon` presets. Optional CMS `imageSrc` (CDN/HTTPS) when media is published |
+| Announcement visuals | Default: Lucide `icon` presets. Optional CMS `imageSrc` from featured/latest PUBLIC news covers |
 
 
 
-Section components **do not** hardcode marketing copy — they receive `content` props so a future admin editor can swap the loader without UI rewrites.
+Section components **do not** hardcode marketing copy — they receive `content` props so the loader (i18n and/or CMS) can change without UI rewrites.
 
 
 

@@ -29,19 +29,25 @@ Path API **unversioned**: `/api/*` (bukan `/api/v1`). Evolusi: route baru + depr
 | Settings password | `/settings` | `POST /api/settings/password` | — | Better Auth + email; CSRF |
 | Login history | `/settings` | `GET /api/settings/login-history` | `/api/settings/login-history` | Actor + current session token |
 | Media proxy (read) | `<img src="/api/media/…">` | `GET /api/media/[...key]` | — | Next → SeaweedFS (basic auth server-side) |
-| Catalog / materials / assessment / analytics / billing | — | *(belum)* | Stub routes di Go | Belum ada BFF Next sampai fitur UI diluncurkan |
+| Learning materials (admin) | `/admin/materials` | `/api/admin/materials*` | `/api/admin/materials*` | Actor ADMIN + CSRF; TipTap JSON |
+| Student materials | `/dashboard/materials` | `/api/materials*` | `/api/materials*` | Actor USER/ADMIN; STUDENT+PUBLISHED |
+| Public news | `/news` | RSC → Go | `/api/news*` | Secret only; PUBLIC+PUBLISHED |
+| Catalog / assessment / analytics / billing | — | *(stub)* | Stub routes di Go | Billing Xendit belum wired ke materials |
 
 ## Header kontrak Next → Go
 
 | Header | Kapan | Fungsi |
 | --- | --- | --- |
 | `X-Internal-Secret` | Semua panggilan trusted; mutating `/api/*` | Shared secret (`INTERNAL_API_SECRET`) |
-| `X-Actor-User-Id` | Admin users, login-history | User yang diwakili BFF (diverifikasi di DB oleh Go) |
-| `X-Actor-Role` | Admin (`ADMIN`); settings opsional | Hint; Go tetap verify role/status di PostgreSQL |
+| `X-Actor-User-Id` | Admin users, materials, login-history | User yang diwakili BFF (diverifikasi di DB oleh Go) |
+| `X-Actor-Role` | Admin (`ADMIN`); student materials / settings opsional | Hint; Go tetap verify role/status di PostgreSQL |
 | `X-Current-Session-Token` | Login history | Menandai baris “sesi saat ini” |
 | `X-Health-Token` / `Authorization: Bearer` | Health/ready (prod) | `HEALTH_CHECK_TOKEN` |
 
 Implementasi client: `src/lib/api/go-client.ts`
+- `callGoApi` / `callGoApiWithActor` / `checkGoReady`
+- `src/lib/admin/go-users.ts`
+- `src/lib/api/go-materials.ts`
 
 - `callGoApi` — secret + timeout (default 15s)
 - `callGoApiWithActor` — secret + actor headers

@@ -7,6 +7,7 @@
   "nav": {
     "features": "Fitur",
     "howItWorks": "Cara Kerja",
+    "news": "Berita",
     "pricing": "Paket",
     "faq": "FAQ",
     "login": "Masuk",
@@ -485,7 +486,7 @@
   "adminUsers": {
     "eyebrow": "Administrasi",
     "title": "Manajemen pengguna",
-    "subtitle": "Lihat semua akun terdaftar, ubah role atau status, dan kelola pengguna yang dihapus sementara di tempat sampah hingga 30 hari.",
+    "subtitle": "Cari akun, ubah role atau status, dan tinjau pengguna di tempat sampah.",
     "totalLabel": "{count} pengguna",
     "searchPlaceholder": "Cari nama atau email…",
     "tabs": {
@@ -601,6 +602,212 @@
       "INTERNAL_ERROR": "Terjadi kesalahan. Silakan coba lagi."
     }
   },
+  "adminMaterials": {
+    "eyebrow": "Administrasi",
+    "title": "Materi pembelajaran",
+    "subtitle": "Buat, terbitkan, dan kelola konten belajar dwibahasa untuk siswa dan situs publik.",
+    "totalLabel": "{count} materi",
+    "untitled": "Tanpa judul",
+    "searchPlaceholder": "Cari berdasarkan judul materi…",
+    "searchHint": "Mencocokkan judul dan isi teks di locale ID/EN.",
+    "filters": {
+      "allVisibility": "Semua visibilitas",
+      "allStatus": "Semua status",
+      "allFeatured": "Unggulan: semua",
+      "featuredOnly": "Hanya unggulan",
+      "notFeatured": "Bukan unggulan",
+      "tagPlaceholder": "Slug tag…",
+      "sort": "Urutkan"
+    },
+    "sort": {
+      "newest": "Baru dibuat",
+      "oldest": "Lama dibuat",
+      "updatedDesc": "Baru diperbarui",
+      "publishedDesc": "Baru diterbitkan",
+      "titleAsc": "Judul A–Z",
+      "titleDesc": "Judul Z–A"
+    },
+    "columns": {
+      "title": "Materi",
+      "visibility": "Visibilitas",
+      "status": "Status",
+      "updated": "Diperbarui",
+      "actions": "Aksi"
+    },
+    "visibility": {
+      "STUDENT": "Siswa",
+      "PUBLIC": "Publik"
+    },
+    "status": {
+      "DRAFT": "Draf",
+      "PUBLISHED": "Terbit",
+      "ARCHIVED": "Arsip"
+    },
+    "fields": {
+      "title": "Judul",
+      "excerpt": "Ringkasan",
+      "body": "Isi",
+      "slug": "Slug",
+      "visibility": "Visibilitas",
+      "status": "Status",
+      "featured": "Unggulan",
+      "cover": "Gambar sampul",
+      "tags": "Tag",
+      "tag": "Tag"
+    },
+    "editor": {
+      "createTitle": "Materi baru",
+      "editTitle": "Edit materi",
+      "subtitle": "Susun konten dwibahasa, atur audiens, lalu terbitkan saat siap.",
+      "localeTabs": "Bahasa konten",
+      "locale": {
+        "id": "Indonesia",
+        "en": "English"
+      },
+      "titlePlaceholder": "cth. Dasar hiragana untuk pemula",
+      "excerptPlaceholder": "Ringkasan singkat untuk daftar…",
+      "bodyPlaceholder": "Mulai tulis isi pelajaran…",
+      "bodyHint": "Mendukung heading, daftar, tautan, gambar, dan tabel. Ringkasan dibuat otomatis dari isi ini.",
+      "titleHint": "Wajib · 1–200 karakter",
+      "titleRequired": "Judul wajib diisi untuk bahasa ini.",
+      "slugAuto": "Ketik judul untuk melihat pratinjau slug URL",
+      "slugLiveHint": "Pratinjau mengikuti judul bahasa aktif selama masih Draf. URL publik bersama lebih mengutamakan judul Indonesia (lalu English) agar tautan ID/EN tetap sama.",
+      "slugSharedHint": "URL publik bersama akan memakai /{slug} (Indonesia diutamakan) agar perpindahan bahasa tetap stabil.",
+      "slugLockedHint": "Slug terkunci setelah pertama kali diterbitkan — URL yang sama untuk Indonesia dan English.",
+      "featuredHint": "Hanya tersedia jika visibilitas Publik.",
+      "coverEmpty": "Belum ada sampul",
+      "coverHint": "JPEG, PNG, WebP, atau GIF · maks 5MB · disarankan 1600×900 (16:9)",
+      "imageHint": "Gambar dalam isi memakai batas 5MB yang sama (JPEG, PNG, WebP, GIF).",
+      "tagsHint": "{count} / {max} tag",
+      "tagsLocaleHint": "Label tag mengikuti bahasa konten aktif (Indonesia / English). Klik tag untuk mengedit kedua nama.",
+      "tagsFormatHint": "Cari tag yang ada atau buat baru · maks 80 karakter · tag katalog yang tidak terpakai bisa dihapus",
+      "tagPlaceholder": "Cari atau buat tag…",
+      "tagPlaceholderLocale": "Cari atau buat tag ({locale})…",
+      "tagEditTitle": "Nama tag dwibahasa",
+      "tagNameId": "Nama (Indonesia)",
+      "tagNameEn": "Nama (English)",
+      "tagNameIdPlaceholder": "cth. Budaya",
+      "tagNameEnPlaceholder": "e.g. Culture",
+      "tagInUse": "dipakai {count}",
+      "tagUnused": "tidak terpakai",
+      "createTag": "Buat “{name}”",
+      "noTagSuggestions": "Ketik nama untuk membuat tag.",
+      "linkPrompt": "Masukkan URL",
+      "linkTitle": "Tambah tautan",
+      "linkDescription": "Tempel URL http(s) untuk dilampirkan ke teks yang dipilih.",
+      "linkUrlLabel": "URL",
+      "linkPlaceholder": "https://contoh.com/pelajaran",
+      "linkHint": "Hanya tautan http dan https yang diizinkan.",
+      "linkInvalid": "Masukkan URL http atau https yang valid.",
+      "linkApply": "Terapkan tautan",
+      "linkRemove": "Hapus tautan",
+      "toolbar": {
+        "h2": "Heading 2",
+        "h3": "Heading 3",
+        "bold": "Tebal",
+        "italic": "Miring",
+        "underline": "Garis bawah",
+        "bulletList": "Daftar bullet",
+        "orderedList": "Daftar bernomor",
+        "blockquote": "Kutipan",
+        "hr": "Garis horizontal",
+        "alignLeft": "Rata kiri",
+        "alignCenter": "Rata tengah",
+        "alignRight": "Rata kanan",
+        "link": "Tautan",
+        "image": "Sisipkan gambar",
+        "insertTable": "Sisipkan tabel",
+        "addColumn": "Tambah kolom",
+        "deleteColumn": "Hapus kolom",
+        "addRow": "Tambah baris",
+        "deleteRow": "Hapus baris",
+        "deleteTable": "Hapus tabel"
+      }
+    },
+    "actions": {
+      "new": "Materi baru",
+      "edit": "Edit",
+      "create": "Buat materi",
+      "save": "Simpan perubahan",
+      "saving": "Menyimpan…",
+      "softDelete": "Arsipkan",
+      "archive": "Arsip",
+      "hardDelete": "Hapus permanen",
+      "delete": "Hapus",
+      "deleting": "Menghapus…",
+      "cancel": "Batal",
+      "clearSearch": "Hapus pencarian",
+      "showFilters": "Tampilkan filter",
+      "hideFilters": "Sembunyikan filter",
+      "viewMode": "Tampilan daftar",
+      "viewRows": "Tampilan baris",
+      "viewGrid": "Tampilan kartu",
+      "backToList": "Kembali ke materi",
+      "uploadCover": "Unggah sampul",
+      "replaceCover": "Ganti sampul",
+      "removeCover": "Hapus sampul",
+      "removeTag": "Hapus tag",
+      "deleteTag": "Hapus tag tidak terpakai"
+    },
+    "confirm": {
+      "softDeleteTitle": "Arsipkan materi ini?",
+      "softDeleteBody": "“{title}” akan diarsipkan dan disembunyikan dari daftar. Anda masih dapat menghapusnya permanen nanti.",
+      "softDeleteConfirm": "Arsipkan",
+      "hardDeleteTitle": "Hapus permanen materi ini?",
+      "hardDeleteBody": "“{title}” beserta locale, tag, dan file sampul akan dihapus. Tindakan ini tidak dapat dibatalkan.",
+      "hardDeleteConfirm": "Hapus selamanya",
+      "unsavedTitle": "Keluar tanpa menyimpan?",
+      "unsavedBody": "Ada perubahan yang belum disimpan. Jika keluar sekarang, perubahan itu akan hilang.",
+      "unsavedConfirm": "Keluar",
+      "saveCreateTitle": "Buat materi ini?",
+      "saveCreateBody": "Materi akan disimpan dengan judul, isi, visibilitas, dan status saat ini.",
+      "saveUpdateTitle": "Simpan perubahan ini?",
+      "saveUpdateBody": "Perubahan Anda akan disimpan dan status materi menjadi “{status}”.",
+      "removeCoverTitle": "Hapus gambar sampul?",
+      "removeCoverBody": "Sampul akan dihapus dari materi ini. Simpan untuk menerapkan perubahan; berkas lama dibersihkan saat diganti atau materi dihapus permanen.",
+      "deleteTagTitle": "Hapus tag ini?",
+      "deleteTagBody": "“{name}” akan dihapus dari katalog tag. Hanya diperbolehkan jika tag tidak sedang dipakai.",
+      "deleteTagConfirm": "Hapus tag"
+    },
+    "toast": {
+      "created": "Materi dibuat.",
+      "updated": "Materi disimpan.",
+      "softDeleted": "Materi diarsipkan. Menampilkan filter Arsip.",
+      "hardDeleted": "Materi dihapus permanen.",
+      "coverUploaded": "Sampul diunggah.",
+      "coverRemoved": "Sampul dihapus dari editor.",
+      "tagDeleted": "Tag dihapus dari katalog."
+    },
+    "empty": {
+      "list": "Tidak ada materi yang cocok dengan filter.",
+      "archived": "Belum ada materi yang diarsipkan."
+    },
+    "pagination": {
+      "showing": "Menampilkan {from}–{to} dari {total}",
+      "pageSize": "Baris per halaman",
+      "perPage": "{count} / halaman",
+      "prev": "Halaman sebelumnya",
+      "next": "Halaman berikutnya"
+    },
+    "errors": {
+      "loadList": "Gagal memuat daftar materi.",
+      "loadDetail": "Gagal memuat materi.",
+      "ACTION_FAILED": "Aksi gagal. Silakan coba lagi.",
+      "VALIDATION_ERROR": "Periksa kembali isian formulir.",
+      "NOT_FOUND": "Materi tidak ditemukan.",
+      "FORBIDDEN": "Anda tidak punya izin untuk aksi ini.",
+      "FORBIDDEN_ORIGIN": "Permintaan diblokir demi keamanan.",
+      "UNAUTHORIZED": "Silakan masuk kembali.",
+      "INTERNAL_ERROR": "Terjadi kesalahan. Silakan coba lagi.",
+      "COVER_UPLOAD_FAILED": "Unggah sampul gagal.",
+      "COVER_TYPE_INVALID": "Sampul harus JPEG, PNG, WebP, atau GIF.",
+      "COVER_SIZE_INVALID": "Gambar maksimal 5MB.",
+      "FILE_REQUIRED": "Pilih berkas gambar.",
+      "tagsMax": "Maksimal 5 tag.",
+      "tagDuplicate": "Tag itu sudah ditambahkan.",
+      "TAG_IN_USE": "Tag itu masih dipakai materi."
+    }
+  },
   "appShell": {
     "breadcrumb": {
       "label": "Breadcrumb",
@@ -608,6 +815,10 @@
       "dashboard": "Dashboard",
       "admin": "Ringkasan",
       "users": "Pengguna",
+      "materials": "Materi pembelajaran",
+      "materialsNew": "Materi baru",
+      "materialsEdit": "Edit",
+      "materialsRead": "Baca",
       "settings": "Pengaturan",
       "app": "Ruang kerja"
     },
@@ -616,6 +827,7 @@
       "dashboard": "Dashboard",
       "admin": "Ringkasan",
       "users": "Pengguna",
+      "materials": "Materi pembelajaran",
       "settings": "Pengaturan",
       "sectionLearn": "Belajar",
       "sectionAdmin": "Administrasi",
@@ -637,6 +849,98 @@
       "help": "Bantuan",
       "copyright": "© {year} Onigiroku. Hak cipta dilindungi."
     }
+  },
+  "studentMaterials": {
+    "eyebrow": "Perpustakaan belajar",
+    "title": "Materi pembelajaran",
+    "subtitle": "Konten belajar bahasa Jepang terstruktur untuk siswa — baca sesuai kecepatan Anda.",
+    "totalLabel": "{count, plural, =0 {Belum ada materi} other {# materi}}",
+    "searchPlaceholder": "Cari materi…",
+    "filters": {
+      "tags": "Tag"
+    },
+    "actions": {
+      "clearSearch": "Hapus pencarian",
+      "read": "Baca materi",
+      "backToList": "Kembali ke materi"
+    },
+    "empty": {
+      "title": "Materi tidak ditemukan",
+      "description": "Coba kata kunci lain atau hapus filter tag."
+    },
+    "pagination": {
+      "showing": "Menampilkan {from}–{to} dari {total}",
+      "prev": "Sebelumnya",
+      "next": "Berikutnya"
+    },
+    "reader": {
+      "eyebrow": "Materi belajar"
+    },
+    "errors": {
+      "loadFailed": "Gagal memuat materi. Silakan coba lagi."
+    }
+  },
+  "news": {
+    "meta": {
+      "title": "Berita & pengumuman",
+      "description": "Berita terbaru Onigiroku, pembaruan produk, dan pengumuman belajar bahasa Jepang."
+    },
+    "eyebrow": "Pembaruan",
+    "title": "Berita & pengumuman",
+    "subtitle": "Pembaruan produk, tips belajar, dan catatan komunitas dari Onigiroku.",
+    "totalLabel": "{count, plural, =0 {Belum ada artikel} other {# artikel}}",
+    "searchPlaceholder": "Cari berita berdasarkan judul…",
+    "filters": {
+      "all": "Semua",
+      "tags": "Tag",
+      "clearTag": "Hapus tag",
+      "moreTags": "Semua tag ({count})",
+      "hideTags": "Sembunyikan daftar tag",
+      "searchTags": "Cari tag…",
+      "noTagMatches": "Tidak ada tag yang cocok.",
+      "multiHint": "Pilih satu atau lebih"
+    },
+    "empty": {
+      "title": "Belum ada berita",
+      "description": "Kembali lagi nanti untuk pengumuman terbaru."
+    },
+    "pagination": {
+      "label": "Navigasi halaman berita",
+      "showing": "Menampilkan {from}–{to} dari {total}",
+      "prev": "Sebelumnya",
+      "next": "Berikutnya",
+      "pageOf": "{page} / {totalPages}"
+    },
+    "actions": {
+      "read": "Baca artikel",
+      "backToList": "Kembali ke berita",
+      "clearSearch": "Hapus pencarian"
+    },
+    "share": {
+      "button": "Bagikan tautan",
+      "copied": "Tautan disalin ke clipboard.",
+      "copiedShort": "Tersalin",
+      "failed": "Gagal membagikan tautan ini."
+    },
+    "reader": {
+      "eyebrow": "Berita"
+    },
+    "article": {
+      "eyebrow": "Berita"
+    },
+    "notFound": "Artikel ini tidak tersedia.",
+    "errors": {
+      "loadFailed": "Gagal memuat berita. Silakan coba lagi."
+    }
+  },
+  "mediaLightbox": {
+    "title": "Pratinjau gambar",
+    "description": "Perbesar dan lihat gambar yang dipilih.",
+    "zoomIn": "Perbesar",
+    "zoomOut": "Perkecil",
+    "resetZoom": "Reset zoom ke 100%",
+    "close": "Tutup pratinjau",
+    "hint": "Scroll untuk zoom · drag untuk geser · +/− atau 0 untuk reset · Esc / klik di luar untuk menutup"
   },
   "localeSwitcher": {
     "label": "Bahasa",

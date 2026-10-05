@@ -36,6 +36,7 @@ Helper: `src/lib/auth/roles.ts`. Panduan manage user: [ADMIN_USERS.md](./ADMIN_U
 | --- | --- | --- |
 | `user.status` | `ACTIVE` / `INACTIVE` | `INACTIVE` → login ditolak (`ACCOUNT_INACTIVE`), sesi dicabut |
 | `user.deleted_at` | timestamp / null | Soft-deleted → login ditolak (`ACCOUNT_DELETED`); purge hard-delete setelah 30 hari |
+| `user.last_login_at` | timestamp / null | Last successful sign-in (durable). Diisi saat `session.create`; **tidak** hilang saat admin menonaktifkan akun (sesi di-expire, bukan dihapus) |
 
 Blokir autentikasi:
 

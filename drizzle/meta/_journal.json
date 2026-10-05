@@ -29,6 +29,27 @@
       "when": 1790900000000,
       "tag": "0003_user_status_soft_delete",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791000000000,
+      "tag": "0004_user_last_login_at",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791100000000,
+      "tag": "0005_learning_materials",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791200000000,
+      "tag": "0006_locale_pk_order",
+      "breakpoints": true
     }
   ]
 }

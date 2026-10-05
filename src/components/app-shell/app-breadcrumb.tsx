@@ -18,6 +18,7 @@ type Props = {
 
 /**
  * Dynamic breadcrumbs from pathname, with optional override items.
+ * Admin home is a single "Home" crumb (no duplicate Overview).
  */
 export function AppBreadcrumb({ items, className }: Props) {
   const t = useTranslations("appShell");
@@ -29,17 +30,39 @@ export function AppBreadcrumb({ items, className }: Props) {
       const crumbs: BreadcrumbItem[] = [
         { label: t("breadcrumb.home"), href: "/dashboard" },
       ];
-      if (pathname.startsWith("/admin/users")) {
+      if (pathname.startsWith("/admin/materials")) {
         crumbs[0] = { label: t("breadcrumb.home"), href: "/admin" };
-        crumbs.push({ label: t("breadcrumb.admin"), href: "/admin" });
+        crumbs.push({
+          label: t("breadcrumb.materials"),
+          href: pathname === "/admin/materials" ? undefined : "/admin/materials",
+        });
+        if (pathname.includes("/new")) {
+          crumbs.push({ label: t("breadcrumb.materialsNew") });
+        } else if (pathname !== "/admin/materials") {
+          crumbs.push({ label: t("breadcrumb.materialsEdit") });
+        }
+      } else if (pathname.startsWith("/admin/users")) {
+        crumbs[0] = { label: t("breadcrumb.home"), href: "/admin" };
         crumbs.push({ label: t("breadcrumb.users") });
       } else if (pathname.startsWith("/admin")) {
-        crumbs[0] = { label: t("breadcrumb.home"), href: "/admin" };
-        crumbs.push({ label: t("breadcrumb.admin") });
+        // Admin landing: single Home crumb (current page)
+        crumbs[0] = { label: t("breadcrumb.home") };
       } else if (pathname.startsWith("/settings")) {
         crumbs.push({ label: t("breadcrumb.settings") });
+      } else if (pathname.startsWith("/dashboard/materials")) {
+        crumbs.push({
+          label: t("breadcrumb.materials"),
+          href:
+            pathname === "/dashboard/materials"
+              ? undefined
+              : "/dashboard/materials",
+        });
+        if (pathname !== "/dashboard/materials") {
+          crumbs.push({ label: t("breadcrumb.materialsRead") });
+        }
       } else if (pathname.startsWith("/dashboard")) {
-        crumbs.push({ label: t("breadcrumb.dashboard") });
+        // Student dashboard landing = Home only
+        crumbs[0] = { label: t("breadcrumb.home") };
       } else {
         crumbs.push({ label: t("breadcrumb.app") });
       }

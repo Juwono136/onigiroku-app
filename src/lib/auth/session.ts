@@ -90,6 +90,26 @@ export async function requireRole(
   return session;
 }
 
+/** Allow any of the given roles (e.g. USER + ADMIN preview of student materials). */
+export async function requireAnyRole(
+  roles: readonly UserRole[],
+  options?: { locale?: string; callbackPath?: string },
+): Promise<AuthSession> {
+  const session = await getServerSession({ fresh: true });
+  if (!session) {
+    redirect(loginPathForLocale(options?.locale, options?.callbackPath));
+  }
+  const current = getSessionRole(session);
+  if (!roles.includes(current)) {
+    const path = getDashboardPath(current);
+    if (options?.locale && options.locale !== "id") {
+      redirect(`/${options.locale}${path}`);
+    }
+    redirect(path);
+  }
+  return session;
+}
+
 export function resolvePostLoginPath(session: AuthSession): string {
   return getDashboardPath(getSessionRole(session));
 }

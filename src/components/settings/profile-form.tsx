@@ -1,16 +1,18 @@
 "use client";
 
 import { Camera, Loader2, Trash2, UserRound } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
+import { RoleBadge } from "@/components/admin/user-badges";
 import { ProfileConfirmDialog } from "@/components/settings/profile-confirm-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "@/i18n/routing";
+import type { UserRole } from "@/lib/auth/roles";
 import { refreshAuthSession } from "@/lib/auth/refresh-session";
 import { toBrowserMediaUrl } from "@/lib/storage";
 import {
@@ -28,7 +30,7 @@ type Props = {
   initialName: string;
   initialEmail: string;
   initialImage?: string | null;
-  roleLabel: string;
+  role: UserRole;
 };
 
 type PendingPhoto = {
@@ -47,10 +49,11 @@ export function ProfileSettingsForm({
   initialName,
   initialEmail,
   initialImage,
-  roleLabel,
+  role,
 }: Props) {
   const t = useTranslations("settings");
   const tAuth = useTranslations("auth");
+  const locale = useLocale();
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(initialName);
@@ -223,9 +226,7 @@ export function ProfileSettingsForm({
           <h2 className="text-lg font-bold text-ink">{t("profile.title")}</h2>
           <p className="mt-1 text-sm text-charcoal/65">{t("profile.subtitle")}</p>
         </div>
-        <span className="inline-flex rounded-full bg-brand/12 px-2.5 py-1 text-xs font-semibold text-brand">
-          {roleLabel}
-        </span>
+        <RoleBadge role={role} locale={locale} />
       </div>
 
       <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-start">

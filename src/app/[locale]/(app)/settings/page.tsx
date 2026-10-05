@@ -1,7 +1,6 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { SettingsWorkspace } from "@/components/settings/settings-workspace";
-import { ROLE_LABELS } from "@/lib/auth/roles";
 import {
   getSessionRole,
   getSessionUser,
@@ -23,8 +22,6 @@ export default async function SettingsPage({
   const t = await getTranslations("settings");
   const user = getSessionUser(session);
   const role = getSessionRole(session);
-  const roleLabel =
-    locale === "en" ? ROLE_LABELS[role].en : ROLE_LABELS[role].id;
 
   return (
     <SettingsWorkspace
@@ -33,7 +30,7 @@ export default async function SettingsPage({
         email: user.email,
         image: toBrowserMediaUrl(user.image),
       }}
-      roleLabel={roleLabel}
+      role={role}
       eyebrow={t("eyebrow")}
       title={t("title")}
       subtitle={t("subtitle")}

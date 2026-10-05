@@ -7,6 +7,7 @@
   "nav": {
     "features": "Features",
     "howItWorks": "How it works",
+    "news": "News",
     "pricing": "Pricing",
     "faq": "FAQ",
     "login": "Log in",
@@ -485,7 +486,7 @@
   "adminUsers": {
     "eyebrow": "Administration",
     "title": "Users management",
-    "subtitle": "View every registered account, update role or status, and manage soft-deleted users in trash for up to 30 days.",
+    "subtitle": "Search accounts, update roles or status, and review users in trash.",
     "totalLabel": "{count} users",
     "searchPlaceholder": "Search by name or email…",
     "tabs": {
@@ -601,6 +602,212 @@
       "INTERNAL_ERROR": "Something went wrong. Please try again."
     }
   },
+  "adminMaterials": {
+    "eyebrow": "Administration",
+    "title": "Learning materials",
+    "subtitle": "Create, publish, and manage bilingual study content for students and the public site.",
+    "totalLabel": "{count} materials",
+    "untitled": "Untitled",
+    "searchPlaceholder": "Search by material title…",
+    "searchHint": "Matches titles and body text across ID/EN locales.",
+    "filters": {
+      "allVisibility": "All visibility",
+      "allStatus": "All statuses",
+      "allFeatured": "Featured: all",
+      "featuredOnly": "Featured only",
+      "notFeatured": "Not featured",
+      "tagPlaceholder": "Tag slug…",
+      "sort": "Sort"
+    },
+    "sort": {
+      "newest": "Newest created",
+      "oldest": "Oldest created",
+      "updatedDesc": "Recently updated",
+      "publishedDesc": "Recently published",
+      "titleAsc": "Title A–Z",
+      "titleDesc": "Title Z–A"
+    },
+    "columns": {
+      "title": "Material",
+      "visibility": "Visibility",
+      "status": "Status",
+      "updated": "Updated",
+      "actions": "Actions"
+    },
+    "visibility": {
+      "STUDENT": "Student",
+      "PUBLIC": "Public"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published",
+      "ARCHIVED": "Archived"
+    },
+    "fields": {
+      "title": "Title",
+      "excerpt": "Excerpt",
+      "body": "Body",
+      "slug": "Slug",
+      "visibility": "Visibility",
+      "status": "Status",
+      "featured": "Featured",
+      "cover": "Cover image",
+      "tags": "Tags",
+      "tag": "Tag"
+    },
+    "editor": {
+      "createTitle": "New material",
+      "editTitle": "Edit material",
+      "subtitle": "Draft bilingual content, set audience and publish when ready.",
+      "localeTabs": "Content locale",
+      "locale": {
+        "id": "Indonesia",
+        "en": "English"
+      },
+      "titlePlaceholder": "e.g. Hiragana basics for beginners",
+      "excerptPlaceholder": "Short summary shown in lists…",
+      "bodyPlaceholder": "Start writing the lesson content…",
+      "bodyHint": "Supports headings, lists, links, images, and tables. Excerpt is generated automatically from this body.",
+      "titleHint": "Required · 1–200 characters",
+      "titleRequired": "Title is required for this locale.",
+      "slugAuto": "Type a title to preview the URL slug",
+      "slugLiveHint": "Preview follows this language’s title while Draft. The shared public URL prefers the Indonesia title when present (then English) so ID/EN keep the same link.",
+      "slugSharedHint": "Shared public URL will use /{slug} (Indonesia preferred) so language switching stays stable.",
+      "slugLockedHint": "Slug is locked after first publish — same URL for Indonesia and English.",
+      "featuredHint": "Only available when visibility is Public.",
+      "coverEmpty": "No cover yet",
+      "coverHint": "JPEG, PNG, WebP, or GIF · max 5MB · recommended 1600×900 (16:9)",
+      "imageHint": "Inline images use the same 5MB limit (JPEG, PNG, WebP, GIF).",
+      "tagsHint": "{count} / {max} tags",
+      "tagsLocaleHint": "Tag labels follow the active content language (Indonesia / English). Click a tag to edit both names.",
+      "tagsFormatHint": "Search existing tags or create one · max 80 characters · unused catalog tags can be deleted",
+      "tagPlaceholder": "Search or create a tag…",
+      "tagPlaceholderLocale": "Search or create a tag ({locale})…",
+      "tagEditTitle": "Bilingual tag names",
+      "tagNameId": "Name (Indonesia)",
+      "tagNameEn": "Name (English)",
+      "tagNameIdPlaceholder": "e.g. Budaya",
+      "tagNameEnPlaceholder": "e.g. Culture",
+      "tagInUse": "used by {count}",
+      "tagUnused": "unused",
+      "createTag": "Create “{name}”",
+      "noTagSuggestions": "Type a name to create a tag.",
+      "linkPrompt": "Enter URL",
+      "linkTitle": "Add link",
+      "linkDescription": "Paste an http(s) URL to attach to the selected text.",
+      "linkUrlLabel": "URL",
+      "linkPlaceholder": "https://example.com/lesson",
+      "linkHint": "Only http and https links are allowed.",
+      "linkInvalid": "Enter a valid http or https URL.",
+      "linkApply": "Apply link",
+      "linkRemove": "Remove link",
+      "toolbar": {
+        "h2": "Heading 2",
+        "h3": "Heading 3",
+        "bold": "Bold",
+        "italic": "Italic",
+        "underline": "Underline",
+        "bulletList": "Bullet list",
+        "orderedList": "Numbered list",
+        "blockquote": "Quote",
+        "hr": "Horizontal rule",
+        "alignLeft": "Align left",
+        "alignCenter": "Align center",
+        "alignRight": "Align right",
+        "link": "Link",
+        "image": "Insert image",
+        "insertTable": "Insert table",
+        "addColumn": "Add column",
+        "deleteColumn": "Delete column",
+        "addRow": "Add row",
+        "deleteRow": "Delete row",
+        "deleteTable": "Delete table"
+      }
+    },
+    "actions": {
+      "new": "New material",
+      "edit": "Edit",
+      "create": "Create material",
+      "save": "Save changes",
+      "saving": "Saving…",
+      "softDelete": "Archive",
+      "archive": "Archive",
+      "hardDelete": "Delete permanently",
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "cancel": "Cancel",
+      "clearSearch": "Clear search",
+      "showFilters": "Show filters",
+      "hideFilters": "Hide filters",
+      "viewMode": "List layout",
+      "viewRows": "Row list",
+      "viewGrid": "Card grid",
+      "backToList": "Back to materials",
+      "uploadCover": "Upload cover",
+      "replaceCover": "Replace cover",
+      "removeCover": "Remove cover",
+      "removeTag": "Remove tag",
+      "deleteTag": "Delete unused tag"
+    },
+    "confirm": {
+      "softDeleteTitle": "Archive this material?",
+      "softDeleteBody": "“{title}” will be archived and hidden from lists. You can still hard-delete it later if needed.",
+      "softDeleteConfirm": "Archive",
+      "hardDeleteTitle": "Permanently delete this material?",
+      "hardDeleteBody": "“{title}” and its locales, tags, and cover file will be removed. This cannot be undone.",
+      "hardDeleteConfirm": "Delete forever",
+      "unsavedTitle": "Leave without saving?",
+      "unsavedBody": "You have unsaved changes. If you leave now, those edits will be lost.",
+      "unsavedConfirm": "Leave page",
+      "saveCreateTitle": "Create this material?",
+      "saveCreateBody": "The material will be saved with the current title, body, visibility, and status.",
+      "saveUpdateTitle": "Save these changes?",
+      "saveUpdateBody": "Your edits will be saved and the material status will be “{status}”.",
+      "removeCoverTitle": "Remove cover image?",
+      "removeCoverBody": "The cover will be cleared from this material. Save to persist the change; the previous file is cleaned up when a replacement is uploaded or the material is deleted.",
+      "deleteTagTitle": "Delete this tag?",
+      "deleteTagBody": "“{name}” will be removed from the tag catalog. This is only allowed when the tag is unused.",
+      "deleteTagConfirm": "Delete tag"
+    },
+    "toast": {
+      "created": "Material created.",
+      "updated": "Material saved.",
+      "softDeleted": "Material archived. Showing the Archived filter.",
+      "hardDeleted": "Material permanently deleted.",
+      "coverUploaded": "Cover uploaded.",
+      "coverRemoved": "Cover removed from the editor.",
+      "tagDeleted": "Tag deleted from catalog."
+    },
+    "empty": {
+      "list": "No materials match your filters.",
+      "archived": "No archived materials yet."
+    },
+    "pagination": {
+      "showing": "Showing {from}–{to} of {total}",
+      "pageSize": "Rows per page",
+      "perPage": "{count} / page",
+      "prev": "Previous page",
+      "next": "Next page"
+    },
+    "errors": {
+      "loadList": "Could not load materials.",
+      "loadDetail": "Could not load material.",
+      "ACTION_FAILED": "Action failed. Please try again.",
+      "VALIDATION_ERROR": "Please check the form fields.",
+      "NOT_FOUND": "Material not found.",
+      "FORBIDDEN": "You do not have permission for this action.",
+      "FORBIDDEN_ORIGIN": "Request blocked for security reasons.",
+      "UNAUTHORIZED": "Please sign in again.",
+      "INTERNAL_ERROR": "Something went wrong. Please try again.",
+      "COVER_UPLOAD_FAILED": "Cover upload failed.",
+      "COVER_TYPE_INVALID": "Cover must be JPEG, PNG, WebP, or GIF.",
+      "COVER_SIZE_INVALID": "Image must be 5MB or smaller.",
+      "FILE_REQUIRED": "Please choose an image file.",
+      "tagsMax": "You can add up to 5 tags.",
+      "tagDuplicate": "That tag is already added.",
+      "TAG_IN_USE": "That tag is still used by materials."
+    }
+  },
   "appShell": {
     "breadcrumb": {
       "label": "Breadcrumb",
@@ -608,6 +815,10 @@
       "dashboard": "Dashboard",
       "admin": "Overview",
       "users": "Users",
+      "materials": "Learning materials",
+      "materialsNew": "New material",
+      "materialsEdit": "Edit",
+      "materialsRead": "Read",
       "settings": "Settings",
       "app": "Workspace"
     },
@@ -616,6 +827,7 @@
       "dashboard": "Dashboard",
       "admin": "Overview",
       "users": "Users",
+      "materials": "Learning materials",
       "settings": "Settings",
       "sectionLearn": "Learning",
       "sectionAdmin": "Administration",
@@ -637,6 +849,98 @@
       "help": "Help",
       "copyright": "© {year} Onigiroku. All rights reserved."
     }
+  },
+  "studentMaterials": {
+    "eyebrow": "Learning library",
+    "title": "Learning materials",
+    "subtitle": "Structured Japanese study content for enrolled students — read at your own pace.",
+    "totalLabel": "{count, plural, =0 {No materials} one {# material} other {# materials}}",
+    "searchPlaceholder": "Search materials…",
+    "filters": {
+      "tags": "Tags"
+    },
+    "actions": {
+      "clearSearch": "Clear search",
+      "read": "Read material",
+      "backToList": "Back to materials"
+    },
+    "empty": {
+      "title": "No materials found",
+      "description": "Try another search or clear the tag filter."
+    },
+    "pagination": {
+      "showing": "Showing {from}–{to} of {total}",
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "reader": {
+      "eyebrow": "Study material"
+    },
+    "errors": {
+      "loadFailed": "Could not load materials. Please try again."
+    }
+  },
+  "news": {
+    "meta": {
+      "title": "News & announcements",
+      "description": "Latest Onigiroku news, product updates, and Japanese learning announcements."
+    },
+    "eyebrow": "Updates",
+    "title": "News & announcements",
+    "subtitle": "Product updates, learning tips, and community notes from Onigiroku.",
+    "totalLabel": "{count, plural, =0 {No articles} one {# article} other {# articles}}",
+    "searchPlaceholder": "Search news by title…",
+    "filters": {
+      "all": "All",
+      "tags": "Tags",
+      "clearTag": "Clear tags",
+      "moreTags": "All tags ({count})",
+      "hideTags": "Hide tag list",
+      "searchTags": "Search tags…",
+      "noTagMatches": "No tags match your search.",
+      "multiHint": "Select one or more"
+    },
+    "empty": {
+      "title": "No news yet",
+      "description": "Check back soon for the latest announcements."
+    },
+    "pagination": {
+      "label": "News pagination",
+      "showing": "Showing {from}–{to} of {total}",
+      "prev": "Previous",
+      "next": "Next",
+      "pageOf": "{page} / {totalPages}"
+    },
+    "actions": {
+      "read": "Read article",
+      "backToList": "Back to news",
+      "clearSearch": "Clear search"
+    },
+    "share": {
+      "button": "Share link",
+      "copied": "Link copied to clipboard.",
+      "copiedShort": "Copied",
+      "failed": "Could not share this link."
+    },
+    "reader": {
+      "eyebrow": "News"
+    },
+    "article": {
+      "eyebrow": "News"
+    },
+    "notFound": "This article is unavailable.",
+    "errors": {
+      "loadFailed": "Could not load news. Please try again."
+    }
+  },
+  "mediaLightbox": {
+    "title": "Image preview",
+    "description": "Zoom and inspect the selected image.",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "resetZoom": "Reset zoom to 100%",
+    "close": "Close preview",
+    "hint": "Scroll to zoom · drag to pan · +/− or 0 to reset · Esc / click outside to close"
   },
   "localeSwitcher": {
     "label": "Language",

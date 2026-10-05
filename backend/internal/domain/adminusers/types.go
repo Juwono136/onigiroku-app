@@ -78,4 +78,5 @@ type userRow struct {
 	UpdatedAt     time.Time
 	DeletedAt     *time.Time
 	DeletedBy     *string
+	LastLoginAt   *time.Time
 }

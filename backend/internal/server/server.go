@@ -62,7 +62,6 @@ func NewEngine(deps Dependencies) *gin.Engine {
 	// Unversioned /api/* — evolve via additive routes / deprecation headers, not /v1 /v2.
 	api := engine.Group("/api")
 	api.Use(middleware.RequireInternalSecret(deps.Config.InternalAPISecret, deps.Config.IsProd))
-	content.NewHandler().Register(api)
 	assessment.NewHandler().Register(api)
 	analytics.NewHandler().Register(api)
 	billing.NewHandler(deps.Config.XenditWebhookToken).Register(api)
@@ -79,6 +78,9 @@ func NewEngine(deps Dependencies) *gin.Engine {
 	)
 	mediaHandler.Register(api)
 
+	contentHandler := content.NewHandler(deps.Pool, mediaHandler.Service, deps.Log)
+	contentHandler.RegisterPublic(api)
+
 	// Trusted BFF routes: always require internal secret (including GET).
 	trusted := api.Group("/")
 	trusted.Use(middleware.RequireInternalSecretAlways(deps.Config.InternalAPISecret, deps.Config.IsProd))
@@ -86,10 +88,12 @@ func NewEngine(deps Dependencies) *gin.Engine {
 	admin := trusted.Group("/")
 	admin.Use(middleware.RequireAdminActor(deps.Pool))
 	adminusers.NewHandler(deps.Pool, mediaHandler.Service, deps.Log).Register(admin)
+	contentHandler.RegisterAdmin(admin)
 
 	account := trusted.Group("/")
 	account.Use(middleware.RequireActor(deps.Pool))
 	settings.NewHandler(deps.Pool, deps.Log).Register(account)
+	contentHandler.RegisterStudent(account)
 
 	engine.NoRoute(func(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{

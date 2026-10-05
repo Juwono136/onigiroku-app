@@ -25,6 +25,7 @@ import {
   buildVerificationEmail,
 } from "@/lib/email/templates/index";
 import { logger } from "@/lib/logger";
+import { eq } from "drizzle-orm";
 
 function buildSocialProviders() {
   const clientId = process.env.GOOGLE_CLIENT_ID?.trim();
@@ -151,12 +152,30 @@ export const auth = betterAuth({
               error instanceof Error ? error.message : "ACCOUNT_INACTIVE";
             // Must include `code` so OAuth callback redirects to login UI
             // instead of rendering raw JSON in the browser.
-            throwAuthApiError(
-              "FORBIDDEN",
-              code === "ACCOUNT_DELETED" ? "ACCOUNT_DELETED" : "ACCOUNT_INACTIVE",
-            );
+            if (code === "ACCOUNT_DELETED") {
+              throwAuthApiError("FORBIDDEN", "ACCOUNT_DELETED");
+            }
+            if (code === "USER_NOT_FOUND") {
+              throwAuthApiError("FORBIDDEN", "USER_NOT_FOUND");
+            }
+            throwAuthApiError("FORBIDDEN", "ACCOUNT_INACTIVE");
           }
           return { data: sessionData };
+        },
+        after: async (session) => {
+          // Persist durable last-login so admin UI survives session revoke/expiry.
+          try {
+            const db = getDb();
+            await db
+              .update(schema.user)
+              .set({ lastLoginAt: new Date() })
+              .where(eq(schema.user.id, session.userId));
+          } catch (error) {
+            logger.warn("Failed to persist last_login_at", {
+              userId: session.userId,
+              error: error instanceof Error ? error.message : String(error),
+            });
+          }
         },
       },
     },

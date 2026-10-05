@@ -51,7 +51,11 @@ CREATE DATABASE onigiroku_db;
 ```
 
 ```bash
-npm run db:push
+# Preferred for this repo once migrations exist:
+npm run db:migrate
+
+# Optional: introspect/sync (drizzle-kit push). Safe after schema is aligned.
+# npm run db:push
 ```
 
 Pastikan Redis dan SeaweedFS gateway (`:8333`) berjalan.

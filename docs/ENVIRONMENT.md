@@ -82,6 +82,7 @@ Lihat `.env.example` untuk daftar lengkap key (template). Ringkas:
 - `LOG_LEVEL`, `HEALTH_CHECK_TOKEN`
 - Go: `GIN_MODE`, `API_*_TIMEOUT`, `API_RATE_LIMIT_MAX`, `INTERNAL_API_SECRET`
 - Xendit: `XENDIT_SECRET_KEY`, `XENDIT_CALLBACK_TOKEN`, `XENDIT_PUBLIC_KEY`
+  - Keys are present for future checkout/webhooks. **Not wired** to learning materials entitlement yet — see [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md).
 
 ## Production checklist
 

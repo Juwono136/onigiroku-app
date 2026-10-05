@@ -151,7 +151,7 @@ Header `X-Internal-Secret` dikirim otomatis jika `INTERNAL_API_SECRET` terset di
 - Restart Go setelah ubah kode (`go run` tidak hot-reload; pertimbangkan [Air](https://github.com/air-verse/air) nanti)
 - Jangan commit `.env`
 - Di production, Go API hanya expose di private network / reverse proxy
-- Domain **admin users**, **settings/login-history**, dan **media** sudah menulis ke DB / storage; catalog/assessment/dll masih stub routing
+- Domain **admin users**, **settings/login-history**, **content/materials**, dan **media** sudah menulis ke DB / storage; catalog/assessment/analytics masih stub; billing Xendit masih stub (belum entitlement materials)
 
 ## Troubleshooting Go
 
@@ -172,18 +172,19 @@ Header `X-Internal-Secret` dikirim otomatis jika `INTERNAL_API_SECRET` terset di
 | Media | `/api/media/*` | Presign + delete SeaweedFS |
 | Admin users | `/api/admin/users*` | List/detail/update/soft/restore/hard + purge 30 hari — [ADMIN_USERS.md](./ADMIN_USERS.md) |
 | Settings | `/api/settings/login-history` | Riwayat login 7 hari |
+| Content / materials | `/api/admin/materials*`, `/api/materials*`, `/api/news*` | Learning materials + public news — [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md) |
 
 **Tidak memakai prefix versi** (`/v1`, `/v2`). Evolusi API: tambah route baru / header deprecation.
 
-Trusted routes (admin + settings) **selalu** butuh `X-Internal-Secret` (termasuk GET) + `X-Actor-User-Id` (+ `X-Actor-Role: ADMIN` untuk admin).
+Trusted routes (admin + settings + student materials) **selalu** butuh `X-Internal-Secret` (termasuk GET) + `X-Actor-User-Id` (+ `X-Actor-Role: ADMIN` untuk admin).
 
 ## Roadmap implementasi domain
 
-1. Catalog & materials read API (+ Next BFF)
+1. ~~Catalog & materials read API (+ Next BFF)~~ — materials/news sudah; catalog masih stub
 2. Attempt state machine + autosave
 3. Learning events collector (idempotent)
 4. Analytics projections / dashboard
-5. Xendit checkout + webhook verification (ingress publik atau Next proxy)
+5. Xendit checkout + webhook verification + materials entitlement (prep docs only today)
 6. ~~Media presign + delete + replace-confirm (SeaweedFS)~~ — sudah ([STORAGE.md](./STORAGE.md))
 7. ~~Admin users management~~ — sudah ([ADMIN_USERS.md](./ADMIN_USERS.md))
 8. ~~Settings login-history~~ — sudah ([SETTINGS.md](./SETTINGS.md))

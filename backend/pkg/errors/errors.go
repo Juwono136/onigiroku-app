@@ -151,6 +151,13 @@ func LastAdmin() *AppError {
 	)
 }
 
+func Conflict(code Code, messageEN, messageID string) *AppError {
+	if code == "" {
+		code = CodeConflict
+	}
+	return New(code, http.StatusConflict, messageEN, messageID)
+}
+
 func FromError(err error) *AppError {
 	if err == nil {
 		return nil

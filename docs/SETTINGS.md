@@ -17,7 +17,7 @@ Profil disusun rapat (avatar + form tanpa ruang kosong berlebih). Password new/c
 
 | Bagian | Kemampuan |
 | --- | --- |
-| Edit profil | Ubah **nama**; upload/hapus **foto profil** (JPG/PNG/WEBP/GIF, maks **5 MB**) ke SeaweedFS; **modal konfirmasi** sebelum simpan nama / ganti foto / hapus foto |
+| Edit profil | Ubah **nama**; upload/hapus **foto profil** (JPG/PNG/WEBP/GIF, maks **5 MB**) ke SeaweedFS; **modal konfirmasi** sebelum simpan nama / ganti foto / hapus foto; badge role memakai komponen yang sama dengan Users Management (PRD: Student=Info, Super Admin=Charcoal) |
 | Update password | Current + new + confirm; hide/unhide; validasi policy; toast error; email notifikasi setelah sukses; tinggi kartu menyelaraskan bento |
 | Riwayat login | Sesi **7 hari terakhir** sebagai **kartu grid** (waktu relatif + absolut, perangkat, jaringan ramah user, status); paginasi |
 

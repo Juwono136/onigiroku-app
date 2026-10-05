@@ -2,8 +2,10 @@ import {
   boolean,
   index,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
+  primaryKey,
   text,
   timestamp,
   uniqueIndex,
@@ -19,6 +21,17 @@ export const userRoleEnum = pgEnum("user_role", ["USER", "ADMIN"]);
 
 /** Account operational status (independent from soft-delete). */
 export const userStatusEnum = pgEnum("user_status", ["ACTIVE", "INACTIVE"]);
+
+export const materialVisibilityEnum = pgEnum("material_visibility", [
+  "STUDENT",
+  "PUBLIC",
+]);
+
+export const materialStatusEnum = pgEnum("material_status", [
+  "DRAFT",
+  "PUBLISHED",
+  "ARCHIVED",
+]);
 
 export const user = pgTable(
   "user",
@@ -40,11 +53,17 @@ export const user = pgTable(
     /** Soft-delete timestamp; null = not in trash. Purge after 30 days. */
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
     deletedBy: text("deleted_by"),
+    /**
+     * Durable last successful sign-in. Survives session revoke/expiry so admin
+     * Users Management does not lose "Last login" when status flips to Inactive.
+     */
+    lastLoginAt: timestamp("last_login_at", { withTimezone: true }),
   },
   (t) => [
     index("user_status_idx").on(t.status),
     index("user_deleted_at_idx").on(t.deletedAt),
     index("user_role_idx").on(t.role),
+    index("user_last_login_at_idx").on(t.lastLoginAt),
   ],
 );
 
@@ -67,7 +86,6 @@ export const session = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
   },
   (t) => [
-    // Login history + session listing under concurrent users.
     index("session_user_created_idx").on(t.userId, t.createdAt),
   ],
 );
@@ -100,7 +118,6 @@ export const account = pgTable(
       .defaultNow(),
   },
   (t) => [
-    // One provider identity can belong to only one local user (prevents split accounts).
     uniqueIndex("account_provider_account_uid").on(t.providerId, t.accountId),
     index("account_user_id_idx").on(t.userId),
   ],
@@ -115,7 +132,6 @@ export const verification = pgTable("verification", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow(),
 });
 
-/** Auth lockout tracking for credential stuffing defense */
 export const authLockout = pgTable("auth_lockout", {
   id: uuid("id").defaultRandom().primaryKey(),
   identifier: text("identifier").notNull().unique(),
@@ -124,10 +140,108 @@ export const authLockout = pgTable("auth_lockout", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+/** Learning materials / news (admin CMS). */
+export const learningMaterial = pgTable(
+  "learning_material",
+  {
+    id: text("id").primaryKey(),
+    slug: text("slug").notNull(),
+    visibility: materialVisibilityEnum("visibility").notNull().default("STUDENT"),
+    status: materialStatusEnum("status").notNull().default("DRAFT"),
+    featured: boolean("featured").notNull().default(false),
+    coverObjectKey: text("cover_object_key"),
+    authorId: text("author_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "restrict" }),
+    publishedAt: timestamp("published_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("learning_material_slug_uid").on(t.slug),
+    index("learning_material_vis_status_pub_idx").on(
+      t.visibility,
+      t.status,
+      t.publishedAt,
+    ),
+    index("learning_material_deleted_at_idx").on(t.deletedAt),
+    index("learning_material_author_idx").on(t.authorId),
+  ],
+);
+
+export const learningMaterialLocale = pgTable(
+  "learning_material_locale",
+  {
+    materialId: text("material_id")
+      .notNull()
+      .references(() => learningMaterial.id, { onDelete: "cascade" }),
+    locale: text("locale").notNull(),
+    title: text("title").notNull(),
+    excerpt: text("excerpt").notNull().default(""),
+    body: jsonb("body").notNull().default({}),
+    bodyText: text("body_text").notNull().default(""),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    // Column order must match drizzle-kit introspection (locale, material_id).
+    // Kit currently reads composite PK order incorrectly for this table; declaring
+    // [materialId, locale] causes an infinite DROP/ADD PRIMARY KEY on every `db:push`.
+    primaryKey({
+      name: "learning_material_locale_material_id_locale_pk",
+      columns: [t.locale, t.materialId],
+    }),
+    index("learning_material_locale_title_idx").on(t.title),
+  ],
+);
+
+export const learningTag = pgTable(
+  "learning_tag",
+  {
+    id: text("id").primaryKey(),
+    slug: text("slug").notNull(),
+    nameId: text("name_id").notNull(),
+    nameEn: text("name_en").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [uniqueIndex("learning_tag_slug_uid").on(t.slug)],
+);
+
+export const learningMaterialTag = pgTable(
+  "learning_material_tag",
+  {
+    materialId: text("material_id")
+      .notNull()
+      .references(() => learningMaterial.id, { onDelete: "cascade" }),
+    tagId: text("tag_id")
+      .notNull()
+      .references(() => learningTag.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    primaryKey({
+      name: "learning_material_tag_material_id_tag_id_pk",
+      columns: [t.materialId, t.tagId],
+    }),
+    index("learning_material_tag_tag_idx").on(t.tagId),
+  ],
+);
+
 export const schema = {
   user,
   session,
   account,
   verification,
   authLockout,
+  learningMaterial,
+  learningMaterialLocale,
+  learningTag,
+  learningMaterialTag,
 };

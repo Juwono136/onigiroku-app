@@ -13,11 +13,11 @@ Next.js (UI + BFF + Better Auth + email)
   │ Drizzle (auth)  │ INTERNAL_API_SECRET (+ X-Actor-* bila perlu)
   ▼                 ▼
 PostgreSQL ◄──── Golang Gin API
-  ▲              (media, admin users, login-history;
-Redis            stub: content, assessment, analytics, billing)
+  ▲              (media, admin users, login-history, content/materials;
+Redis            stub: assessment, analytics, billing)
   │
 SeaweedFS ◄── nginx gateway (basic auth server-side only)
-Xendit (nanti: webhook → Go publik atau Next proxy)
+Xendit (nanti: webhook → Go publik atau Next proxy; entitlement belum wired)
 Nodemailer → SMTP (dari Next saja)
 ```
 
@@ -34,14 +34,14 @@ Kontrak detail Next ↔ Go: **[INTEGRATION.md](./INTEGRATION.md)**.
 - Drizzle schema/migrations untuk auth (+ domain tables bertahap)
 - Validasi Zod di trust boundary web + CSRF Origin/Referer pada mutasi BFF
 - Email transactional modular (`src/lib/email/templates/`) — verifikasi, reset, notifikasi password
-- BFF domain: `/api/admin/users*`, `/api/settings/*`, `/api/media/*`, `/api/health` → `callGoApi` / `callGoApiWithActor`
+- BFF domain: `/api/admin/users*`, `/api/admin/materials*`, `/api/materials*`, `/api/settings/*`, `/api/media/*`, `/api/health` → `callGoApi` / `callGoApiWithActor`
 - i18n ID/EN (`next-intl`)
 
 ### Go Gin (`backend/`)
 
 - Domain API berperforma tinggi di path **unversioned** `/api/*` (bukan `/api/v1`)
-- **Live:** media (presign/delete), admin users, settings/login-history
-- **Stub (belum BFF):** catalog/materials, assessment/attempts, analytics, billing/webhooks
+- **Live:** media (presign/delete), admin users, settings/login-history, learning materials / news (`content`)
+- **Stub (belum BFF):** catalog, assessment/attempts, analytics, billing/webhooks (Xendit prep only)
 - Dipanggil dari Next BFF via `callGoApi` + `X-Internal-Secret` (+ `X-Actor-*` untuk trusted routes)
 - Identity (Better Auth session/password/email) tetap di Next — domain data & storage orchestration di Go
 - Middleware: request ID, CORS, recovery, security headers, Redis rate limit, actor verify
@@ -50,7 +50,8 @@ Kontrak detail Next ↔ Go: **[INTEGRATION.md](./INTEGRATION.md)**.
 
 Media lifecycle (create / replace / delete tanpa orphan): [STORAGE.md](./STORAGE.md).  
 Account settings (profil, password, login history): [SETTINGS.md](./SETTINGS.md).  
-Admin users (list/role/status/soft-hard delete): [ADMIN_USERS.md](./ADMIN_USERS.md).
+Admin users (list/role/status/soft-hard delete): [ADMIN_USERS.md](./ADMIN_USERS.md).  
+Learning materials + News CMS: [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md).
 
 ### Shared infrastructure
 

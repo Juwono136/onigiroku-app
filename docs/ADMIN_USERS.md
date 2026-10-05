@@ -48,21 +48,23 @@ Header wajib ke Go: `X-Internal-Secret`, `X-Actor-User-Id`, `X-Actor-Role: ADMIN
 
 ## Skema database
 
-Migrasi: `drizzle/0003_user_status_soft_delete.sql`
+Migrasi: `drizzle/0003_user_status_soft_delete.sql`, `drizzle/0004_user_last_login_at.sql`
 
 | Kolom | Arti |
 | --- | --- |
 | `user.status` | `ACTIVE` \| `INACTIVE` |
 | `user.deleted_at` | Soft delete; `NULL` = bukan trash |
 | `user.deleted_by` | Admin yang memindahkan ke trash |
+| `user.last_login_at` | Login sukses terakhir (durable; tidak hilang saat revoke sesi) |
 
 ## Perilaku bisnis
 
 - Scope `active` / `trash`; search ILIKE name/email; filter role/status; sort; pagination 5–50.
 - Purge soft-delete > 30 hari dijalankan idempotent saat list.
-- Inactive → revoke sessions; login ditolak (`ACCOUNT_INACTIVE`).
-- Soft delete → trash 30 hari; hard delete hanya dari trash + hapus avatar SeaweedFS.
-- Self-protection: admin tidak bisa ubah/hapus akun sendiri.
+- Inactive → revoke sessions (**expire** live sessions, jangan hapus baris) + blokir login; **`last_login_at` tetap** di kolom user
+- Soft delete → trash 30 hari; hard delete hanya dari trash + hapus avatar SeaweedFS
+- Self-protection: admin tidak bisa ubah/hapus akun sendiri
+- **Last login**: dibaca dari `user.last_login_at` (fallback `MAX(session.created_at)`). Diisi otomatis setiap login sukses via Better Auth `session.create.after`
 
 ## File penting
 
@@ -78,7 +80,7 @@ Migrasi: `drizzle/0003_user_status_soft_delete.sql`
 
 ## UI
 
-Workspace content memakai `max-w-[96rem]` + padding `xl:px-10` (selaras Overview / Settings).
+Workspace content memakai `max-w-[96rem]` + padding `xl:px-10` (selaras Overview / Settings). Subtitle halaman sengaja singkat (cari akun / ubah role-status / tinjau trash).
 
 | Elemen | Catatan desain |
 | --- | --- |

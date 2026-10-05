@@ -1,9 +1,11 @@
 "use client";
 
 import {
+  BookOpen,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
+  Newspaper,
   Settings,
   Users,
   X,
@@ -21,10 +23,18 @@ type Props = {
   role: UserRole;
 };
 
+type NavHref =
+  | "/dashboard"
+  | "/dashboard/materials"
+  | "/admin"
+  | "/admin/users"
+  | "/admin/materials"
+  | "/settings";
+
 type NavItem = {
-  href: "/dashboard" | "/admin" | "/admin/users" | "/settings";
+  href: NavHref;
   icon: typeof LayoutDashboard;
-  labelKey: "dashboard" | "admin" | "users" | "settings";
+  labelKey: "dashboard" | "admin" | "users" | "materials" | "settings";
 };
 
 export function AppSidebar({ role }: Props) {
@@ -40,6 +50,7 @@ export function AppSidebar({ role }: Props) {
       ? [
           { href: "/admin", icon: LayoutDashboard, labelKey: "admin" },
           { href: "/admin/users", icon: Users, labelKey: "users" },
+          { href: "/admin/materials", icon: Newspaper, labelKey: "materials" },
           { href: "/settings", icon: Settings, labelKey: "settings" },
         ]
       : [
@@ -47,6 +58,11 @@ export function AppSidebar({ role }: Props) {
             href: "/dashboard",
             icon: LayoutDashboard,
             labelKey: "dashboard",
+          },
+          {
+            href: "/dashboard/materials",
+            icon: BookOpen,
+            labelKey: "materials",
           },
           { href: "/settings", icon: Settings, labelKey: "settings" },
         ];
@@ -57,6 +73,9 @@ export function AppSidebar({ role }: Props) {
   function isActive(href: string) {
     if (href === "/admin") {
       return pathname === "/admin";
+    }
+    if (href === "/dashboard") {
+      return pathname === "/dashboard";
     }
     return pathname === href || pathname.startsWith(`${href}/`);
   }

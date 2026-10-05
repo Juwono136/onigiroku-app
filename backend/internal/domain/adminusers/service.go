@@ -62,6 +62,19 @@ func formatTimePtr(t *time.Time) *string {
 	return &s
 }
 
+// revokeActiveSessions expires live sessions without deleting rows so
+// last-login / login-history remain auditable after inactive / soft-delete.
+func revokeActiveSessions(ctx context.Context, tx pgx.Tx, userID string) error {
+	_, err := tx.Exec(ctx, `
+		UPDATE session
+		SET expires_at = LEAST(expires_at, NOW()),
+		    updated_at = NOW()
+		WHERE user_id = $1
+		  AND expires_at > NOW()
+	`, userID)
+	return err
+}
+
 // purgeLockKey is a stable Postgres advisory lock for soft-delete purge.
 const purgeLockKey int64 = 7845123901
 
@@ -225,7 +238,10 @@ func (s *Service) List(ctx context.Context, q ListQuery) (*ListResult, error) {
 	listSQL := fmt.Sprintf(`
 		SELECT u.id, u.name, u.email, u.email_verified, u.image, u.role::text, u.status::text, u.locale,
 		       u.created_at, u.updated_at, u.deleted_at, u.deleted_by,
-		       (SELECT MAX(s.created_at) FROM session s WHERE s.user_id = u.id) AS last_login
+		       COALESCE(
+		         u.last_login_at,
+		         (SELECT MAX(s.created_at) FROM session s WHERE s.user_id = u.id)
+		       ) AS last_login
 		FROM "user" u
 		WHERE %s
 		ORDER BY %s %s NULLS LAST
@@ -252,6 +268,7 @@ func (s *Service) List(ctx context.Context, q ListQuery) (*ListResult, error) {
 		); err != nil {
 			return nil, apperrors.Internal(err)
 		}
+		item.row.LastLoginAt = item.lastLogin
 		scannedRows = append(scannedRows, item)
 	}
 	if err := rows.Err(); err != nil {
@@ -309,10 +326,13 @@ func (s *Service) loadLastLoginMap(ctx context.Context, ids []string) (map[strin
 		return out, nil
 	}
 	rows, err := s.Pool.Query(ctx, `
-		SELECT user_id, MAX(created_at) AS last_login
-		FROM session
-		WHERE user_id = ANY($1)
-		GROUP BY user_id
+		SELECT u.id,
+		       COALESCE(
+		         u.last_login_at,
+		         (SELECT MAX(s.created_at) FROM session s WHERE s.user_id = u.id)
+		       ) AS last_login
+		FROM "user" u
+		WHERE u.id = ANY($1)
 	`, ids)
 	if err != nil {
 		return nil, apperrors.Internal(err)
@@ -361,7 +381,8 @@ func (s *Service) Get(ctx context.Context, userID string) (*UserDetail, error) {
 
 	var sessionCount int
 	if err := s.Pool.QueryRow(ctx, `
-		SELECT COUNT(*)::int FROM session WHERE user_id = $1
+		SELECT COUNT(*)::int FROM session
+		WHERE user_id = $1 AND expires_at > NOW()
 	`, userID).Scan(&sessionCount); err != nil {
 		return nil, apperrors.Internal(err)
 	}
@@ -391,13 +412,13 @@ func (s *Service) fetchUser(ctx context.Context, userID string) (*userRow, error
 	var r userRow
 	err := s.Pool.QueryRow(ctx, `
 		SELECT id, name, email, email_verified, image, role::text, status::text, locale,
-		       created_at, updated_at, deleted_at, deleted_by
+		       created_at, updated_at, deleted_at, deleted_by, last_login_at
 		FROM "user"
 		WHERE id = $1
 	`, userID).Scan(
 		&r.ID, &r.Name, &r.Email, &r.EmailVerified, &r.Image,
 		&r.Role, &r.Status, &r.Locale, &r.CreatedAt, &r.UpdatedAt,
-		&r.DeletedAt, &r.DeletedBy,
+		&r.DeletedAt, &r.DeletedBy, &r.LastLoginAt,
 	)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -467,7 +488,7 @@ func (s *Service) Update(ctx context.Context, userID, actorID string, patch Upda
 	}
 
 	if revokeSessions {
-		if _, err := tx.Exec(ctx, `DELETE FROM session WHERE user_id = $1`, userID); err != nil {
+		if err := revokeActiveSessions(ctx, tx, userID); err != nil {
 			return nil, apperrors.Internal(err)
 		}
 	}
@@ -515,7 +536,7 @@ func (s *Service) SoftDelete(ctx context.Context, userID, actorID string) (*User
 	if tag.RowsAffected() == 0 {
 		return nil, apperrors.UserNotFound()
 	}
-	if _, err := tx.Exec(ctx, `DELETE FROM session WHERE user_id = $1`, userID); err != nil {
+	if err := revokeActiveSessions(ctx, tx, userID); err != nil {
 		return nil, apperrors.Internal(err)
 	}
 	if err := tx.Commit(ctx); err != nil {

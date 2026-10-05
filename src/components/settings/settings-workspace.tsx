@@ -3,6 +3,7 @@
 import { LoginHistoryPanel } from "@/components/settings/login-history";
 import { PasswordSettingsForm } from "@/components/settings/password-form";
 import { ProfileSettingsForm } from "@/components/settings/profile-form";
+import type { UserRole } from "@/lib/auth/roles";
 
 type Props = {
   user: {
@@ -10,7 +11,7 @@ type Props = {
     email: string;
     image?: string | null;
   };
-  roleLabel: string;
+  role: UserRole;
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -23,7 +24,7 @@ type Props = {
  */
 export function SettingsWorkspace({
   user,
-  roleLabel,
+  role,
   eyebrow,
   title,
   subtitle,
@@ -56,7 +57,7 @@ export function SettingsWorkspace({
               initialName={user.name}
               initialEmail={user.email}
               initialImage={user.image}
-              roleLabel={roleLabel}
+              role={role}
             />
             <PasswordSettingsForm />
           </div>
