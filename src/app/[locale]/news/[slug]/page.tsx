@@ -7,7 +7,8 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { NewsArticle } from "@/components/news/news-article";
 import { goGetNews } from "@/lib/api/go-materials";
 import { defaultLocale } from "@/i18n/routing";
-import { pickMaterialLocale } from "@/lib/materials/locale";
+import { resolveMaterialSeo } from "@/lib/materials/locale";
+import { toBrowserMediaUrl } from "@/lib/storage";
 
 type Props = {
   params: Promise<{ locale: string; slug: string }>;
@@ -28,10 +29,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   try {
     const material = await goGetNews(slug);
-    const loc = pickMaterialLocale(material, locale);
-    const title = loc.title || t("meta.title");
-    const description = loc.excerpt?.trim() || t("meta.description");
+    const seo = resolveMaterialSeo(material, locale);
+    const title = seo.title || t("meta.title");
+    const description = seo.description || t("meta.description");
     const canonical = siteCanonical(locale, `/news/${slug}`);
+    const cover = toBrowserMediaUrl(material.coverUrl);
 
     return {
       title,
@@ -42,7 +44,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         url: canonical,
         type: "article",
-        images: material.coverUrl ? [{ url: material.coverUrl }] : undefined,
+        images: cover ? [{ url: cover }] : undefined,
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+        images: cover ? [cover] : undefined,
       },
     };
   } catch {

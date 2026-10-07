@@ -25,11 +25,13 @@ type TagDTO struct {
 }
 
 type LocaleDTO struct {
-	Locale   string `json:"locale"`
-	Title    string `json:"title"`
-	Excerpt  string `json:"excerpt"`
-	Body     any    `json:"body"`
-	BodyText string `json:"bodyText,omitempty"`
+	Locale         string `json:"locale"`
+	Title          string `json:"title"`
+	Excerpt        string `json:"excerpt"`
+	Body           any    `json:"body"`
+	BodyText       string `json:"bodyText,omitempty"`
+	SeoTitle       string `json:"seoTitle"`
+	SeoDescription string `json:"seoDescription"`
 }
 
 type MaterialListItem struct {
@@ -81,10 +83,12 @@ type ListQuery struct {
 }
 
 type LocaleInput struct {
-	Locale  string `json:"locale"`
-	Title   string `json:"title"`
-	Excerpt string `json:"excerpt"`
-	Body    any    `json:"body"`
+	Locale         string `json:"locale"`
+	Title          string `json:"title"`
+	Excerpt        string `json:"excerpt"`
+	Body           any    `json:"body"`
+	SeoTitle       string `json:"seoTitle"`
+	SeoDescription string `json:"seoDescription"`
 }
 
 type TagInput struct {

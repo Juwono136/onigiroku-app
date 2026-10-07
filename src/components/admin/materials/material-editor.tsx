@@ -3,9 +3,11 @@
 import type { JSONContent } from "@tiptap/react";
 import {
   ArrowLeft,
+  Eye,
   ImageIcon,
   Loader2,
   Save,
+  Search,
   Star,
   Tag,
   Trash2,
@@ -16,6 +18,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AdminConfirmDialog } from "@/components/admin/admin-confirm-dialog";
+import { MaterialPreviewDialog } from "@/components/admin/materials/material-preview-dialog";
 import {
   EMPTY_TIPTAP_DOC,
   MaterialTiptapEditor,
@@ -24,6 +27,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { FilterSelect } from "@/components/ui/filter-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Link, useRouter } from "@/i18n/routing";
 import {
   CMS_IMAGE_ACCEPT,
@@ -53,6 +57,8 @@ type LocaleKey = "id" | "en";
 type LocaleDraft = {
   title: string;
   body: JSONContent;
+  seoTitle: string;
+  seoDescription: string;
 };
 
 type Snapshot = {
@@ -70,7 +76,12 @@ type Props = {
 };
 
 function emptyLocale(): LocaleDraft {
-  return { title: "", body: EMPTY_TIPTAP_DOC };
+  return {
+    title: "",
+    body: EMPTY_TIPTAP_DOC,
+    seoTitle: "",
+    seoDescription: "",
+  };
 }
 
 function tagKey(tag: { nameId: string; slug?: string | null }) {
@@ -120,10 +131,14 @@ function snapshotKey(s: Snapshot): string {
       id: {
         title: s.locales.id.title,
         body: s.locales.id.body,
+        seoTitle: s.locales.id.seoTitle,
+        seoDescription: s.locales.id.seoDescription,
       },
       en: {
         title: s.locales.en.title,
         body: s.locales.en.body,
+        seoTitle: s.locales.en.seoTitle,
+        seoDescription: s.locales.en.seoDescription,
       },
     },
     visibility: s.visibility,
@@ -186,6 +201,9 @@ export function MaterialEditor({ mode, materialId }: Props) {
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
   const [removeCoverOpen, setRemoveCoverOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [seoTitleTouched, setSeoTitleTouched] = useState(false);
+  const [seoDescriptionTouched, setSeoDescriptionTouched] = useState(false);
   const pendingHrefRef = useRef<string | null>(null);
   const allowLeaveRef = useRef(false);
   const pendingSaveRef = useRef<ReturnType<
@@ -308,6 +326,8 @@ export function MaterialEditor({ mode, materialId }: Props) {
               (loc.body as JSONContent).type === "doc"
                 ? (loc.body as JSONContent)
                 : EMPTY_TIPTAP_DOC,
+            seoTitle: loc.seoTitle ?? "",
+            seoDescription: loc.seoDescription ?? "",
           };
         }
         const nextTags = normalizeSelectedTags(
@@ -542,6 +562,8 @@ export function MaterialEditor({ mode, materialId }: Props) {
         title: locales[key].title.trim(),
         excerpt: excerptFromBody(locales[key].body),
         body: locales[key].body ?? EMPTY_TIPTAP_DOC,
+        seoTitle: locales[key].seoTitle.trim(),
+        seoDescription: locales[key].seoDescription.trim(),
       }))
       .filter((loc) => loc.title.length > 0);
 
@@ -558,6 +580,8 @@ export function MaterialEditor({ mode, materialId }: Props) {
               title: locales[activeLocale].title,
               excerpt: excerptFromBody(locales[activeLocale].body),
               body: locales[activeLocale].body,
+              seoTitle: locales[activeLocale].seoTitle,
+              seoDescription: locales[activeLocale].seoDescription,
             },
           ],
       tags: normalizeSelectedTags(tags),
@@ -568,6 +592,8 @@ export function MaterialEditor({ mode, materialId }: Props) {
       const message = issue?.message ?? t("errors.VALIDATION_ERROR");
       setFieldError(message);
       setTitleTouched(true);
+      setSeoTitleTouched(true);
+      setSeoDescriptionTouched(true);
       toast.error(t("errors.VALIDATION_ERROR"));
       return;
     }
@@ -633,6 +659,8 @@ export function MaterialEditor({ mode, materialId }: Props) {
             (loc.body as JSONContent).type === "doc"
               ? (loc.body as JSONContent)
               : EMPTY_TIPTAP_DOC,
+          seoTitle: loc.seoTitle ?? "",
+          seoDescription: loc.seoDescription ?? "",
         };
       }
       const savedTags = normalizeSelectedTags(
@@ -647,10 +675,16 @@ export function MaterialEditor({ mode, materialId }: Props) {
         id: {
           title: savedLocales.id.title || locales.id.title,
           body: locales.id.body,
+          seoTitle: savedLocales.id.seoTitle || locales.id.seoTitle,
+          seoDescription:
+            savedLocales.id.seoDescription || locales.id.seoDescription,
         },
         en: {
           title: savedLocales.en.title || locales.en.title,
           body: locales.en.body,
+          seoTitle: savedLocales.en.seoTitle || locales.en.seoTitle,
+          seoDescription:
+            savedLocales.en.seoDescription || locales.en.seoDescription,
         },
       };
       const nextVisibility =
@@ -727,6 +761,11 @@ export function MaterialEditor({ mode, materialId }: Props) {
     sharedSlugPreview !== activeLiveSlug;
   const titleInvalid =
     titleTouched && draft.title.trim().length === 0;
+  const seoTitleInvalid =
+    seoTitleTouched && draft.seoTitle.trim().length > 70;
+  const seoDescriptionInvalid =
+    seoDescriptionTouched && draft.seoDescription.trim().length > 160;
+  const showNewsTools = visibility === "PUBLIC";
   const canCreateTag =
     tagQuery.trim().length > 0 &&
     !tagSuggestions.some(
@@ -796,23 +835,37 @@ export function MaterialEditor({ mode, materialId }: Props) {
             </div>
           </div>
 
-          <Button
-            type="button"
-            disabled={saving}
-            onClick={() => void handleSave()}
-            className="h-11 cursor-pointer rounded-2xl px-5 font-semibold"
-          >
-            {saving ? (
-              <Loader2 className="size-4 animate-spin" aria-hidden />
-            ) : (
-              <Save className="size-4" aria-hidden />
-            )}
-            {saving
-              ? t("actions.saving")
-              : mode === "create"
-                ? t("actions.create")
-                : t("actions.save")}
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {showNewsTools ? (
+              <Button
+                type="button"
+                variant="outline"
+                disabled={saving || !draft.title.trim()}
+                onClick={() => setPreviewOpen(true)}
+                className="h-11 cursor-pointer rounded-2xl px-4 font-semibold"
+              >
+                <Eye className="size-4" aria-hidden />
+                {t("actions.preview")}
+              </Button>
+            ) : null}
+            <Button
+              type="button"
+              disabled={saving}
+              onClick={() => void handleSave()}
+              className="h-11 cursor-pointer rounded-2xl px-5 font-semibold"
+            >
+              {saving ? (
+                <Loader2 className="size-4 animate-spin" aria-hidden />
+              ) : (
+                <Save className="size-4" aria-hidden />
+              )}
+              {saving
+                ? t("actions.saving")
+                : mode === "create"
+                  ? t("actions.create")
+                  : t("actions.save")}
+            </Button>
+          </div>
         </header>
 
         {fieldError ? (
@@ -952,6 +1005,109 @@ export function MaterialEditor({ mode, materialId }: Props) {
                   disabled={saving}
                 />
               </div>
+
+              {showNewsTools ? (
+                <div className="space-y-4 rounded-2xl border border-charcoal/10 bg-white/80 p-4 sm:p-5">
+                  <div className="flex flex-wrap items-start justify-between gap-2">
+                    <div className="space-y-1">
+                      <div className="inline-flex items-center gap-2">
+                        <Search className="size-4 text-brand" aria-hidden />
+                        <Label className="text-sm font-semibold text-ink">
+                          {t("fields.seo")}
+                        </Label>
+                      </div>
+                      <p className={FIELD_HINT_CLASS}>{t("editor.seoHint")}</p>
+                    </div>
+                    <span className="rounded-full border border-charcoal/10 bg-soft px-2.5 py-0.5 text-[10px] font-semibold tracking-wide text-charcoal/55 uppercase">
+                      {t(`editor.locale.${activeLocale}`)}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="material-seo-title">
+                      {t("fields.seoTitle")}
+                    </Label>
+                    <Input
+                      id="material-seo-title"
+                      value={draft.seoTitle}
+                      onChange={(e) =>
+                        updateLocale(activeLocale, {
+                          seoTitle: e.target.value.slice(0, 70),
+                        })
+                      }
+                      onBlur={() => setSeoTitleTouched(true)}
+                      placeholder={t("editor.seoTitlePlaceholder")}
+                      className={cn(
+                        FIELD_INPUT_CLASS,
+                        seoTitleInvalid &&
+                          "border-destructive/50 focus-visible:border-destructive focus-visible:ring-destructive/25",
+                      )}
+                      maxLength={70}
+                      aria-invalid={seoTitleInvalid}
+                      aria-describedby="material-seo-title-hint"
+                      disabled={saving}
+                    />
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p
+                        id="material-seo-title-hint"
+                        className={
+                          seoTitleInvalid ? FIELD_ERROR_CLASS : FIELD_HINT_CLASS
+                        }
+                      >
+                        {seoTitleInvalid
+                          ? t("editor.seoTitleInvalid")
+                          : t("editor.seoTitleHint")}
+                      </p>
+                      <span className={FIELD_HINT_CLASS}>
+                        {draft.seoTitle.trim().length}/70
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="material-seo-description">
+                      {t("fields.seoDescription")}
+                    </Label>
+                    <Textarea
+                      id="material-seo-description"
+                      value={draft.seoDescription}
+                      onChange={(e) =>
+                        updateLocale(activeLocale, {
+                          seoDescription: e.target.value.slice(0, 160),
+                        })
+                      }
+                      onBlur={() => setSeoDescriptionTouched(true)}
+                      placeholder={t("editor.seoDescriptionPlaceholder")}
+                      className={cn(
+                        "min-h-[96px] rounded-2xl border-charcoal/12 bg-white text-sm font-medium text-ink shadow-sm placeholder:text-charcoal/38",
+                        seoDescriptionInvalid &&
+                          "border-destructive/50 focus-visible:border-destructive focus-visible:ring-destructive/25",
+                      )}
+                      maxLength={160}
+                      aria-invalid={seoDescriptionInvalid}
+                      aria-describedby="material-seo-description-hint"
+                      disabled={saving}
+                    />
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p
+                        id="material-seo-description-hint"
+                        className={
+                          seoDescriptionInvalid
+                            ? FIELD_ERROR_CLASS
+                            : FIELD_HINT_CLASS
+                        }
+                      >
+                        {seoDescriptionInvalid
+                          ? t("editor.seoDescriptionInvalid")
+                          : t("editor.seoDescriptionHint")}
+                      </p>
+                      <span className={FIELD_HINT_CLASS}>
+                        {draft.seoDescription.trim().length}/160
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : null}
             </div>
           </section>
 
@@ -1387,6 +1543,16 @@ export function MaterialEditor({ mode, materialId }: Props) {
         onConfirm={() => {
           if (tagDeleteTarget) void deleteCatalogTag(tagDeleteTarget);
         }}
+      />
+
+      <MaterialPreviewDialog
+        open={previewOpen}
+        onOpenChange={setPreviewOpen}
+        title={draft.title}
+        body={draft.body}
+        coverUrl={coverPreview}
+        publicSlug={slug ?? displaySlug}
+        published={status === "PUBLISHED" && Boolean(slug)}
       />
     </div>
   );

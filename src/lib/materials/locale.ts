@@ -17,5 +17,23 @@ export function pickMaterialLocale(
     title: material.title,
     excerpt: material.excerpt,
     body: { type: "doc", content: [] },
+    seoTitle: "",
+    seoDescription: "",
   };
+}
+
+/** Resolve public meta title/description with SEO overrides and safe fallbacks. */
+export function resolveMaterialSeo(
+  material: MaterialDetail,
+  locale: string,
+): { title: string; description: string } {
+  const loc = pickMaterialLocale(material, locale);
+  const title = (loc.seoTitle || loc.title || material.title).trim();
+  const description = (
+    loc.seoDescription ||
+    loc.excerpt ||
+    material.excerpt ||
+    ""
+  ).trim();
+  return { title, description };
 }

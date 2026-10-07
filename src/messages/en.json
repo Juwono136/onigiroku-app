@@ -653,7 +653,10 @@
       "featured": "Featured",
       "cover": "Cover image",
       "tags": "Tags",
-      "tag": "Tag"
+      "tag": "Tag",
+      "seo": "SEO for public news",
+      "seoTitle": "SEO title",
+      "seoDescription": "SEO description"
     },
     "editor": {
       "createTitle": "New material",
@@ -670,6 +673,13 @@
       "bodyHint": "Supports headings, lists, links, images, and tables. Excerpt is generated automatically from this body.",
       "titleHint": "Required · 1–200 characters",
       "titleRequired": "Title is required for this locale.",
+      "seoHint": "Optional overrides for search engines and social previews. Leave blank to use the article title and auto excerpt.",
+      "seoTitlePlaceholder": "e.g. Hiragana basics — learn Japanese with Onigiroku",
+      "seoTitleHint": "Recommended ≤ 60 characters · max 70",
+      "seoTitleInvalid": "SEO title must be 70 characters or fewer.",
+      "seoDescriptionPlaceholder": "A concise summary that appears in Google and link previews…",
+      "seoDescriptionHint": "Recommended ≤ 155 characters · max 160",
+      "seoDescriptionInvalid": "SEO description must be 160 characters or fewer.",
       "slugAuto": "Type a title to preview the URL slug",
       "slugLiveHint": "Preview follows this language’s title while Draft. The shared public URL prefers the Indonesia title when present (then English) so ID/EN keep the same link.",
       "slugSharedHint": "Shared public URL will use /{slug} (Indonesia preferred) so language switching stays stable.",
@@ -747,7 +757,15 @@
       "replaceCover": "Replace cover",
       "removeCover": "Remove cover",
       "removeTag": "Remove tag",
-      "deleteTag": "Delete unused tag"
+      "deleteTag": "Delete unused tag",
+      "preview": "Preview"
+    },
+    "preview": {
+      "title": "News preview",
+      "description": "Preview how this article will appear on the public news page.",
+      "eyebrow": "News",
+      "close": "Close",
+      "openLive": "Open live page"
     },
     "confirm": {
       "softDeleteTitle": "Archive this material?",
@@ -915,6 +933,14 @@
       "read": "Read article",
       "backToList": "Back to news",
       "clearSearch": "Clear search"
+    },
+    "related": {
+      "eyebrow": "Keep reading",
+      "title": "Latest news",
+      "subtitle": "More updates and announcements from Onigiroku.",
+      "viewAll": "Browse all news",
+      "backToList": "Back to news list",
+      "empty": "No other articles are available yet."
     },
     "share": {
       "button": "Share link",

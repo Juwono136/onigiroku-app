@@ -18,7 +18,7 @@ Onigiroku treats the marketing/landing page as **CMS-managed content** (PRD **FR
 
 | Landing loader | `src/content/cms/get-landing-content.ts` (i18n seeds + CMS news merge) |
 
-| Learning materials / News CMS | Admin TipTap + Go domain — [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md) |
+| Learning materials / News CMS | Admin TipTap + Go domain — Preview + per-locale SEO for PUBLIC news; public detail has Latest news footer — [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md) |
 
 | Copy source (landing fallback) | `src/messages/id.json` + `en.json` |
 

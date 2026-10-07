@@ -1,5 +1,6 @@
 import { ArrowLeft, CalendarDays } from "lucide-react";
 import { getTranslations } from "next-intl/server";
+import type { ReactNode } from "react";
 
 import { MaterialTiptapViewer } from "@/components/materials/material-tiptap-viewer";
 import { ShareLinkButton } from "@/components/news/share-link-button";
@@ -22,6 +23,8 @@ type Props = {
   wide?: boolean;
   /** Show share control (public news). */
   shareUrl?: string;
+  /** Optional footer below the article body (e.g. latest news). */
+  footer?: ReactNode;
 };
 
 function formatDate(value: string | null, locale: string) {
@@ -52,6 +55,7 @@ export async function MaterialReader({
   showExcerpt = false,
   wide = false,
   shareUrl,
+  footer,
 }: Props) {
   const t = await getTranslations("studentMaterials");
   const loc = pickMaterialLocale(material, locale);
@@ -145,6 +149,8 @@ export async function MaterialReader({
         <div className="rounded-[1.35rem] border border-charcoal/10 bg-[var(--workspace-card)] px-4 py-5 shadow-[0_16px_40px_-32px_rgba(67,64,64,0.55)] sm:px-7 sm:py-8 lg:px-9 lg:py-9">
           <MaterialTiptapViewer content={loc.body} enableImageZoom />
         </div>
+
+        {footer}
       </div>
     </article>
   );

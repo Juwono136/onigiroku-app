@@ -653,7 +653,10 @@
       "featured": "Unggulan",
       "cover": "Gambar sampul",
       "tags": "Tag",
-      "tag": "Tag"
+      "tag": "Tag",
+      "seo": "SEO untuk berita publik",
+      "seoTitle": "Judul SEO",
+      "seoDescription": "Deskripsi SEO"
     },
     "editor": {
       "createTitle": "Materi baru",
@@ -670,6 +673,13 @@
       "bodyHint": "Mendukung heading, daftar, tautan, gambar, dan tabel. Ringkasan dibuat otomatis dari isi ini.",
       "titleHint": "Wajib · 1–200 karakter",
       "titleRequired": "Judul wajib diisi untuk bahasa ini.",
+      "seoHint": "Opsional untuk mesin pencari dan pratinjau sosial. Kosongkan untuk memakai judul artikel dan ringkasan otomatis.",
+      "seoTitlePlaceholder": "cth. Dasar hiragana — belajar Jepang bersama Onigiroku",
+      "seoTitleHint": "Disarankan ≤ 60 karakter · maks 70",
+      "seoTitleInvalid": "Judul SEO maksimal 70 karakter.",
+      "seoDescriptionPlaceholder": "Ringkasan singkat yang muncul di Google dan pratinjau tautan…",
+      "seoDescriptionHint": "Disarankan ≤ 155 karakter · maks 160",
+      "seoDescriptionInvalid": "Deskripsi SEO maksimal 160 karakter.",
       "slugAuto": "Ketik judul untuk melihat pratinjau slug URL",
       "slugLiveHint": "Pratinjau mengikuti judul bahasa aktif selama masih Draf. URL publik bersama lebih mengutamakan judul Indonesia (lalu English) agar tautan ID/EN tetap sama.",
       "slugSharedHint": "URL publik bersama akan memakai /{slug} (Indonesia diutamakan) agar perpindahan bahasa tetap stabil.",
@@ -747,7 +757,15 @@
       "replaceCover": "Ganti sampul",
       "removeCover": "Hapus sampul",
       "removeTag": "Hapus tag",
-      "deleteTag": "Hapus tag tidak terpakai"
+      "deleteTag": "Hapus tag tidak terpakai",
+      "preview": "Pratinjau"
+    },
+    "preview": {
+      "title": "Pratinjau berita",
+      "description": "Pratinjau tampilan artikel di halaman berita publik.",
+      "eyebrow": "Berita",
+      "close": "Tutup",
+      "openLive": "Buka halaman publik"
     },
     "confirm": {
       "softDeleteTitle": "Arsipkan materi ini?",
@@ -915,6 +933,14 @@
       "read": "Baca artikel",
       "backToList": "Kembali ke berita",
       "clearSearch": "Hapus pencarian"
+    },
+    "related": {
+      "eyebrow": "Lanjutkan membaca",
+      "title": "Berita terbaru",
+      "subtitle": "Pembaruan dan pengumuman lainnya dari Onigiroku.",
+      "viewAll": "Lihat semua berita",
+      "backToList": "Kembali ke daftar berita",
+      "empty": "Belum ada artikel lain saat ini."
     },
     "share": {
       "button": "Bagikan tautan",

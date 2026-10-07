@@ -10,6 +10,8 @@ export const materialLocaleInputSchema = z.object({
   title: z.string().trim().min(1).max(200),
   excerpt: z.string().trim().max(500).optional().default(""),
   body: z.unknown().optional().default(emptyDoc),
+  seoTitle: z.string().trim().max(70).optional().default(""),
+  seoDescription: z.string().trim().max(160).optional().default(""),
 });
 
 export const materialTagInputSchema = z.object({

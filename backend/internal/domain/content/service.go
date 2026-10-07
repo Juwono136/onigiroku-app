@@ -373,7 +373,7 @@ func (s *Service) getOne(ctx context.Context, where string, arg any, _ string) (
 
 func (s *Service) loadLocales(ctx context.Context, materialID string) ([]LocaleDTO, error) {
 	rows, err := s.Pool.Query(ctx, `
-		SELECT locale, title, excerpt, body, body_text
+		SELECT locale, title, excerpt, body, body_text, seo_title, seo_description
 		FROM learning_material_locale
 		WHERE material_id = $1
 		ORDER BY locale
@@ -386,7 +386,10 @@ func (s *Service) loadLocales(ctx context.Context, materialID string) ([]LocaleD
 	for rows.Next() {
 		var loc LocaleDTO
 		var bodyRaw []byte
-		if err := rows.Scan(&loc.Locale, &loc.Title, &loc.Excerpt, &bodyRaw, &loc.BodyText); err != nil {
+		if err := rows.Scan(
+			&loc.Locale, &loc.Title, &loc.Excerpt, &bodyRaw, &loc.BodyText,
+			&loc.SeoTitle, &loc.SeoDescription,
+		); err != nil {
 			return nil, apperrors.Internal(err)
 		}
 		var body any
@@ -806,12 +809,22 @@ func normalizeUpsert(in UpsertInput, requireLocales bool) (Visibility, Status, b
 		if len(excerpt) > 500 {
 			return "", "", false, nil, nil, apperrors.Validation("Excerpt too long", "Ringkasan terlalu panjang")
 		}
+		seoTitle := strings.TrimSpace(loc.SeoTitle)
+		if len(seoTitle) > 70 {
+			return "", "", false, nil, nil, apperrors.Validation("SEO title too long", "Judul SEO terlalu panjang (maks 70)")
+		}
+		seoDescription := strings.TrimSpace(loc.SeoDescription)
+		if len(seoDescription) > 160 {
+			return "", "", false, nil, nil, apperrors.Validation("SEO description too long", "Deskripsi SEO terlalu panjang (maks 160)")
+		}
 		seen[l] = struct{}{}
 		locales = append(locales, LocaleInput{
-			Locale:  l,
-			Title:   title,
-			Excerpt: excerpt,
-			Body:    sanitizeBody(loc.Body),
+			Locale:         l,
+			Title:          title,
+			Excerpt:        excerpt,
+			Body:           sanitizeBody(loc.Body),
+			SeoTitle:       seoTitle,
+			SeoDescription: seoDescription,
 		})
 	}
 	if requireLocales && len(locales) == 0 {
@@ -877,10 +890,20 @@ func (s *Service) replaceLocales(ctx context.Context, tx pgx.Tx, materialID stri
 		if len(excerpt) > 500 {
 			excerpt = truncateExcerpt(excerpt, 500)
 		}
+		seoTitle := strings.TrimSpace(loc.SeoTitle)
+		if len(seoTitle) > 70 {
+			seoTitle = truncateExcerpt(seoTitle, 70)
+		}
+		// Keep empty optional — public meta falls back to title/excerpt at read time.
+		seoDescription := strings.TrimSpace(loc.SeoDescription)
+		if len(seoDescription) > 160 {
+			seoDescription = truncateExcerpt(seoDescription, 160)
+		}
 		if _, err := tx.Exec(ctx, `
-			INSERT INTO learning_material_locale (material_id, locale, title, excerpt, body, body_text, updated_at)
-			VALUES ($1,$2,$3,$4,$5::jsonb,$6,NOW())
-		`, materialID, loc.Locale, loc.Title, excerpt, bodyJSON, bodyText); err != nil {
+			INSERT INTO learning_material_locale (
+			  material_id, locale, title, excerpt, body, body_text, seo_title, seo_description, updated_at
+			) VALUES ($1,$2,$3,$4,$5::jsonb,$6,$7,$8,NOW())
+		`, materialID, loc.Locale, loc.Title, excerpt, bodyJSON, bodyText, seoTitle, seoDescription); err != nil {
 			return apperrors.Internal(err)
 		}
 	}

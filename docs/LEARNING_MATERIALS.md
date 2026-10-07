@@ -16,7 +16,7 @@ Paid entitlement checks are **not** live. Extension point: `assertCanAccessStude
 Migration `drizzle/0005_learning_materials.sql`:
 
 - `learning_material` — slug (unique), visibility, status (`DRAFT`\|`PUBLISHED`\|`ARCHIVED`), featured, cover key, author, published_at, soft `deleted_at`
-- `learning_material_locale` — `(material_id, locale)` with `id`\|`en`; title, excerpt, TipTap JSON `body`, `body_text` for search
+- `learning_material_locale` — `(material_id, locale)` with `id`\|`en`; title, excerpt, TipTap JSON `body`, `body_text` for search, plus optional `seo_title` / `seo_description` (migration `0007_material_locale_seo.sql`)
 - `learning_tag` + `learning_material_tag` — max **5** tags per material (enforced in Go)
 
 ### Slug rules
@@ -71,6 +71,7 @@ Media: cover/content images via existing media presign with `folder: cms`, clean
 - Breadcrumb: admin paths use a single **Home** crumb (no duplicate Overview)
 - List: debounced search by title/keyword (body text indexed server-side), visibility/status/sort filters (`FilterSelect`), hybrid **card grid &lt;lg** / **row list on desktop**, pagination, archive/delete confirms
 - Editor layout: main locale tabs + title + TipTap; side panel with true **16:9** cover preview, visibility/status (`FilterSelect`), featured (PUBLIC only), searchable tags with unused-delete
+- **PUBLIC (news) tools:** **Preview** button opens a clean article-style dialog (title, cover, body — mirrors the public reader). When status is `PUBLISHED`, **Open live page** jumps to `/news/{slug}`. Per-locale **SEO title** (max 70) and **SEO description** (max 160) with placeholders, char counters, and client + Go validation; empty values fall back to article title / excerpt for meta tags (SEO is edited in the form, not shown inside Preview)
 - TipTap: H2/H3, bold/italic/underline, lists, link, image, blockquote, HR, text align, table insert (default 2×2) with distinct add/delete row/column/table icons
 - Soft-delete / Archive sets `status=ARCHIVED` (still visible in admin under Status → Archived or All). Hard-delete removes the row and cleans SeaweedFS cover objects. The Archive action is hidden once a material is already archived.
 - Create / save / remove-cover / archive / hard-delete / unused-tag-delete all use confirmation dialogs
@@ -91,6 +92,8 @@ Media: cover/content images via existing media presign with `folder: cms`, clean
 - Multi-tag filter uses **OR** matching (material has any selected tag); capped at 12 slugs server-side
 - No article-count / “showing X–Y of Z” chrome on the public list — only prev/next when `totalPages > 1`
 - Detail: no excerpt under title (body is source of truth), wider column (`max-w-6xl`), full-width proportional body images, share-link button
+- Detail SEO: `generateMetadata` uses per-locale `seoTitle` / `seoDescription` via `resolveMaterialSeo` (fallback title + excerpt) for title, description, Open Graph, and Twitter cards
+- Detail footer: **Latest news** (3 cards excluding current slug) + **Browse all news** / **Back to news list** CTAs → `/news`
 - Tag labels resolve by site locale (`nameId` / `nameEn`)
 - Body images open a **full-viewport lightbox** (button + mouse-wheel zoom, drag-to-pan, reset, Esc / click-outside)
 - Landing: `getLandingPageContent` merges CMS featured/latest (max 5) with i18n seed fallback when empty

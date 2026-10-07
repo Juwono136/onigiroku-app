@@ -185,6 +185,8 @@ export const learningMaterialLocale = pgTable(
     excerpt: text("excerpt").notNull().default(""),
     body: jsonb("body").notNull().default({}),
     bodyText: text("body_text").notNull().default(""),
+    seoTitle: text("seo_title").notNull().default(""),
+    seoDescription: text("seo_description").notNull().default(""),
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

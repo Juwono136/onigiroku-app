@@ -15,6 +15,8 @@ export type MaterialLocale = {
   excerpt: string;
   body: unknown;
   bodyText?: string;
+  seoTitle?: string;
+  seoDescription?: string;
 };
 
 export type MaterialListItem = {
@@ -51,6 +53,8 @@ export type MaterialLocaleInput = {
   title: string;
   excerpt?: string;
   body?: unknown;
+  seoTitle?: string;
+  seoDescription?: string;
 };
 
 export type MaterialTagInput = {
