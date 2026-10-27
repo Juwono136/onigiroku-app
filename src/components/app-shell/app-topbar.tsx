@@ -82,7 +82,7 @@ export function AppTopbar({ user }: Props) {
           )}
         </button>
 
-        <AppBreadcrumb className="min-w-0 flex-1" />
+        <AppBreadcrumb className="hidden min-w-0 flex-1 md:block" />
 
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2.5">
           <Link

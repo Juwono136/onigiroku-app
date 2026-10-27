@@ -15,6 +15,7 @@ type SidebarContextValue = {
   collapsed: boolean;
   mobileOpen: boolean;
   setCollapsed: (value: boolean) => void;
+  setFocusMode: (value: boolean) => void;
   toggleCollapsed: () => void;
   setMobileOpen: (value: boolean) => void;
   toggleMobileOpen: () => void;
@@ -24,6 +25,7 @@ const SidebarContext = createContext<SidebarContextValue | null>(null);
 
 export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsedState] = useState(false);
+  const [focusMode, setFocusMode] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
@@ -50,19 +52,25 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleCollapsed = useCallback(() => {
+    if (focusMode) {
+      setFocusMode(false);
+      setCollapsed(false);
+      return;
+    }
     setCollapsed(!collapsed);
-  }, [collapsed, setCollapsed]);
+  }, [collapsed, focusMode, setCollapsed]);
 
   const value = useMemo(
     () => ({
-      collapsed: hydrated ? collapsed : false,
+      collapsed: focusMode || (hydrated ? collapsed : false),
       mobileOpen,
       setCollapsed,
+      setFocusMode,
       toggleCollapsed,
       setMobileOpen,
       toggleMobileOpen: () => setMobileOpen((v) => !v),
     }),
-    [collapsed, hydrated, mobileOpen, setCollapsed, toggleCollapsed],
+    [collapsed, focusMode, hydrated, mobileOpen, setCollapsed, toggleCollapsed],
   );
 
   return (

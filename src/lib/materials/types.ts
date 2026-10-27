@@ -38,6 +38,12 @@ export type MaterialListItem = {
 
 export type MaterialDetail = MaterialListItem & {
   locales: MaterialLocale[];
+  categoryId?: string | null;
+  position?: number | null;
+  passScore?: number;
+  shuffleQuestions?: boolean;
+  shuffleChoices?: boolean;
+  questions?: import("@/lib/learning/types").QuestionAdmin[];
 };
 
 export type MaterialListResult = {
@@ -68,8 +74,14 @@ export type MaterialUpsertInput = {
   status: MaterialStatus;
   featured?: boolean;
   coverObjectKey?: string | null;
+  categoryId?: string | null;
+  position?: number | null;
+  passScore?: number;
+  shuffleQuestions?: boolean;
+  shuffleChoices?: boolean;
   locales: MaterialLocaleInput[];
   tags?: MaterialTagInput[];
+  questions?: import("@/lib/learning/types").QuestionInput[];
 };
 
 export type MaterialListQuery = {
@@ -84,6 +96,7 @@ export type MaterialListQuery = {
   tags?: string[];
   featured?: boolean;
   locale?: "id" | "en";
-  sortBy?: "publishedAt" | "createdAt" | "updatedAt" | "title";
+  sortBy?: "publishedAt" | "createdAt" | "updatedAt" | "title" | "position";
   sortDir?: "asc" | "desc";
+  categoryId?: string;
 };

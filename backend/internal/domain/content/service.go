@@ -122,6 +122,11 @@ func (s *Service) List(ctx context.Context, q ListQuery) (*ListResult, error) {
 		args = append(args, *q.Featured)
 		argN++
 	}
+	if categoryID := strings.TrimSpace(q.CategoryID); categoryID != "" {
+		where = append(where, fmt.Sprintf("m.category_id = $%d", argN))
+		args = append(args, categoryID)
+		argN++
+	}
 	if search := strings.TrimSpace(q.Search); search != "" {
 		where = append(where, fmt.Sprintf(`
 			EXISTS (
@@ -175,6 +180,8 @@ func (s *Service) List(ctx context.Context, q ListQuery) (*ListResult, error) {
 		orderExpr = "m.updated_at"
 	case "publishedAt":
 		orderExpr = "m.published_at"
+	case "position":
+		orderExpr = "m.position NULLS LAST, m.created_at"
 	}
 
 	offset := (page - 1) * pageSize
@@ -295,8 +302,16 @@ func (s *Service) loadTagsMap(ctx context.Context, ids []string) (map[string][]T
 }
 
 func (s *Service) GetByID(ctx context.Context, id string) (*MaterialDetail, error) {
-	// Admin may open archived / legacy soft-deleted rows; public/student use GetBySlug.
-	return s.getOne(ctx, `m.id = $1`, id, "")
+	detail, err := s.getOne(ctx, `m.id = $1`, id, "")
+	if err != nil {
+		return nil, err
+	}
+	questions, err := s.loadQuestions(ctx, id, true)
+	if err != nil {
+		return nil, err
+	}
+	detail.Questions = questions
+	return detail, nil
 }
 
 func (s *Service) GetBySlug(ctx context.Context, slug string, requirePublic, requireStudent bool) (*MaterialDetail, error) {
@@ -314,12 +329,14 @@ func (s *Service) getOne(ctx context.Context, where string, arg any, _ string) (
 	var r materialRow
 	err := s.Pool.QueryRow(ctx, `
 		SELECT id, slug, visibility::text, status::text, featured, cover_object_key,
-		       author_id, published_at, created_at, updated_at, deleted_at
+		       author_id, published_at, created_at, updated_at, deleted_at,
+		       category_id, position, pass_score, shuffle_questions, shuffle_choices
 		FROM learning_material m
 		WHERE `+where+`
 	`, arg).Scan(
 		&r.ID, &r.Slug, &r.Visibility, &r.Status, &r.Featured, &r.CoverObjectKey,
 		&r.AuthorID, &r.PublishedAt, &r.CreatedAt, &r.UpdatedAt, &r.DeletedAt,
+		&r.CategoryID, &r.Position, &r.PassScore, &r.ShuffleQuestions, &r.ShuffleChoices,
 	)
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -367,7 +384,12 @@ func (s *Service) getOne(ctx context.Context, where string, arg any, _ string) (
 			Excerpt:        excerpt,
 			Tags:           tags,
 		},
-		Locales: locales,
+		Locales:          locales,
+		CategoryID:       r.CategoryID,
+		Position:         r.Position,
+		PassScore:        r.PassScore,
+		ShuffleQuestions: r.ShuffleQuestions,
+		ShuffleChoices:   r.ShuffleChoices,
 	}, nil
 }
 
@@ -408,14 +430,7 @@ func (s *Service) Create(ctx context.Context, authorID string, in UpsertInput) (
 		return nil, err
 	}
 
-	baseTitle := locales[0].Title
-	for _, loc := range locales {
-		if loc.Locale == "id" && strings.TrimSpace(loc.Title) != "" {
-			baseTitle = loc.Title
-			break
-		}
-	}
-	slug, err := s.uniqueSlug(ctx, slugifyTitle(baseTitle), "")
+	slug, err := s.uniqueSlug(ctx, slugifyTitle(preferredSlugTitleFromLocales(locales)), "")
 	if err != nil {
 		return nil, err
 	}
@@ -451,6 +466,9 @@ func (s *Service) Create(ctx context.Context, authorID string, in UpsertInput) (
 	if err := s.replaceTags(ctx, tx, id, tags); err != nil {
 		return nil, err
 	}
+	if err := s.applyLessonPath(ctx, tx, id, vis, in); err != nil {
+		return nil, err
+	}
 	if err := tx.Commit(ctx); err != nil {
 		return nil, apperrors.Internal(err)
 	}
@@ -482,14 +500,7 @@ func (s *Service) Update(ctx context.Context, id string, in UpsertInput) (*Mater
 
 	slug := existing.Slug
 	if existing.Status == string(StatusDraft) && status == StatusDraft {
-		baseTitle := locales[0].Title
-		for _, loc := range locales {
-			if loc.Locale == "id" && strings.TrimSpace(loc.Title) != "" {
-				baseTitle = loc.Title
-				break
-			}
-		}
-		slug, err = s.uniqueSlug(ctx, slugifyTitle(baseTitle), id)
+		slug, err = s.uniqueSlug(ctx, slugifyTitle(preferredSlugTitleFromLocales(locales)), id)
 		if err != nil {
 			return nil, err
 		}
@@ -535,6 +546,9 @@ func (s *Service) Update(ctx context.Context, id string, in UpsertInput) (*Mater
 		return nil, err
 	}
 	if err := s.replaceTags(ctx, tx, id, tags); err != nil {
+		return nil, err
+	}
+	if err := s.applyLessonPath(ctx, tx, id, vis, in); err != nil {
 		return nil, err
 	}
 	if err := tx.Commit(ctx); err != nil {

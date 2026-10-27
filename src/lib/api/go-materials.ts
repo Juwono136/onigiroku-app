@@ -36,6 +36,9 @@ function listParams(input: MaterialListQuery): URLSearchParams {
   if (input.featured !== undefined) {
     params.set("featured", String(input.featured));
   }
+  if (input.categoryId) {
+    params.set("categoryId", input.categoryId);
+  }
   return params;
 }
 
@@ -180,9 +183,11 @@ export async function goStudentGetMaterial(
   actorId: string,
   role: string,
   slug: string,
-): Promise<MaterialDetail> {
-  const result = await callGoApiWithActor<MaterialDetail>(
-    `/api/materials/${encodeURIComponent(slug)}`,
+  locale: "id" | "en" = "id",
+): Promise<import("@/lib/learning/types").StudentLessonView> {
+  const params = new URLSearchParams({ locale });
+  const result = await callGoApiWithActor<import("@/lib/learning/types").StudentLessonView>(
+    `/api/materials/${encodeURIComponent(slug)}?${params.toString()}`,
     { userId: actorId, role },
   );
   if (!result.success || !result.data) {

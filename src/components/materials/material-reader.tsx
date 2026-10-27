@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 type Props = {
   material: MaterialDetail;
   locale: string;
-  backHref?: "/dashboard/materials" | "/news";
+  backHref?: string;
   backLabel?: string;
   eyebrow?: string;
   /** Hide auto-derived excerpt under the title (recommended for long-form readers). */
@@ -87,7 +87,7 @@ export async function MaterialReader({
       >
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
           <Link
-            href={backHref}
+            href={backHref as "/dashboard/materials"}
             className={cn(
               buttonVariants({ variant: "ghost" }),
               "h-9 cursor-pointer gap-1.5 rounded-xl px-2.5 text-charcoal/70 hover:text-ink",

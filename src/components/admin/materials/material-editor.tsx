@@ -18,6 +18,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AdminConfirmDialog } from "@/components/admin/admin-confirm-dialog";
+import { BrandLogo } from "@/components/shared/brand-logo";
+import { LessonQuizBuilder } from "@/components/admin/learning/lesson-quiz-builder";
 import { MaterialPreviewDialog } from "@/components/admin/materials/material-preview-dialog";
 import {
   EMPTY_TIPTAP_DOC,
@@ -36,6 +38,7 @@ import {
   excerptFromBody,
 } from "@/lib/materials/plain-text";
 import { previewMaterialSlug } from "@/lib/materials/slug";
+import type { QuestionInput } from "@/lib/learning/types";
 import type {
   MaterialDetail,
   MaterialStatus,
@@ -68,11 +71,18 @@ type Snapshot = {
   featured: boolean;
   coverObjectKey: string | null;
   tags: MaterialTagInput[];
+  /** Lesson practice fields — ignored for news dirty checks via surface. */
+  passScore: number;
+  shuffleQuestions: boolean;
+  shuffleChoices: boolean;
+  questions: QuestionInput[];
 };
 
 type Props = {
   mode: "create" | "edit";
   materialId?: string;
+  surface?: "news" | "lesson";
+  categoryId?: string;
 };
 
 function emptyLocale(): LocaleDraft {
@@ -146,11 +156,21 @@ function snapshotKey(s: Snapshot): string {
     featured: s.featured,
     coverObjectKey: s.coverObjectKey,
     tags: normalizeSelectedTags(s.tags),
+    passScore: s.passScore,
+    shuffleQuestions: s.shuffleQuestions,
+    shuffleChoices: s.shuffleChoices,
+    questions: s.questions,
   });
 }
 
-export function MaterialEditor({ mode, materialId }: Props) {
+export function MaterialEditor({
+  mode,
+  materialId,
+  surface = "news",
+  categoryId,
+}: Props) {
   const t = useTranslations("adminMaterials");
+  const lessonCopy = useTranslations("learningAdmin");
   const locale = useLocale();
   const router = useRouter();
 
@@ -161,8 +181,13 @@ export function MaterialEditor({ mode, materialId }: Props) {
     id: emptyLocale(),
     en: emptyLocale(),
   });
-  const [visibility, setVisibility] =
-    useState<MaterialVisibility>("STUDENT");
+  const [visibility, setVisibility] = useState<MaterialVisibility>(
+    surface === "news" ? "PUBLIC" : "STUDENT",
+  );
+  const [passScore, setPassScore] = useState(80);
+  const [shuffleQuestions, setShuffleQuestions] = useState(false);
+  const [shuffleChoices, setShuffleChoices] = useState(false);
+  const [questions, setQuestions] = useState<QuestionInput[]>([]);
   const [status, setStatus] = useState<MaterialStatus>("DRAFT");
   const [featured, setFeatured] = useState(false);
   const [coverObjectKey, setCoverObjectKey] = useState<string | null>(null);
@@ -190,11 +215,15 @@ export function MaterialEditor({ mode, materialId }: Props) {
     mode === "create"
       ? snapshotKey({
           locales: { id: emptyLocale(), en: emptyLocale() },
-          visibility: "STUDENT",
+          visibility: surface === "news" ? "PUBLIC" : "STUDENT",
           status: "DRAFT",
           featured: false,
           coverObjectKey: null,
           tags: [],
+          passScore: 80,
+          shuffleQuestions: false,
+          shuffleChoices: false,
+          questions: [],
         })
       : null,
   );
@@ -223,8 +252,23 @@ export function MaterialEditor({ mode, materialId }: Props) {
       featured,
       coverObjectKey,
       tags,
+      passScore,
+      shuffleQuestions,
+      shuffleChoices,
+      questions,
     }),
-    [locales, visibility, status, featured, coverObjectKey, tags],
+    [
+      locales,
+      visibility,
+      status,
+      featured,
+      coverObjectKey,
+      tags,
+      passScore,
+      shuffleQuestions,
+      shuffleChoices,
+      questions,
+    ],
   );
 
   useEffect(() => {
@@ -356,6 +400,33 @@ export function MaterialEditor({ mode, materialId }: Props) {
         setCoverUrl(detail.coverUrl);
         setSlug(detail.slug);
         setSlugLocked(detail.status !== "DRAFT");
+        const nextPassScore =
+          typeof detail.passScore === "number" && detail.passScore >= 50
+            ? detail.passScore
+            : 80;
+        const nextShuffleQuestions = Boolean(detail.shuffleQuestions);
+        const nextShuffleChoices = Boolean(detail.shuffleChoices);
+        const nextQuestions: QuestionInput[] = detail.questions?.length
+          ? detail.questions.map((q) => ({
+              type: q.type,
+              promptId: q.promptId,
+              promptEn: q.promptEn,
+              explanationId: q.explanationId ?? "",
+              explanationEn: q.explanationEn ?? "",
+              acceptedAnswers: q.acceptedAnswers ?? [],
+              answerId: q.answerId ?? "",
+              answerEn: q.answerEn ?? "",
+              options: (q.options ?? []).map((o) => ({
+                labelId: o.labelId,
+                labelEn: o.labelEn,
+                correct: Boolean(o.correct),
+              })),
+            }))
+          : [];
+        setPassScore(nextPassScore);
+        setShuffleQuestions(nextShuffleQuestions);
+        setShuffleChoices(nextShuffleChoices);
+        setQuestions(nextQuestions);
         setTags(nextTags);
         setBaseline(
           snapshotKey({
@@ -365,6 +436,10 @@ export function MaterialEditor({ mode, materialId }: Props) {
             featured: nextFeatured,
             coverObjectKey: nextCover,
             tags: nextTags,
+            passScore: nextPassScore,
+            shuffleQuestions: nextShuffleQuestions,
+            shuffleChoices: nextShuffleChoices,
+            questions: nextQuestions,
           }),
         );
         window.setTimeout(() => {
@@ -375,14 +450,18 @@ export function MaterialEditor({ mode, materialId }: Props) {
         if (controller.signal.aborted) return;
         toast.error(t("errors.loadDetail"));
         allowLeaveRef.current = true;
-        router.replace("/admin/materials");
+        router.replace(
+          surface === "lesson" && categoryId
+            ? `/admin/learning/${categoryId}`
+            : "/admin/news",
+        );
       } finally {
         if (!controller.signal.aborted) setLoading(false);
       }
     })();
 
     return () => controller.abort();
-  }, [mode, materialId, router, t]);
+  }, [mode, materialId, router, t, surface, categoryId]);
 
   useEffect(() => {
     const q = tagQuery.trim();
@@ -567,11 +646,17 @@ export function MaterialEditor({ mode, materialId }: Props) {
       }))
       .filter((loc) => loc.title.length > 0);
 
+    const effectiveVisibility = surface === "news" ? "PUBLIC" : "STUDENT";
     const parsed = materialUpsertSchema.safeParse({
-      visibility,
+      visibility: effectiveVisibility,
       status,
-      featured: visibility === "PUBLIC" ? featured : false,
+      featured: effectiveVisibility === "PUBLIC" ? featured : false,
       coverObjectKey,
+      categoryId: surface === "lesson" ? categoryId ?? null : null,
+      passScore: surface === "lesson" ? passScore : 80,
+      shuffleQuestions: surface === "lesson" ? shuffleQuestions : false,
+      shuffleChoices: surface === "lesson" ? shuffleChoices : false,
+      questions: surface === "lesson" ? questions : undefined,
       locales: localePayload.length
         ? localePayload
         : [
@@ -697,6 +782,38 @@ export function MaterialEditor({ mode, materialId }: Props) {
             : "DRAFT";
       const nextFeatured = Boolean(payload.data.featured);
       const nextCover = payload.data.coverObjectKey;
+      const nextPassScore =
+        surface === "lesson" &&
+        typeof payload.data.passScore === "number" &&
+        payload.data.passScore >= 50
+          ? payload.data.passScore
+          : passScore;
+      const nextShuffleQuestions =
+        surface === "lesson"
+          ? Boolean(payload.data.shuffleQuestions)
+          : shuffleQuestions;
+      const nextShuffleChoices =
+        surface === "lesson"
+          ? Boolean(payload.data.shuffleChoices)
+          : shuffleChoices;
+      const nextQuestions: QuestionInput[] =
+        surface === "lesson" && payload.data.questions
+          ? payload.data.questions.map((q) => ({
+              type: q.type,
+              promptId: q.promptId,
+              promptEn: q.promptEn,
+              explanationId: q.explanationId ?? "",
+              explanationEn: q.explanationEn ?? "",
+              acceptedAnswers: q.acceptedAnswers ?? [],
+              answerId: q.answerId ?? "",
+              answerEn: q.answerEn ?? "",
+              options: (q.options ?? []).map((o) => ({
+                labelId: o.labelId,
+                labelEn: o.labelEn,
+                correct: Boolean(o.correct),
+              })),
+            }))
+          : questions;
 
       setLocales(cleanLocales);
       setTags(savedTags);
@@ -707,6 +824,12 @@ export function MaterialEditor({ mode, materialId }: Props) {
       setSlugLocked(payload.data.status !== "DRAFT");
       setCoverObjectKey(nextCover);
       setCoverUrl(payload.data.coverUrl);
+      if (surface === "lesson") {
+        setPassScore(nextPassScore);
+        setShuffleQuestions(nextShuffleQuestions);
+        setShuffleChoices(nextShuffleChoices);
+        setQuestions(nextQuestions);
+      }
       setBaseline(
         snapshotKey({
           locales: cleanLocales,
@@ -715,6 +838,10 @@ export function MaterialEditor({ mode, materialId }: Props) {
           featured: nextFeatured,
           coverObjectKey: nextCover,
           tags: savedTags,
+          passScore: nextPassScore,
+          shuffleQuestions: nextShuffleQuestions,
+          shuffleChoices: nextShuffleChoices,
+          questions: nextQuestions,
         }),
       );
       markEditorClean();
@@ -723,7 +850,11 @@ export function MaterialEditor({ mode, materialId }: Props) {
 
       if (mode === "create") {
         allowLeaveRef.current = true;
-        router.replace(`/admin/materials/${payload.data.id}`);
+        if (surface === "lesson" && categoryId) {
+          router.replace(`/admin/learning/${categoryId}/lessons/${payload.data.id}`);
+        } else {
+          router.replace(`/admin/news/${payload.data.id}`);
+        }
       }
     } catch {
       toast.error(t("errors.ACTION_FAILED"));
@@ -737,11 +868,11 @@ export function MaterialEditor({ mode, materialId }: Props) {
   /** Active tab title drives the live preview when switching ID/EN. */
   const activeTitle = draft.title.trim();
   /**
-   * Canonical public URL slug prefers Indonesia, then English — one shared path
+   * Canonical public URL slug prefers English, then Indonesia — one shared path
    * so locale switcher keeps `/news/{slug}` stable across languages.
    */
   const canonicalTitle =
-    locales.id.title.trim() || locales.en.title.trim() || activeTitle;
+    locales.en.title.trim() || locales.id.title.trim() || activeTitle;
   const activeLiveSlug = activeTitle
     ? previewMaterialSlug(activeTitle)
     : null;
@@ -765,17 +896,13 @@ export function MaterialEditor({ mode, materialId }: Props) {
     seoTitleTouched && draft.seoTitle.trim().length > 70;
   const seoDescriptionInvalid =
     seoDescriptionTouched && draft.seoDescription.trim().length > 160;
-  const showNewsTools = visibility === "PUBLIC";
+  const showNewsTools = surface === "news";
   const canCreateTag =
     tagQuery.trim().length > 0 &&
     !tagSuggestions.some(
       (s) => tagKey(s) === tagKey({ nameId: tagQuery }),
     );
 
-  const visibilityOptions = [
-    { value: "STUDENT", label: t("visibility.STUDENT") },
-    { value: "PUBLIC", label: t("visibility.PUBLIC") },
-  ];
   const statusOptions = [
     { value: "DRAFT", label: t("status.DRAFT") },
     { value: "PUBLISHED", label: t("status.PUBLISHED") },
@@ -809,40 +936,50 @@ export function MaterialEditor({ mode, materialId }: Props) {
         aria-hidden
       />
 
-      <div className="relative mx-auto flex w-full max-w-[96rem] flex-1 flex-col px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
+      <div className="relative mx-auto flex w-full max-w-[96rem] flex-1 flex-col px-3 py-4 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
         <header className="mb-5 flex flex-col gap-4 sm:mb-7 lg:flex-row lg:items-end lg:justify-between">
           <div className="space-y-3">
             <Link
-              href="/admin/materials"
+              href={
+                surface === "lesson" && categoryId
+                  ? `/admin/learning/${categoryId}`
+                  : "/admin/news"
+              }
               className={cn(
                 buttonVariants({ variant: "ghost" }),
                 "h-9 w-fit cursor-pointer rounded-xl px-2.5 font-semibold text-charcoal/70",
               )}
             >
               <ArrowLeft className="size-3.5" aria-hidden />
-              {t("actions.backToList")}
+              {surface === "lesson" ? lessonCopy("lessonForm.back") : t("actions.backToNews")}
             </Link>
             <div>
               <p className="text-[11px] font-semibold tracking-[0.16em] text-brand uppercase">
-                {t("eyebrow")}
+                {surface === "lesson" ? lessonCopy("eyebrow") : t("newsTitle")}
               </p>
               <h1 className="mt-1 text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-                {mode === "create" ? t("editor.createTitle") : t("editor.editTitle")}
+                {surface === "lesson"
+                  ? mode === "create"
+                    ? lessonCopy("lessonForm.createTitle")
+                    : lessonCopy("lessonForm.editTitle")
+                  : mode === "create"
+                    ? t("editor.createTitle")
+                    : t("editor.editTitle")}
               </h1>
               <p className="mt-1.5 text-sm text-charcoal/70">
-                {t("editor.subtitle")}
+                {surface === "lesson" ? lessonCopy("lessonForm.subtitle") : t("editor.subtitle")}
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:flex-wrap sm:items-center">
             {showNewsTools ? (
               <Button
                 type="button"
                 variant="outline"
                 disabled={saving || !draft.title.trim()}
                 onClick={() => setPreviewOpen(true)}
-                className="h-11 cursor-pointer rounded-2xl px-4 font-semibold"
+                className="h-11 w-full cursor-pointer rounded-2xl px-4 font-semibold sm:w-auto"
               >
                 <Eye className="size-4" aria-hidden />
                 {t("actions.preview")}
@@ -852,7 +989,7 @@ export function MaterialEditor({ mode, materialId }: Props) {
               type="button"
               disabled={saving}
               onClick={() => void handleSave()}
-              className="h-11 cursor-pointer rounded-2xl px-5 font-semibold"
+              className="h-11 w-full cursor-pointer rounded-2xl px-5 font-semibold sm:w-auto"
             >
               {saving ? (
                 <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -861,9 +998,13 @@ export function MaterialEditor({ mode, materialId }: Props) {
               )}
               {saving
                 ? t("actions.saving")
-                : mode === "create"
-                  ? t("actions.create")
-                  : t("actions.save")}
+                : surface === "lesson"
+                  ? mode === "create"
+                    ? lessonCopy("lessonForm.createAction")
+                    : lessonCopy("lessonForm.saveAction")
+                  : mode === "create"
+                    ? t("actions.create")
+                    : t("actions.save")}
             </Button>
           </div>
         </header>
@@ -874,7 +1015,7 @@ export function MaterialEditor({ mode, materialId }: Props) {
           </p>
         ) : null}
 
-        <div className="grid flex-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
           <section className="min-w-0 space-y-4">
             <div
               className="inline-flex rounded-2xl border border-charcoal/10 bg-white/80 p-1 shadow-sm"
@@ -903,9 +1044,12 @@ export function MaterialEditor({ mode, materialId }: Props) {
               ))}
             </div>
 
-            <div className="space-y-4 rounded-[1.35rem] border border-charcoal/10 bg-[var(--workspace-elevated)] p-4 shadow-[0_22px_48px_-30px_rgba(15,23,42,0.35)] sm:p-6">
+            <div className="min-w-0 space-y-4 rounded-[1.35rem] border border-charcoal/10 bg-[var(--workspace-elevated)] p-3 shadow-[0_22px_48px_-30px_rgba(15,23,42,0.35)] sm:p-6">
               <div className="space-y-2">
-                <Label htmlFor="material-title">{t("fields.title")}</Label>
+                <Label htmlFor="material-title">
+                  {t("fields.title")}
+                  {surface === "lesson" ? <span className="ml-1 text-destructive" aria-hidden>*</span> : null}
+                </Label>
                 <Input
                   id="material-title"
                   value={draft.title}
@@ -982,8 +1126,12 @@ export function MaterialEditor({ mode, materialId }: Props) {
               </div>
 
               <div className="space-y-2">
-                <Label>{t("fields.body")}</Label>
-                <p className={FIELD_HINT_CLASS}>{t("editor.bodyHint")}</p>
+                <Label>
+                  {surface === "lesson" ? lessonCopy("lessonForm.reading") : t("fields.body")}
+                </Label>
+                <p className={FIELD_HINT_CLASS}>
+                  {surface === "lesson" ? lessonCopy("lessonForm.readingHint") : t("editor.bodyHint")}
+                </p>
                 <MaterialTiptapEditor
                   key={activeLocale}
                   content={draft.body}
@@ -1001,7 +1149,7 @@ export function MaterialEditor({ mode, materialId }: Props) {
                       };
                     });
                   }}
-                  placeholder={t("editor.bodyPlaceholder")}
+                  placeholder={surface === "lesson" ? lessonCopy("lessonForm.readingPlaceholder") : t("editor.bodyPlaceholder")}
                   disabled={saving}
                 />
               </div>
@@ -1108,15 +1256,53 @@ export function MaterialEditor({ mode, materialId }: Props) {
                   </div>
                 </div>
               ) : null}
+
+              {surface === "lesson" ? (
+                <div className="min-w-0 space-y-5 rounded-[1.35rem] border border-charcoal/10 bg-[var(--workspace-card)] p-3 shadow-sm sm:p-6">
+                  <div className="space-y-2">
+                    <Label htmlFor="lesson-pass-score">
+                      {t("lesson.passScore")}
+                      <span className="ml-1 text-destructive" aria-hidden>*</span>
+                    </Label>
+                    <Input
+                      id="lesson-pass-score"
+                      type="number"
+                      min={50}
+                      max={100}
+                      inputMode="numeric"
+                      placeholder="80"
+                      value={passScore}
+                      onChange={(e) => {
+                        const next = Number(e.target.value);
+                        if (Number.isFinite(next)) {
+                          setPassScore(Math.min(100, Math.max(50, next)));
+                        }
+                      }}
+                      className={FIELD_INPUT_CLASS}
+                    />
+                    <p className={FIELD_HINT_CLASS}>{t("lesson.passScoreHint")}</p>
+                  </div>
+                  <LessonQuizBuilder
+                    questions={questions}
+                    onChange={setQuestions}
+                    disabled={saving}
+                    passScore={passScore}
+                    shuffleQuestions={shuffleQuestions}
+                    shuffleChoices={shuffleChoices}
+                    onShuffleQuestionsChange={setShuffleQuestions}
+                    onShuffleChoicesChange={setShuffleChoices}
+                  />
+                </div>
+              ) : null}
             </div>
           </section>
 
-          <aside className="space-y-4 xl:sticky xl:top-4 xl:self-start">
+          <aside className="min-w-0 space-y-4 xl:sticky xl:top-4 xl:self-start">
             <div className="space-y-4 rounded-[1.35rem] border border-charcoal/10 bg-[var(--workspace-elevated)] p-4 shadow-[0_22px_48px_-30px_rgba(15,23,42,0.35)] sm:p-5">
               <div className="space-y-2">
                 <Label>{t("fields.cover")}</Label>
                 <div className="overflow-hidden rounded-2xl border border-charcoal/10 bg-white">
-                  <div className="relative w-full overflow-hidden bg-soft aspect-video">
+                  <div className="relative aspect-[2/1] max-h-44 w-full overflow-hidden bg-soft sm:aspect-video sm:max-h-none">
                     {coverPreview ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -1124,6 +1310,13 @@ export function MaterialEditor({ mode, materialId }: Props) {
                         alt=""
                         className="absolute inset-0 size-full object-cover"
                       />
+                    ) : surface === "lesson" ? (
+                      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-[var(--workspace-surface)] px-4 text-center">
+                        <BrandLogo size={72} alt="" />
+                        <span className="text-xs font-medium text-charcoal/55">
+                          {lessonCopy("fields.coverEmpty")}
+                        </span>
+                      </div>
                     ) : (
                       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 px-4 text-center text-charcoal/40">
                         <ImageIcon className="size-8 sm:size-9" aria-hidden />
@@ -1131,7 +1324,7 @@ export function MaterialEditor({ mode, materialId }: Props) {
                           {t("editor.coverEmpty")}
                         </span>
                         <span className="text-[10px] tracking-wide text-charcoal/35 uppercase">
-                          16:9 · 1600×900
+                          16:9, 1600×900
                         </span>
                       </div>
                     )}
@@ -1167,7 +1360,7 @@ export function MaterialEditor({ mode, materialId }: Props) {
                     ) : null}
                   </div>
                   <p className="border-t border-charcoal/8 px-3 py-2 text-[11px] leading-relaxed text-charcoal/50">
-                    {t("editor.coverHint")}
+                    {surface === "lesson" ? lessonCopy("fields.coverOptional") : t("editor.coverHint")}
                   </p>
                   <input
                     ref={coverInputRef}
@@ -1183,20 +1376,6 @@ export function MaterialEditor({ mode, materialId }: Props) {
               </div>
 
               <div className="space-y-2">
-                <Label>{t("fields.visibility")}</Label>
-                <FilterSelect
-                  value={visibility}
-                  onValueChange={(next) => {
-                    const value = next as MaterialVisibility;
-                    setVisibility(value);
-                    if (value !== "PUBLIC") setFeatured(false);
-                  }}
-                  options={visibilityOptions}
-                  ariaLabel={t("fields.visibility")}
-                />
-              </div>
-
-              <div className="space-y-2">
                 <Label>{t("fields.status")}</Label>
                 <FilterSelect
                   value={status}
@@ -1206,16 +1385,11 @@ export function MaterialEditor({ mode, materialId }: Props) {
                 />
               </div>
 
-              <label
-                className={cn(
-                  "flex items-start gap-3 rounded-2xl border border-charcoal/10 bg-white/80 px-3.5 py-3",
-                  visibility !== "PUBLIC" && "opacity-55",
-                )}
-              >
+              {surface === "news" ? (
+              <label className="flex items-start gap-3 rounded-2xl border border-charcoal/10 bg-white/80 px-3.5 py-3">
                 <input
                   type="checkbox"
                   checked={featured}
-                  disabled={visibility !== "PUBLIC"}
                   onChange={(e) => setFeatured(e.target.checked)}
                   className="mt-1 size-4 cursor-pointer accent-[var(--brand)]"
                 />
@@ -1229,7 +1403,9 @@ export function MaterialEditor({ mode, materialId }: Props) {
                   </span>
                 </span>
               </label>
+              ) : null}
 
+              {surface === "news" ? (
               <div className="space-y-2" ref={tagBoxRef}>
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor="material-tags">{t("fields.tags")}</Label>
@@ -1456,6 +1632,7 @@ export function MaterialEditor({ mode, materialId }: Props) {
                   ) : null}
                 </div>
               </div>
+              ) : null}
             </div>
           </aside>
         </div>

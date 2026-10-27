@@ -42,7 +42,26 @@ export async function requireAdminApi(request?: Request): Promise<
   return { session, actorId: getSessionUser(session).id };
 }
 
+export function mapLearningAdminError(error: unknown): NextResponse {
+  if (error instanceof Error) {
+    const detail = (error as Error & { detail?: string }).detail;
+    if (error.message === "VALIDATION_ERROR" && detail) {
+      return jsonError(detail, 422, "VALIDATION_ERROR");
+    }
+    if (error.message === "CONFLICT" && detail) {
+      return jsonError(detail, 409, "CONFLICT");
+    }
+  }
+  return mapAdminUserError(error);
+}
+
 export function mapAdminUserError(error: unknown): NextResponse {
+  if (error instanceof Error) {
+    const detail = (error as Error & { detail?: string }).detail;
+    if (detail && (error.message === "VALIDATION_ERROR" || error.message === "CONFLICT")) {
+      return jsonError(detail, error.message === "CONFLICT" ? 409 : 422, error.message);
+    }
+  }
   const message = error instanceof Error ? error.message : "INTERNAL_ERROR";
   switch (message) {
     case "CANNOT_MODIFY_SELF":

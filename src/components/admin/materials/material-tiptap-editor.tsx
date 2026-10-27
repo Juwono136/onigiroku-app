@@ -57,7 +57,18 @@ import {
 } from "@/lib/materials/plain-text";
 import { cn } from "@/lib/utils";
 
-export const EMPTY_TIPTAP_DOC: JSONContent = { type: "doc", content: [] };
+export const EMPTY_TIPTAP_DOC: JSONContent = {
+  type: "doc",
+  content: [{ type: "paragraph" }],
+};
+
+function normalizeEditorContent(content?: JSONContent | null): JSONContent {
+  if (!content?.type) return EMPTY_TIPTAP_DOC;
+  if (!Array.isArray(content.content) || content.content.length === 0) {
+    return EMPTY_TIPTAP_DOC;
+  }
+  return content;
+}
 
 type Props = {
   content: JSONContent;
@@ -65,6 +76,10 @@ type Props = {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  /** Formatting only. Skips image and table tools so short fields stay compact. */
+  compact?: boolean;
+  /** Full toolbar with a shorter, scrollable writing area. */
+  short?: boolean;
 };
 
 function normalizeHttpUrl(raw: string): string | null {
@@ -109,6 +124,8 @@ export function MaterialTiptapEditor({
   placeholder,
   className,
   disabled = false,
+  compact = false,
+  short = false,
 }: Props) {
   const t = useTranslations("adminMaterials");
   const imageInputRef = useRef<HTMLInputElement>(null);
@@ -154,6 +171,9 @@ export function MaterialTiptapEditor({
       }),
       Placeholder.configure({
         placeholder: placeholder ?? t("editor.bodyPlaceholder"),
+        // Show before the field is focused so empty editors are not blank boxes.
+        showOnlyCurrent: false,
+        showOnlyWhenEditable: true,
       }),
       Table.configure({
         resizable: true,
@@ -165,7 +185,7 @@ export function MaterialTiptapEditor({
       TableHeader,
       TableCell,
     ],
-    content: content?.type ? content : EMPTY_TIPTAP_DOC,
+    content: normalizeEditorContent(content),
     onCreate: () => {
       // Ignore the first document normalization so parent dirty state stays clean.
       suppressUpdateRef.current = true;
@@ -179,8 +199,11 @@ export function MaterialTiptapEditor({
     },
     editorProps: {
       attributes: {
-        class:
-          "material-prose tiptap-content font-jp min-h-[320px] px-4 py-3 focus:outline-none sm:min-h-[420px] sm:px-5 sm:py-4",
+        class: compact
+          ? "material-prose tiptap-content font-jp min-h-[120px] resize-y overflow-auto px-4 py-3 focus:outline-none"
+          : short
+            ? "material-prose tiptap-content font-jp min-h-[112px] max-h-[min(48vh,22rem)] resize-y overflow-auto px-4 py-3 focus:outline-none"
+            : "material-prose tiptap-content font-jp min-h-[200px] max-h-[min(56vh,28rem)] resize-y overflow-auto px-4 py-3 focus:outline-none sm:min-h-[220px] sm:px-5 sm:py-4",
       },
     },
   });
@@ -190,24 +213,27 @@ export function MaterialTiptapEditor({
     editor.setEditable(!disabled);
   }, [disabled, editor]);
 
-  async function handleImagePick(file: File | undefined) {
-    if (!file || !editor) return;
-    if (!CMS_IMAGE_MIME.has(file.type)) {
-      toast.error(t("errors.COVER_TYPE_INVALID"));
-      return;
-    }
-    if (file.size <= 0 || file.size > CMS_IMAGE_MAX_BYTES) {
-      toast.error(t("errors.COVER_SIZE_INVALID"));
-      return;
-    }
+  async function handleImagePick(files: FileList | null) {
+    if (!files?.length || !editor) return;
+    const list = Array.from(files).slice(0, 8);
     setUploadingImage(true);
     try {
-      const uploaded = await uploadCmsMedia(file);
-      editor
-        .chain()
-        .focus()
-        .setImage({ src: uploaded.publicUrl, alt: file.name })
-        .run();
+      for (const file of list) {
+        if (!CMS_IMAGE_MIME.has(file.type)) {
+          toast.error(t("errors.COVER_TYPE_INVALID"));
+          continue;
+        }
+        if (file.size <= 0 || file.size > CMS_IMAGE_MAX_BYTES) {
+          toast.error(t("errors.COVER_SIZE_INVALID"));
+          continue;
+        }
+        const uploaded = await uploadCmsMedia(file);
+        editor
+          .chain()
+          .focus()
+          .setImage({ src: uploaded.publicUrl, alt: file.name })
+          .run();
+      }
     } catch {
       toast.error(t("errors.COVER_UPLOAD_FAILED"));
     } finally {
@@ -256,7 +282,8 @@ export function MaterialTiptapEditor({
     return (
       <div
         className={cn(
-          "flex min-h-[320px] items-center justify-center rounded-2xl border border-charcoal/10 bg-white/70",
+          compact ? "min-h-[120px]" : short ? "min-h-[160px]" : "min-h-[200px]",
+          "flex items-center justify-center rounded-2xl border border-charcoal/10 bg-[var(--workspace-card,var(--soft))]",
           className,
         )}
       >
@@ -275,7 +302,12 @@ export function MaterialTiptapEditor({
         className,
       )}
     >
-      <div className="sticky top-14 z-10 -mx-px flex flex-wrap items-center gap-1 rounded-none border-b border-charcoal/10 bg-[color-mix(in_oklab,var(--workspace-elevated)_96%,white)] px-2 py-2 shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] backdrop-blur-md sm:top-16 sm:px-3">
+      <div className={cn(
+        "flex flex-nowrap items-center gap-0.5 overflow-x-auto overscroll-x-contain border-b border-charcoal/10 bg-[color-mix(in_oklab,var(--workspace-elevated)_96%,white)] px-1.5 py-1.5 [scrollbar-width:thin] sm:gap-1 sm:px-3 md:flex-wrap md:overflow-visible",
+        short
+          ? "rounded-t-2xl"
+          : "sticky top-14 z-10 -mx-px shadow-[0_10px_24px_-18px_rgba(15,23,42,0.45)] backdrop-blur-md sm:top-16",
+      )}>
         <ToolbarButton
           label={t("editor.toolbar.h2")}
           active={editor.isActive("heading", { level: 2 })}
@@ -387,6 +419,8 @@ export function MaterialTiptapEditor({
         >
           <Link2 className="size-3.5" aria-hidden />
         </ToolbarButton>
+        {compact ? null : (
+          <>
         <ToolbarButton
           label={t("editor.toolbar.image")}
           disabled={disabled || uploadingImage}
@@ -452,14 +486,19 @@ export function MaterialTiptapEditor({
           ref={imageInputRef}
           type="file"
           accept={CMS_IMAGE_ACCEPT}
+          multiple
           className="sr-only"
-          onChange={(e) => void handleImagePick(e.target.files?.[0])}
+          onChange={(e) => void handleImagePick(e.target.files)}
         />
+          </>
+        )}
       </div>
       <EditorContent editor={editor} />
+      {compact || short ? null : (
       <p className="border-t border-charcoal/8 px-4 py-2 text-[11px] text-charcoal/50">
         {t("editor.imageHint")}
       </p>
+      )}
 
       <Dialog open={linkOpen} onOpenChange={setLinkOpen}>
         <DialogContent

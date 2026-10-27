@@ -53,7 +53,13 @@ type MaterialListItem struct {
 
 type MaterialDetail struct {
 	MaterialListItem
-	Locales []LocaleDTO `json:"locales"`
+	Locales          []LocaleDTO        `json:"locales"`
+	CategoryID       *string            `json:"categoryId,omitempty"`
+	Position         *int               `json:"position,omitempty"`
+	PassScore        int                `json:"passScore,omitempty"`
+	ShuffleQuestions bool               `json:"shuffleQuestions"`
+	ShuffleChoices   bool               `json:"shuffleChoices"`
+	Questions        []QuestionAdminDTO `json:"questions,omitempty"`
 }
 
 type ListResult struct {
@@ -76,6 +82,7 @@ type ListQuery struct {
 	Locale     string // preferred title locale
 	SortBy     string
 	SortDir    string
+	CategoryID string
 	// Scope filters for public/student surfaces
 	RequirePublicPublished  bool
 	RequireStudentPublished bool
@@ -98,24 +105,35 @@ type TagInput struct {
 }
 
 type UpsertInput struct {
-	Visibility     string        `json:"visibility"`
-	Status         string        `json:"status"`
-	Featured       *bool         `json:"featured"`
-	CoverObjectKey *string       `json:"coverObjectKey"`
-	Locales        []LocaleInput `json:"locales"`
-	Tags           []TagInput    `json:"tags"`
+	Visibility     string           `json:"visibility"`
+	Status         string           `json:"status"`
+	Featured       *bool            `json:"featured"`
+	CoverObjectKey *string          `json:"coverObjectKey"`
+	CategoryID       *string          `json:"categoryId"`
+	Position         *int             `json:"position"`
+	PassScore        *int             `json:"passScore"`
+	ShuffleQuestions *bool            `json:"shuffleQuestions"`
+	ShuffleChoices   *bool            `json:"shuffleChoices"`
+	Locales          []LocaleInput    `json:"locales"`
+	Tags             []TagInput       `json:"tags"`
+	Questions        *[]QuestionInput `json:"questions"`
 }
 
 type materialRow struct {
-	ID             string
-	Slug           string
-	Visibility     string
-	Status         string
-	Featured       bool
-	CoverObjectKey *string
-	AuthorID       string
-	PublishedAt    *time.Time
-	CreatedAt      time.Time
-	UpdatedAt      time.Time
-	DeletedAt      *time.Time
+	ID               string
+	Slug             string
+	Visibility       string
+	Status           string
+	Featured         bool
+	CoverObjectKey   *string
+	AuthorID         string
+	PublishedAt      *time.Time
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+	DeletedAt        *time.Time
+	CategoryID       *string
+	Position         *int
+	PassScore        int
+	ShuffleQuestions bool
+	ShuffleChoices   bool
 }

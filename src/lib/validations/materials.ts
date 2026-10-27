@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { questionInputSchema } from "@/lib/validations/learning";
+
 const emptyDoc = { type: "doc", content: [] as unknown[] };
 
 export const materialVisibilitySchema = z.enum(["STUDENT", "PUBLIC"]);
@@ -26,8 +28,14 @@ export const materialUpsertSchema = z
     status: materialStatusSchema,
     featured: z.boolean().optional().default(false),
     coverObjectKey: z.string().trim().max(512).nullable().optional(),
+    categoryId: z.string().uuid().nullable().optional(),
+    position: z.number().int().min(1).max(500).nullable().optional(),
+    passScore: z.number().int().min(50).max(100).optional().default(80),
+    shuffleQuestions: z.boolean().optional().default(false),
+    shuffleChoices: z.boolean().optional().default(false),
     locales: z.array(materialLocaleInputSchema).min(1).max(2),
     tags: z.array(materialTagInputSchema).max(5).optional().default([]),
+    questions: z.array(questionInputSchema).max(30).optional(),
   })
   .superRefine((value, ctx) => {
     const locales = new Set(value.locales.map((l) => l.locale));
@@ -43,6 +51,20 @@ export const materialUpsertSchema = z
         code: "custom",
         message: "Featured is only valid for PUBLIC news",
         path: ["featured"],
+      });
+    }
+    if (value.visibility === "PUBLIC" && value.categoryId) {
+      ctx.addIssue({
+        code: "custom",
+        message: "News cannot belong to a learning category",
+        path: ["categoryId"],
+      });
+    }
+    if (value.visibility === "STUDENT" && value.status === "PUBLISHED" && !value.categoryId) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Published lessons need a category",
+        path: ["categoryId"],
       });
     }
   });
@@ -70,10 +92,11 @@ export const materialsListQuerySchema = z.object({
     }),
   locale: z.enum(["id", "en"]).optional().default("id"),
   sortBy: z
-    .enum(["publishedAt", "createdAt", "updatedAt", "title"])
+    .enum(["publishedAt", "createdAt", "updatedAt", "title", "position"])
     .optional()
     .default("publishedAt"),
   sortDir: z.enum(["asc", "desc"]).optional().default("desc"),
+  categoryId: z.string().uuid().optional().or(z.literal("")),
 });
 
 export const materialIdParamSchema = z.object({

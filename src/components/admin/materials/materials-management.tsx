@@ -89,7 +89,7 @@ function writeViewMode(next: ViewMode) {
   window.dispatchEvent(new Event(VIEW_MODE_EVENT));
 }
 
-export function MaterialsManagement() {
+export function MaterialsManagement({ surface = "materials" }: { surface?: "materials" | "news" } = {}) {
   const t = useTranslations("adminMaterials");
   const locale = useLocale();
 
@@ -132,7 +132,7 @@ export function MaterialsManagement() {
         page: String(page),
         pageSize: String(pageSize),
         search,
-        visibility,
+        visibility: surface === "news" ? "PUBLIC" : visibility,
         status,
         sortBy,
         sortDir,
@@ -153,7 +153,7 @@ export function MaterialsManagement() {
       if (requestId !== undefined && requestId !== requestIdRef.current) return;
       setData(payload.data);
     },
-    [locale, page, pageSize, search, sortBy, sortDir, status, visibility],
+    [locale, page, pageSize, search, sortBy, sortDir, status, visibility, surface],
   );
 
   useEffect(() => {
@@ -251,10 +251,10 @@ export function MaterialsManagement() {
           <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-2xl">
               <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-                {t("title")}
+                {surface === "news" ? t("newsTitle") : t("title")}
               </h1>
               <p className="mt-1.5 text-sm leading-relaxed text-charcoal/70">
-                {t("subtitle")}
+                {surface === "news" ? t("newsSubtitle") : t("subtitle")}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2.5">
@@ -263,14 +263,14 @@ export function MaterialsManagement() {
                 {t("totalLabel", { count: total })}
               </div>
               <Link
-                href="/admin/materials/new"
+                href={surface === "news" ? "/admin/news/new" : "/admin/materials/new"}
                 className={cn(
                   buttonVariants(),
                   "h-11 cursor-pointer gap-2 rounded-2xl px-4 font-semibold shadow-sm",
                 )}
               >
                 <Plus className="size-4" aria-hidden />
-                {t("actions.new")}
+                {surface === "news" ? t("actions.newArticle") : t("actions.new")}
               </Link>
             </div>
           </div>
@@ -322,6 +322,7 @@ export function MaterialsManagement() {
                   filtersOpen ? "grid" : "hidden lg:flex",
                 )}
               >
+                {surface === "news" ? null : (
                 <FilterSelect
                   ariaLabel={t("fields.visibility")}
                   value={visibility}
@@ -336,6 +337,7 @@ export function MaterialsManagement() {
                     { value: "PUBLIC", label: t("visibility.PUBLIC") },
                   ]}
                 />
+                )}
                 <FilterSelect
                   ariaLabel={t("fields.status")}
                   value={status}
@@ -443,6 +445,7 @@ export function MaterialsManagement() {
                         key={item.id}
                         item={item}
                         locale={locale}
+                        editHref={surface === "news" ? `/admin/news/${item.id}` : `/admin/materials/${item.id}`}
                         onSoftDelete={() => {
                           setTarget(item);
                           setConfirm("softDelete");
@@ -480,6 +483,7 @@ export function MaterialsManagement() {
                       key={item.id}
                       item={item}
                       locale={locale}
+                      editHref={surface === "news" ? `/admin/news/${item.id}` : `/admin/materials/${item.id}`}
                       onSoftDelete={() => {
                         setTarget(item);
                         setConfirm("softDelete");
@@ -518,6 +522,7 @@ export function MaterialsManagement() {
                     key={item.id}
                     item={item}
                     locale={locale}
+                    editHref={surface === "news" ? `/admin/news/${item.id}` : `/admin/materials/${item.id}`}
                     onSoftDelete={() => {
                       setTarget(item);
                       setConfirm("softDelete");
@@ -681,11 +686,13 @@ function EmptyState({ title }: { title: string }) {
 function MaterialRow({
   item,
   locale,
+  editHref,
   onSoftDelete,
   onHardDelete,
 }: {
   item: MaterialListItem;
   locale: string;
+  editHref: string;
   onSoftDelete: () => void;
   onHardDelete: () => void;
 }) {
@@ -729,7 +736,7 @@ function MaterialRow({
       </div>
       <div className="flex shrink-0 items-center gap-1.5">
         <Link
-          href={`/admin/materials/${item.id}`}
+          href={editHref}
           className={cn(
             buttonVariants({ variant: "ghost" }),
             "h-9 cursor-pointer rounded-xl border border-transparent bg-white/70 px-3 font-semibold text-ink shadow-sm hover:border-charcoal/10 hover:bg-white",
@@ -770,11 +777,13 @@ function MaterialRow({
 function MaterialCard({
   item,
   locale,
+  editHref,
   onSoftDelete,
   onHardDelete,
 }: {
   item: MaterialListItem;
   locale: string;
+  editHref: string;
   onSoftDelete: () => void;
   onHardDelete: () => void;
 }) {
@@ -824,7 +833,7 @@ function MaterialCard({
           )}
         >
           <Link
-            href={`/admin/materials/${item.id}`}
+            href={editHref}
             className={cn(
               buttonVariants({ variant: "outline" }),
               "h-10 cursor-pointer rounded-xl font-semibold",

@@ -77,6 +77,43 @@ func slugifyTitle(title string) string {
 	return s
 }
 
+// preferredSlugSource picks the English label first so shared URL paths stay English-first.
+// Indonesian is only used when English is empty.
+func preferredSlugSource(nameEN, nameID string) string {
+	en := strings.TrimSpace(nameEN)
+	if en != "" {
+		return en
+	}
+	return strings.TrimSpace(nameID)
+}
+
+// preferredSlugTitleFromLocales picks the English title first for the shared material slug.
+func preferredSlugTitleFromLocales(locales []LocaleInput) string {
+	var en, id, first string
+	for _, loc := range locales {
+		title := strings.TrimSpace(loc.Title)
+		if title == "" {
+			continue
+		}
+		if first == "" {
+			first = title
+		}
+		switch strings.ToLower(strings.TrimSpace(loc.Locale)) {
+		case "en":
+			en = title
+		case "id":
+			id = title
+		}
+	}
+	if en != "" {
+		return en
+	}
+	if id != "" {
+		return id
+	}
+	return first
+}
+
 func extractPlainText(body any) string {
 	switch v := body.(type) {
 	case nil:

@@ -605,6 +605,8 @@
   "adminMaterials": {
     "eyebrow": "Administrasi",
     "title": "Materi pembelajaran",
+    "newsTitle": "Berita",
+    "newsSubtitle": "Artikel publik yang tampil di halaman berita. Materi siswa dikelola di Pembelajaran.",
     "subtitle": "Buat, terbitkan, dan kelola konten belajar dwibahasa untuk siswa dan situs publik.",
     "totalLabel": "{count} materi",
     "untitled": "Tanpa judul",
@@ -659,9 +661,9 @@
       "seoDescription": "Deskripsi SEO"
     },
     "editor": {
-      "createTitle": "Materi baru",
-      "editTitle": "Edit materi",
-      "subtitle": "Susun konten dwibahasa, atur audiens, lalu terbitkan saat siap.",
+      "createTitle": "Artikel baru",
+      "editTitle": "Edit artikel",
+      "subtitle": "Tulis artikel dalam dua bahasa. Artikel yang terbit muncul di beranda publik.",
       "localeTabs": "Bahasa konten",
       "locale": {
         "id": "Indonesia",
@@ -687,7 +689,7 @@
       "featuredHint": "Hanya tersedia jika visibilitas Publik.",
       "coverEmpty": "Belum ada sampul",
       "coverHint": "JPEG, PNG, WebP, atau GIF · maks 5MB · disarankan 1600×900 (16:9)",
-      "imageHint": "Gambar dalam isi memakai batas 5MB yang sama (JPEG, PNG, WebP, GIF).",
+      "imageHint": "Anda bisa menyisipkan beberapa gambar. Setiap file memakai batas 5MB yang sama (JPEG, PNG, WebP, GIF).",
       "tagsHint": "{count} / {max} tag",
       "tagsLocaleHint": "Label tag mengikuti bahasa konten aktif (Indonesia / English). Klik tag untuk mengedit kedua nama.",
       "tagsFormatHint": "Cari tag yang ada atau buat baru · maks 80 karakter · tag katalog yang tidak terpakai bisa dihapus",
@@ -736,6 +738,8 @@
     },
     "actions": {
       "new": "Materi baru",
+      "newArticle": "Artikel baru",
+      "backToNews": "Kembali ke berita",
       "edit": "Edit",
       "create": "Buat materi",
       "save": "Simpan perubahan",
@@ -824,6 +828,10 @@
       "tagsMax": "Maksimal 5 tag.",
       "tagDuplicate": "Tag itu sudah ditambahkan.",
       "TAG_IN_USE": "Tag itu masih dipakai materi."
+    },
+    "lesson": {
+      "passScore": "Nilai lulus",
+      "passScoreHint": "Siswa harus mencapai nilai ini (50–100) pada latihan di akhir materi sebelum materi berikutnya terbuka."
     }
   },
   "appShell": {
@@ -834,6 +842,15 @@
       "admin": "Ringkasan",
       "users": "Pengguna",
       "materials": "Materi pembelajaran",
+      "news": "Berita",
+      "learning": "Pembelajaran",
+      "newsNew": "Artikel baru",
+      "newsEdit": "Edit artikel",
+      "categoryNew": "Kategori baru",
+      "categoryEdit": "Kategori",
+      "lessonNew": "Materi baru",
+      "lessonEdit": "Edit materi",
+      "path": "Jalur",
       "materialsNew": "Materi baru",
       "materialsEdit": "Edit",
       "materialsRead": "Baca",
@@ -846,6 +863,8 @@
       "admin": "Ringkasan",
       "users": "Pengguna",
       "materials": "Materi pembelajaran",
+      "news": "Berita",
+      "learning": "Pembelajaran",
       "settings": "Pengaturan",
       "sectionLearn": "Belajar",
       "sectionAdmin": "Administrasi",
@@ -866,6 +885,253 @@
       "terms": "Syarat",
       "help": "Bantuan",
       "copyright": "© {year} Onigiroku. Hak cipta dilindungi."
+    }
+  },
+  "learningAdmin": {
+    "eyebrow": "Jalur belajar",
+    "title": "Kategori",
+    "subtitle": "Kelompokkan materi siswa menjadi jalur berurutan. Materi tetap terkunci sampai setiap materi sebelumnya di kategori yang sama selesai.",
+    "searchPlaceholder": "Cari kategori…",
+    "editTitle": "Edit kategori",
+    "createTitle": "Kategori baru",
+    "lessonCount": "{count, plural, =0 {Belum ada materi} other {# materi}}",
+    "prev": "Sebelumnya",
+    "next": "Berikutnya",
+    "showing": "Menampilkan {from}–{to} dari {total}",
+    "pageSize": "{count} / halaman",
+    "sort": {
+      "position": "Urutan jalur",
+      "updated": "Baru diperbarui",
+      "name": "Nama"
+    },
+    "filters": {
+      "all": "Semua status"
+    },
+    "lessonForm": {
+      "createTitle": "Materi baru",
+      "editTitle": "Edit materi",
+      "subtitle": "Tulis bacaan yang dilihat siswa lebih dulu, atur nilai lulus, lalu tambahkan latihan di akhir halaman.",
+      "reading": "Bacaan materi",
+      "readingHint": "Ini artikel yang dibaca siswa sebelum latihan. Setiap soal punya teksnya sendiri, jadi kolom ini untuk isi materi.",
+      "readingPlaceholder": "Tulis materi yang akan dibaca siswa",
+      "back": "Kembali ke kategori",
+      "createAction": "Buat materi",
+      "saveAction": "Simpan materi"
+    },
+    "tabs": {
+      "id": "Indonesia",
+      "en": "Inggris"
+    },
+    "orderHint": "Urutan materi di dalam kategori dibuat otomatis. Gunakan panah pada setiap materi untuk mengubahnya.",
+    "orderLabel": "Urutan {position}",
+    "actions": {
+      "new": "Kategori baru",
+      "back": "Semua kategori",
+      "save": "Simpan kategori",
+      "archive": "Arsipkan",
+      "delete": "Hapus",
+      "cancel": "Batal",
+      "uploadCover": "Unggah sampul"
+    },
+    "fields": {
+      "nameId": "Nama (Indonesia)",
+      "nameEn": "Nama (Inggris)",
+      "descriptionId": "Deskripsi (Indonesia)",
+      "descriptionEn": "Deskripsi (Inggris)",
+      "status": "Status",
+      "planKey": "Kunci paket",
+      "planHint": "Label paket akses, misalnya free. Gateway pembayaran belum dihubungkan.",
+      "accessTitle": "Akses siswa",
+      "accessNote": "Jalur yang terbit terbuka untuk siswa yang sudah masuk. Paket pembayaran bisa dihubungkan nanti tanpa mengubah formulir ini.",
+      "cover": "Sampul",
+      "slug": "Jalur siswa",
+      "slugNote": "Siswa membuka jalur ini dari perpustakaan belajar. Alamatnya dibuat dari nama kategori.",
+      "slugPending": "Dibuat saat kategori disimpan",
+      "coverEmpty": "Logo Onigiroku dipakai jika sampul kosong.",
+      "coverOptional": "Opsional. JPEG, PNG, WebP, atau GIF, maksimal 5MB. Logo Onigiroku ditampilkan jika kosong.",
+      "coverHint": "JPEG, PNG, WebP, atau GIF, maksimal 5MB."
+    },
+    "placeholders": {
+      "nameId": "Misalnya JLPT N5",
+      "nameEn": "For example JLPT N5",
+      "description": "Apa yang akan dilatih siswa di jalur ini"
+    },
+    "status": {
+      "DRAFT": "Draf",
+      "PUBLISHED": "Terbit",
+      "ARCHIVED": "Diarsipkan"
+    },
+    "lessons": {
+      "title": "Materi",
+      "new": "Materi baru",
+      "orderHint": "Gunakan Naikkan dan Turunkan untuk mengubah materi mana yang tampil lebih dulu.",
+      "afterSave": "Simpan kategori terlebih dahulu. Materi akan muncul di panel ini agar bisa ditambah dan diurutkan.",
+      "empty": "Belum ada materi di kategori ini.",
+      "untitled": "Materi tanpa judul",
+      "up": "Naikkan",
+      "down": "Turunkan"
+    },
+    "quiz": {
+      "title": "Latihan",
+      "hint": "Satu kolom soal, jadi pertanyaan bahasa Jepang bisa ditulis dengan leluasa. Siswa melihatnya di akhir materi. Kunci jawaban tetap di server sampai mereka mengirim jawaban.",
+      "prompt": "Pertanyaan",
+      "options": "Pilihan dan kunci jawaban",
+      "optionPlaceholder": "Pilihan, misalnya です",
+      "optionHint": "Pilih radio di samping pilihan yang benar. Siswa melihat pilihan itu setelah mengirim jawaban.",
+      "markCorrect": "Jadikan kunci jawaban",
+      "answerKeyBadge": "Kunci jawaban",
+      "accepted": "Jawaban yang diterima",
+      "answerKeys": "Kunci jawaban",
+      "acceptedHint": "Tambahkan setiap bentuk jawaban yang dianggap benar. Pencocokan menyamakan hiragana dan katakana, mengabaikan huruf besar/kecil, dan mengabaikan spasi berlebih.",
+      "back": "Sisi belakang kartu",
+      "explanation": "Pembahasan",
+      "explanationHint": "Tidak muncul saat siswa menjawab. Baru muncul setelah mereka mengirim jawaban, baik benar maupun salah.",
+      "explanationPlaceholder": "Jelaskan jawaban dalam bahasa Jepang atau bahasa yang Anda gunakan untuk mengajar",
+      "preview": "Pratinjau soal",
+      "previewAll": "Pratinjau latihan",
+      "add": "Tambah soal",
+      "shuffleQuestions": "Acak urutan soal",
+      "shuffleQuestionsHint": "Setiap percobaan menampilkan soal latihan dalam urutan baru.",
+      "shuffleChoices": "Acak pilihan jawaban",
+      "shuffleChoicesHint": "Opsi pilihan ganda diacak pada setiap percobaan.",
+      "previewTitle": "Pratinjau siswa",
+      "previewHint": "Jawab seperti siswa. Nilai, jawaban benar, dan pembahasan muncul setelah jawaban diperiksa.",
+      "chars": "{count}/{max}",
+      "empty": "Belum ada soal. Materi tanpa soal selesai begitu siswa membukanya.",
+      "moveUp": "Naikkan",
+      "moveDown": "Turunkan",
+      "remove": "Hapus",
+      "removeTitle": "Hapus soal ini?",
+      "removeBody": "Soal dan pilihannya dihapus dari materi ini. Simpan materi agar perubahan tersimpan.",
+      "promptId": "Pertanyaan (Indonesia)",
+      "promptEn": "Pertanyaan (Inggris)",
+      "promptPlaceholder": "Tulis pertanyaan",
+      "correct": "Jawaban benar",
+      "optionId": "Opsi (Indonesia)",
+      "optionEn": "Opsi (Inggris)",
+      "addOption": "Tambah opsi",
+      "acceptedPlaceholder": "Kunci jawaban, misalnya おはよう atau ohayou",
+      "addAnswer": "Tambah kunci jawaban",
+      "backId": "Belakang kartu (Indonesia)",
+      "backEn": "Belakang kartu (Inggris)",
+      "backPlaceholder": "Jawaban yang muncul setelah kartu dibalik",
+      "explainId": "Pembahasan (Indonesia)",
+      "explainEn": "Pembahasan (Inggris)",
+      "types": {
+        "multiple_choice": "Pilihan ganda",
+        "short_answer": "Isian singkat",
+        "flashcard": "Kuis kartu"
+      },
+      "typeHint": {
+        "multiple_choice": "Siswa memilih satu jawaban",
+        "short_answer": "Siswa mengetik jawaban",
+        "flashcard": "Siswa membalik kartu, lalu menandai yang sudah diketahui"
+      }
+    },
+    "confirm": {
+      "saveTitle": "Simpan kategori ini?",
+      "saveBody": "Nama, deskripsi, sampul, dan status akan disimpan.",
+      "archiveTitle": "Arsipkan kategori ini?",
+      "archiveBody": "Siswa tidak lagi melihat jalur ini. Anda bisa menerbitkannya lagi nanti.",
+      "deleteTitle": "Hapus kategori ini?",
+      "deleteBody": "Kategori dan sampulnya dihapus. Penghapusan ditolak selama masih ada materi di dalamnya.",
+      "unsavedTitle": "Keluar tanpa menyimpan?",
+      "unsavedBody": "Ada perubahan kategori yang belum disimpan. Jika keluar sekarang, perubahan itu akan hilang.",
+      "unsavedConfirm": "Keluar"
+    },
+    "toast": {
+      "saved": "Kategori disimpan."
+    },
+    "empty": {
+      "title": "Belum ada kategori",
+      "description": "Buat kategori, tambahkan materi berurutan, lalu terbitkan untuk siswa."
+    },
+    "errors": {
+      "load": "Gagal memuat kategori.",
+      "save": "Gagal menyimpan. Periksa formulir lalu coba lagi.",
+      "cover": "Sampul harus JPEG, PNG, WebP, atau GIF dan maksimal 5MB.",
+      "name": "Isi nama kategori dalam bahasa Indonesia atau Inggris.",
+      "description": "Setiap deskripsi maksimal 1000 karakter.",
+      "publishCover": "Unggah sampul sebelum menerbitkan kategori ini."
+    }
+  },
+  "learningStudent": {
+    "eyebrow": "Belajar",
+    "title": "Jalur belajar",
+    "subtitle": "Pilih kategori dan ikuti materi sesuai urutan. Materi berikutnya terbuka setelah materi sebelumnya selesai.",
+    "searchPlaceholder": "Cari kategori…",
+    "showing": "Menampilkan {from}–{to} dari {total}",
+    "pageSize": "{count} / halaman",
+    "sort": {
+      "position": "Urutan jalur",
+      "name": "Nama"
+    },
+    "pathProgress": "Kemajuan jalur",
+    "progress": "{done} dari {total} selesai",
+    "actions": {
+      "back": "Semua kategori",
+      "backToPath": "Kembali ke jalur"
+    },
+    "prev": "Sebelumnya",
+    "next": "Berikutnya",
+    "empty": {
+      "title": "Belum ada jalur belajar",
+      "description": "Kategori yang sudah terbit akan muncul di sini.",
+      "lessons": "Jalur ini belum punya materi yang terbit."
+    },
+    "locked": {
+      "title": "Materi ini terkunci",
+      "description": "Selesaikan materi sebelumnya di jalur ini sebelum membuka materi ini."
+    },
+    "lesson": {
+      "done": "Selesai",
+      "opened": "Sedang berjalan",
+      "locked": "Terkunci",
+      "continue": "Lanjutkan",
+      "start": "Mulai",
+      "next": "Materi berikutnya"
+    },
+    "quiz": {
+      "eyebrow": "Latihan",
+      "title": "Cek yang sudah dipelajari",
+      "subtitle": "Jawab semua soal, lalu kirim. Anda boleh mengulang tanpa batas.",
+      "shortPlaceholder": "Ketik jawaban",
+      "reveal": "Balik kartu",
+      "markHint": "Tandai apakah Anda tahu ini setelah membalik kartu.",
+      "knew": "Sudah tahu",
+      "learning": "Masih belajar",
+      "correct": "Benar",
+      "incorrect": "Belum tepat",
+      "submit": "Kirim jawaban",
+      "failed": "Gagal mengirim. Silakan coba lagi.",
+      "passed": "Anda lulus. Materi berikutnya terbuka.",
+      "retry": "Nilai belum lulus. Anda bisa mencoba lagi.",
+      "tryAgain": "Coba lagi",
+      "score": "Nilai {score}%. Nilai lulus {pass}%.",
+      "explanation": "Pembahasan",
+      "acceptedShow": "Jawaban yang diterima",
+      "correctChoice": "Jawaban benar",
+      "correctAnswerLabel": "Jawaban benar:",
+      "answered": "{done} dari {total} terjawab",
+      "missing": "Jawab semua soal sebelum melanjutkan.",
+      "check": "Periksa jawaban",
+      "sending": "Memeriksa…",
+      "resultPass": "Nilai lulus tercapai",
+      "resultFail": "Belum mencapai nilai lulus",
+      "cardFront": "Depan",
+      "cardBack": "Belakang",
+      "tapFlip": "Ketuk untuk membalik",
+      "tapFlipBack": "Ketuk untuk balik lagi",
+      "flipFirst": "Balik kartu, lalu tandai yang sudah diketahui.",
+      "shortHint": "Hiragana, katakana, dan huruf Latin diterima. Huruf besar atau kecil tidak berpengaruh.",
+      "choices": "Pilihan",
+      "emptyChoice": "Pilihan kosong",
+      "questionOf": "Soal {index} dari {total}",
+      "types": {
+        "multiple_choice": "Pilihan ganda",
+        "short_answer": "Isian singkat",
+        "flashcard": "Kuis kartu"
+      }
     }
   },
   "studentMaterials": {

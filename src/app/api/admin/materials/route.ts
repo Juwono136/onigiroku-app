@@ -29,6 +29,7 @@ export async function GET(request: Request) {
     locale: url.searchParams.get("locale") ?? undefined,
     sortBy: url.searchParams.get("sortBy") ?? undefined,
     sortDir: url.searchParams.get("sortDir") ?? undefined,
+    categoryId: url.searchParams.get("categoryId") ?? undefined,
   });
 
   if (!parsed.success) {

@@ -30,16 +30,40 @@ export function AppBreadcrumb({ items, className }: Props) {
       const crumbs: BreadcrumbItem[] = [
         { label: t("breadcrumb.home"), href: "/dashboard" },
       ];
-      if (pathname.startsWith("/admin/materials")) {
+      const segments = pathname.split("/").filter(Boolean);
+      if (pathname === "/admin/news" || pathname.startsWith("/admin/news/") || pathname.startsWith("/admin/materials")) {
         crumbs[0] = { label: t("breadcrumb.home"), href: "/admin" };
+        const onList = pathname === "/admin/news" || pathname === "/admin/materials";
         crumbs.push({
-          label: t("breadcrumb.materials"),
-          href: pathname === "/admin/materials" ? undefined : "/admin/materials",
+          label: t("breadcrumb.news"),
+          href: onList ? undefined : "/admin/news",
         });
-        if (pathname.includes("/new")) {
-          crumbs.push({ label: t("breadcrumb.materialsNew") });
-        } else if (pathname !== "/admin/materials") {
-          crumbs.push({ label: t("breadcrumb.materialsEdit") });
+        if (!onList) {
+          crumbs.push({
+            label: segments[segments.length - 1] === "new"
+              ? t("breadcrumb.newsNew")
+              : t("breadcrumb.newsEdit"),
+          });
+        }
+      } else if (pathname === "/admin/learning" || pathname.startsWith("/admin/learning/")) {
+        crumbs[0] = { label: t("breadcrumb.home"), href: "/admin" };
+        const onList = pathname === "/admin/learning";
+        crumbs.push({
+          label: t("breadcrumb.learning"),
+          href: onList ? undefined : "/admin/learning",
+        });
+        if (segments[2] === "new") {
+          crumbs.push({ label: t("breadcrumb.categoryNew") });
+        } else if (segments[3] === "lessons") {
+          crumbs.push({
+            label: t("breadcrumb.categoryEdit"),
+            href: `/admin/learning/${segments[2]}`,
+          });
+          crumbs.push({
+            label: segments[4] === "new" ? t("breadcrumb.lessonNew") : t("breadcrumb.lessonEdit"),
+          });
+        } else if (!onList) {
+          crumbs.push({ label: t("breadcrumb.categoryEdit") });
         }
       } else if (pathname.startsWith("/admin/users")) {
         crumbs[0] = { label: t("breadcrumb.home"), href: "/admin" };
@@ -50,14 +74,14 @@ export function AppBreadcrumb({ items, className }: Props) {
       } else if (pathname.startsWith("/settings")) {
         crumbs.push({ label: t("breadcrumb.settings") });
       } else if (pathname.startsWith("/dashboard/materials")) {
+        const onList = pathname === "/dashboard/materials";
         crumbs.push({
-          label: t("breadcrumb.materials"),
-          href:
-            pathname === "/dashboard/materials"
-              ? undefined
-              : "/dashboard/materials",
+          label: t("breadcrumb.learning"),
+          href: onList ? undefined : "/dashboard/materials",
         });
-        if (pathname !== "/dashboard/materials") {
+        if (pathname.includes("/categories/")) {
+          crumbs.push({ label: t("breadcrumb.path") });
+        } else if (!onList) {
           crumbs.push({ label: t("breadcrumb.materialsRead") });
         }
       } else if (pathname.startsWith("/dashboard")) {

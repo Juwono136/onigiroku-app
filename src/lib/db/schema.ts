@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   index,
@@ -31,6 +32,23 @@ export const materialStatusEnum = pgEnum("material_status", [
   "DRAFT",
   "PUBLISHED",
   "ARCHIVED",
+]);
+
+export const learningCategoryStatusEnum = pgEnum("learning_category_status", [
+  "DRAFT",
+  "PUBLISHED",
+  "ARCHIVED",
+]);
+
+export const learningQuestionTypeEnum = pgEnum("learning_question_type", [
+  "multiple_choice",
+  "short_answer",
+  "flashcard",
+]);
+
+export const learningProgressStatusEnum = pgEnum("learning_progress_status", [
+  "in_progress",
+  "completed",
 ]);
 
 export const user = pgTable(
@@ -161,6 +179,13 @@ export const learningMaterial = pgTable(
       .notNull()
       .defaultNow(),
     deletedAt: timestamp("deleted_at", { withTimezone: true }),
+    categoryId: text("category_id").references(() => learningCategory.id, {
+      onDelete: "restrict",
+    }),
+    position: integer("position"),
+    passScore: integer("pass_score").notNull().default(80),
+    shuffleQuestions: boolean("shuffle_questions").notNull().default(false),
+    shuffleChoices: boolean("shuffle_choices").notNull().default(false),
   },
   (t) => [
     uniqueIndex("learning_material_slug_uid").on(t.slug),
@@ -192,12 +217,14 @@ export const learningMaterialLocale = pgTable(
       .defaultNow(),
   },
   (t) => [
-    // Column order must match drizzle-kit introspection (locale, material_id).
-    // Kit currently reads composite PK order incorrectly for this table; declaring
-    // [materialId, locale] causes an infinite DROP/ADD PRIMARY KEY on every `db:push`.
+    // drizzle-kit 0.31 reads composite PK columns from constraint_column_usage
+    // without ordinal_position, so the order it "sees" is not the real key order.
+    // These arrays follow that read (stable here: reverse alphabetical). The
+    // database key itself stays as created by migrations. Swapping them back
+    // makes `db:push` drop and recreate the same primary key forever.
     primaryKey({
       name: "learning_material_locale_material_id_locale_pk",
-      columns: [t.locale, t.materialId],
+      columns: [t.materialId, t.locale],
     }),
     index("learning_material_locale_title_idx").on(t.title),
   ],
@@ -228,11 +255,171 @@ export const learningMaterialTag = pgTable(
       .references(() => learningTag.id, { onDelete: "cascade" }),
   },
   (t) => [
+    // Column order matches drizzle-kit's unordered PK read. See learningMaterialLocale.
     primaryKey({
       name: "learning_material_tag_material_id_tag_id_pk",
-      columns: [t.materialId, t.tagId],
+      columns: [t.tagId, t.materialId],
     }),
     index("learning_material_tag_tag_idx").on(t.tagId),
+  ],
+);
+
+export const learningCategory = pgTable(
+  "learning_category",
+  {
+    id: text("id").primaryKey(),
+    slug: text("slug").notNull(),
+    nameId: text("name_id").notNull(),
+    nameEn: text("name_en").notNull().default(""),
+    descriptionId: text("description_id").notNull().default(""),
+    descriptionEn: text("description_en").notNull().default(""),
+    coverObjectKey: text("cover_object_key"),
+    position: integer("position").notNull().default(0),
+    status: learningCategoryStatusEnum("status").notNull().default("DRAFT"),
+    planKey: text("plan_key").notNull().default("free"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("learning_category_slug_uid")
+      .on(t.slug)
+      .where(sql`${t.deletedAt} IS NULL`),
+    index("learning_category_status_pos_idx").on(t.status, t.position),
+  ],
+);
+
+export const learningQuestion = pgTable(
+  "learning_question",
+  {
+    id: text("id").primaryKey(),
+    materialId: text("material_id")
+      .notNull()
+      .references(() => learningMaterial.id, { onDelete: "cascade" }),
+    type: learningQuestionTypeEnum("type").notNull(),
+    position: integer("position").notNull(),
+    promptId: text("prompt_id").notNull(),
+    promptEn: text("prompt_en").notNull().default(""),
+    explanationId: text("explanation_id").notNull().default(""),
+    explanationEn: text("explanation_en").notNull().default(""),
+    acceptedAnswers: jsonb("accepted_answers").notNull().default([]),
+    answerId: text("answer_id").notNull().default(""),
+    answerEn: text("answer_en").notNull().default(""),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("learning_question_material_pos_uid").on(t.materialId, t.position),
+  ],
+);
+
+export const learningQuestionOption = pgTable(
+  "learning_question_option",
+  {
+    id: text("id").primaryKey(),
+    questionId: text("question_id")
+      .notNull()
+      .references(() => learningQuestion.id, { onDelete: "cascade" }),
+    position: integer("position").notNull(),
+    labelId: text("label_id").notNull(),
+    labelEn: text("label_en").notNull().default(""),
+    isCorrect: boolean("is_correct").notNull().default(false),
+  },
+  (t) => [index("learning_question_option_question_idx").on(t.questionId, t.position)],
+);
+
+export const learningLessonProgress = pgTable(
+  "learning_lesson_progress",
+  {
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    materialId: text("material_id")
+      .notNull()
+      .references(() => learningMaterial.id, { onDelete: "cascade" }),
+    status: learningProgressStatusEnum("status").notNull().default("in_progress"),
+    readingPercent: integer("reading_percent").notNull().default(0),
+    lastOpenedAt: timestamp("last_opened_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    completedAt: timestamp("completed_at", { withTimezone: true }),
+  },
+  (t) => [
+    primaryKey({
+      name: "learning_lesson_progress_pk",
+      columns: [t.userId, t.materialId],
+    }),
+  ],
+);
+
+export const learningQuizAttempt = pgTable("learning_quiz_attempt", {
+  id: text("id").primaryKey(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id, { onDelete: "cascade" }),
+  materialId: text("material_id")
+    .notNull()
+    .references(() => learningMaterial.id, { onDelete: "cascade" }),
+  score: integer("score").notNull(),
+  passed: boolean("passed").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
+
+export const learningQuizAnswer = pgTable(
+  "learning_quiz_answer",
+  {
+    attemptId: text("attempt_id")
+      .notNull()
+      .references(() => learningQuizAttempt.id, { onDelete: "cascade" }),
+    questionId: text("question_id")
+      .notNull()
+      .references(() => learningQuestion.id, { onDelete: "cascade" }),
+    selectedOptionId: text("selected_option_id"),
+    textAnswer: text("text_answer").notNull().default(""),
+    knew: boolean("knew"),
+    correct: boolean("correct").notNull(),
+  },
+  (t) => [
+    // Column order matches drizzle-kit's unordered PK read. See learningMaterialLocale.
+    primaryKey({
+      name: "learning_quiz_answer_pk",
+      columns: [t.questionId, t.attemptId],
+    }),
+  ],
+);
+
+export const userLearningAccess = pgTable(
+  "user_learning_access",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    planKey: text("plan_key").notNull(),
+    status: text("status").notNull().default("active"),
+    source: text("source").notNull().default("manual"),
+    externalRef: text("external_ref").notNull().default(""),
+    startsAt: timestamp("starts_at", { withTimezone: true }),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("user_learning_access_user_plan_idx").on(t.userId, t.planKey, t.status),
   ],
 );
 
@@ -246,4 +433,11 @@ export const schema = {
   learningMaterialLocale,
   learningTag,
   learningMaterialTag,
+  learningCategory,
+  learningQuestion,
+  learningQuestionOption,
+  learningLessonProgress,
+  learningQuizAttempt,
+  learningQuizAnswer,
+  userLearningAccess,
 };

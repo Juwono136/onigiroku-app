@@ -6,7 +6,9 @@ import type {
 } from "@/lib/admin/users";
 
 function goError(code: string, message: string) {
-  return new Error(code || message);
+  const err = new Error(code || message) as Error & { detail?: string };
+  if (message && message !== code) err.detail = message;
+  return err;
 }
 
 export async function goListUsers(

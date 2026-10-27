@@ -610,7 +610,7 @@ func (s *Service) HardDelete(ctx context.Context, userID, actorID string, requir
 		return apperrors.UserNotInTrash()
 	}
 
-	return s.hardDeleteRow(ctx, existing, func(tx pgx.Tx) error {
+	return s.hardDeleteRow(ctx, existing, actorID, func(tx pgx.Tx) error {
 		if existing.DeletedAt == nil && existing.Role == "ADMIN" {
 			return s.ensureNotLastActiveAdmin(ctx, tx, userID, existing.Role)
 		}
@@ -627,10 +627,10 @@ func (s *Service) hardDeleteExpired(ctx context.Context, userID string, cutoff t
 	if existing.DeletedAt == nil || !existing.DeletedAt.Before(cutoff) {
 		return nil // restored or not yet expired — idempotent no-op
 	}
-	return s.hardDeleteRow(ctx, existing, nil)
+	return s.hardDeleteRow(ctx, existing, "", nil)
 }
 
-func (s *Service) hardDeleteRow(ctx context.Context, existing *userRow, beforeDelete func(pgx.Tx) error) error {
+func (s *Service) hardDeleteRow(ctx context.Context, existing *userRow, actorID string, beforeDelete func(pgx.Tx) error) error {
 	userID := existing.ID
 	imageKey := ""
 	if existing.Image != nil {
@@ -660,8 +660,13 @@ func (s *Service) hardDeleteRow(ctx context.Context, existing *userRow, beforeDe
 	_, _ = tx.Exec(ctx, `DELETE FROM verification WHERE identifier = $1`, email)
 	_, _ = tx.Exec(ctx, `DELETE FROM auth_lockout WHERE identifier = $1`, strings.ToLower(email))
 
+	if err := s.reassignAuthoredMaterials(ctx, tx, userID, actorID); err != nil {
+		return err
+	}
+
 	tag, err := tx.Exec(ctx, `DELETE FROM "user" WHERE id = $1`, userID)
 	if err != nil {
+		s.Log.Error("hard delete user failed", zap.String("userId", userID), zap.Error(err))
 		return apperrors.Internal(err)
 	}
 	if tag.RowsAffected() == 0 {
@@ -680,5 +685,49 @@ func (s *Service) hardDeleteRow(ctx context.Context, existing *userRow, beforeDe
 			)
 		}
 	}
+	return nil
+}
+
+// reassignAuthoredMaterials keeps news and lessons when their author account is removed.
+// author_id is ON DELETE RESTRICT, so the row must point at a remaining admin first.
+func (s *Service) reassignAuthoredMaterials(ctx context.Context, tx pgx.Tx, fromUserID, actorID string) error {
+	var n int
+	if err := tx.QueryRow(ctx, `SELECT COUNT(*)::int FROM learning_material WHERE author_id = $1`, fromUserID).Scan(&n); err != nil {
+		return apperrors.Internal(err)
+	}
+	if n == 0 {
+		return nil
+	}
+	owner := strings.TrimSpace(actorID)
+	if owner == "" || owner == fromUserID {
+		err := tx.QueryRow(ctx, `
+			SELECT id FROM "user"
+			WHERE id <> $1 AND role = 'ADMIN' AND deleted_at IS NULL AND status = 'ACTIVE'
+			ORDER BY created_at ASC
+			LIMIT 1
+		`, fromUserID).Scan(&owner)
+		if err == pgx.ErrNoRows {
+			return apperrors.Conflict(
+				apperrors.CodeConflict,
+				"This account still owns news or lessons, and no other admin can take them.",
+				"Akun ini masih memiliki berita atau materi, dan tidak ada admin lain yang bisa menerimanya.",
+			)
+		}
+		if err != nil {
+			return apperrors.Internal(err)
+		}
+	}
+	if _, err := tx.Exec(ctx, `
+		UPDATE learning_material
+		SET author_id = $2, updated_at = NOW()
+		WHERE author_id = $1
+	`, fromUserID, owner); err != nil {
+		return apperrors.Internal(err)
+	}
+	s.Log.Info("reassigned authored materials before user hard delete",
+		zap.String("fromUserId", fromUserID),
+		zap.String("toUserId", owner),
+		zap.Int("count", n),
+	)
 	return nil
 }

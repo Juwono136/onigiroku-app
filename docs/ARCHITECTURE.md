@@ -34,13 +34,13 @@ Kontrak detail Next ↔ Go: **[INTEGRATION.md](./INTEGRATION.md)**.
 - Drizzle schema/migrations untuk auth (+ domain tables bertahap)
 - Validasi Zod di trust boundary web + CSRF Origin/Referer pada mutasi BFF
 - Email transactional modular (`src/lib/email/templates/`) — verifikasi, reset, notifikasi password
-- BFF domain: `/api/admin/users*`, `/api/admin/materials*`, `/api/materials*`, `/api/settings/*`, `/api/media/*`, `/api/health` → `callGoApi` / `callGoApiWithActor`
+- BFF domain: `/api/admin/users*`, `/api/admin/materials*`, `/api/admin/learning/*`, `/api/learning/*`, `/api/materials*`, `/api/settings/*`, `/api/media/*`, `/api/health` → `callGoApi` / `callGoApiWithActor`
 - i18n ID/EN (`next-intl`)
 
 ### Go Gin (`backend/`)
 
 - Domain API berperforma tinggi di path **unversioned** `/api/*` (bukan `/api/v1`)
-- **Live:** media (presign/delete), admin users, settings/login-history, learning materials / news (`content`)
+- **Live:** media (presign/delete), admin users, settings/login-history, news + learning paths (`content`: categories, ordered lessons, progress, quiz grading, `plan_key` grants)
 - **Stub (belum BFF):** catalog, assessment/attempts, analytics, billing/webhooks (Xendit prep only)
 - Dipanggil dari Next BFF via `callGoApi` + `X-Internal-Secret` (+ `X-Actor-*` untuk trusted routes)
 - Identity (Better Auth session/password/email) tetap di Next — domain data & storage orchestration di Go

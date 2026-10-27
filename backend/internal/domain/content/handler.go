@@ -46,11 +46,22 @@ func (h *Handler) RegisterAdmin(r gin.IRoutes) {
 	r.PATCH("/admin/materials/:id", h.AdminUpdate)
 	r.DELETE("/admin/materials/:id", h.AdminSoftDelete)
 	r.POST("/admin/materials/:id/hard-delete", h.AdminHardDelete)
+	r.GET("/admin/learning/categories", h.AdminListCategories)
+	r.POST("/admin/learning/categories", h.AdminCreateCategory)
+	r.GET("/admin/learning/categories/:id", h.AdminGetCategory)
+	r.PUT("/admin/learning/categories/:id", h.AdminUpdateCategory)
+	r.DELETE("/admin/learning/categories/:id", h.AdminArchiveCategory)
+	r.POST("/admin/learning/categories/:id/hard-delete", h.AdminHardDeleteCategory)
+	r.PUT("/admin/learning/categories/:id/lessons/order", h.AdminReorderLessons)
 }
 
 // RegisterStudent mounts student materials routes (RequireActor already applied).
 func (h *Handler) RegisterStudent(r gin.IRoutes) {
+	r.GET("/learning/categories", h.StudentListCategories)
+	r.GET("/learning/categories/:slug", h.StudentGetCategory)
 	r.GET("/materials", h.StudentList)
+	r.POST("/materials/:slug/progress", h.StudentProgress)
+	r.POST("/materials/:slug/quiz", h.StudentQuiz)
 	r.GET("/materials/:slug", h.StudentGet)
 }
 
@@ -205,12 +216,16 @@ func (h *Handler) StudentList(c *gin.Context) {
 }
 
 func (h *Handler) StudentGet(c *gin.Context) {
-	detail, err := h.Service.GetBySlug(c.Request.Context(), c.Param("slug"), false, true)
+	actorID, _ := c.Get(middleware.ContextActorUserID)
+	actor, _ := actorID.(string)
+	role, _ := c.Get(middleware.ContextActorRole)
+	roleStr, _ := role.(string)
+	view, err := h.Service.OpenStudentLesson(c.Request.Context(), actor, c.Param("slug"), c.DefaultQuery("locale", "id"), roleStr == "ADMIN")
 	if err != nil {
 		response.AbortWithError(c, err)
 		return
 	}
-	response.OK(c, detail)
+	response.OK(c, view)
 }
 
 func parseListQuery(c *gin.Context) ListQuery {
@@ -233,6 +248,7 @@ func parseListQuery(c *gin.Context) ListQuery {
 		Locale:     c.DefaultQuery("locale", "id"),
 		SortBy:     c.DefaultQuery("sortBy", "publishedAt"),
 		SortDir:    c.DefaultQuery("sortDir", "desc"),
+		CategoryID: c.Query("categoryId"),
 	}
 }
 
@@ -246,4 +262,141 @@ func parseTagQueryParams(c *gin.Context) []string {
 	}
 	raw = append(raw, c.QueryArray("tag")...)
 	return normalizeTagSlugList(raw, "")
+}
+
+func (h *Handler) AdminListCategories(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "12"))
+	result, err := h.Service.ListCategories(c.Request.Context(), page, pageSize, c.Query("search"), c.Query("status"), c.DefaultQuery("sortBy", "position"), c.DefaultQuery("sortDir", "asc"), true)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, result)
+}
+
+func (h *Handler) AdminCreateCategory(c *gin.Context) {
+	var in CategoryInput
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.AbortWithError(c, apperrors.BadRequest("Invalid payload", "Payload tidak valid"))
+		return
+	}
+	item, err := h.Service.CreateCategory(c.Request.Context(), in)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.Created(c, item)
+}
+
+func (h *Handler) AdminGetCategory(c *gin.Context) {
+	item, err := h.Service.GetCategory(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, item)
+}
+
+func (h *Handler) AdminUpdateCategory(c *gin.Context) {
+	var in CategoryInput
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.AbortWithError(c, apperrors.BadRequest("Invalid payload", "Payload tidak valid"))
+		return
+	}
+	item, err := h.Service.UpdateCategory(c.Request.Context(), c.Param("id"), in)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, item)
+}
+
+func (h *Handler) AdminArchiveCategory(c *gin.Context) {
+	if err := h.Service.ArchiveCategory(c.Request.Context(), c.Param("id")); err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, gin.H{"archived": true, "id": c.Param("id")})
+}
+
+func (h *Handler) AdminHardDeleteCategory(c *gin.Context) {
+	if err := h.Service.HardDeleteCategory(c.Request.Context(), c.Param("id")); err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, gin.H{"deleted": true, "id": c.Param("id")})
+}
+
+func (h *Handler) AdminReorderLessons(c *gin.Context) {
+	var body struct {
+		IDs []string `json:"ids"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.AbortWithError(c, apperrors.BadRequest("Invalid payload", "Payload tidak valid"))
+		return
+	}
+	if err := h.Service.ReorderLessons(c.Request.Context(), c.Param("id"), body.IDs); err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, gin.H{"ok": true})
+}
+
+func (h *Handler) StudentListCategories(c *gin.Context) {
+	actorID, _ := c.Get(middleware.ContextActorUserID)
+	actor, _ := actorID.(string)
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "12"))
+	result, err := h.Service.StudentCategories(c.Request.Context(), actor, page, pageSize, c.Query("search"), c.DefaultQuery("sortBy", "position"), c.DefaultQuery("sortDir", "asc"))
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, result)
+}
+
+func (h *Handler) StudentGetCategory(c *gin.Context) {
+	actorID, _ := c.Get(middleware.ContextActorUserID)
+	actor, _ := actorID.(string)
+	detail, err := h.Service.StudentCategoryPath(c.Request.Context(), actor, c.Param("slug"), c.DefaultQuery("locale", "id"))
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, detail)
+}
+
+func (h *Handler) StudentProgress(c *gin.Context) {
+	actorID, _ := c.Get(middleware.ContextActorUserID)
+	actor, _ := actorID.(string)
+	var body struct {
+		ReadingPercent int `json:"readingPercent"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.AbortWithError(c, apperrors.BadRequest("Invalid payload", "Payload tidak valid"))
+		return
+	}
+	progress, err := h.Service.TouchProgress(c.Request.Context(), actor, c.Param("slug"), body.ReadingPercent)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, progress)
+}
+
+func (h *Handler) StudentQuiz(c *gin.Context) {
+	actorID, _ := c.Get(middleware.ContextActorUserID)
+	actor, _ := actorID.(string)
+	var body QuizSubmitInput
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.AbortWithError(c, apperrors.BadRequest("Invalid payload", "Payload tidak valid"))
+		return
+	}
+	result, err := h.Service.SubmitQuiz(c.Request.Context(), actor, c.Param("slug"), body)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, result)
 }

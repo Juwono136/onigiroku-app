@@ -22,6 +22,7 @@ const (
 	CodeUserNotInTrash   Code = "USER_NOT_IN_TRASH"
 	CodeUserNotFound     Code = "USER_NOT_FOUND"
 	CodeLastAdmin        Code = "LAST_ADMIN"
+	CodeLessonLocked     Code = "LESSON_LOCKED"
 )
 
 // AppError is the domain/API error type returned to handlers and middleware.
@@ -97,6 +98,13 @@ func Forbidden() *AppError {
 	return New(CodeForbidden, http.StatusForbidden,
 		"Access denied",
 		"Akses ditolak",
+	)
+}
+
+func LessonLocked() *AppError {
+	return New(CodeLessonLocked, http.StatusForbidden,
+		"Finish the previous lesson before opening this one",
+		"Selesaikan materi sebelumnya sebelum membuka materi ini",
 	)
 }
 

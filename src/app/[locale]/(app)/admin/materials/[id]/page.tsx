@@ -1,19 +1,10 @@
-import { setRequestLocale } from "next-intl/server";
+import { redirect } from "@/i18n/routing";
 
-import { MaterialEditor } from "@/components/admin/materials/material-editor";
-import { requireRole } from "@/lib/auth/session";
-
-export default async function AdminMaterialsEditPage({
+export default async function AdminMaterialsEditRedirect({
   params,
 }: {
   params: Promise<{ locale: string; id: string }>;
 }) {
   const { locale, id } = await params;
-  setRequestLocale(locale);
-  await requireRole("ADMIN", {
-    locale,
-    callbackPath: `/admin/materials/${id}`,
-  });
-
-  return <MaterialEditor mode="edit" materialId={id} />;
+  redirect({ href: `/admin/news/${id}`, locale });
 }

@@ -27,6 +27,31 @@ func TestSlugifyTitle(t *testing.T) {
 	}
 }
 
+func TestPreferredSlugSource(t *testing.T) {
+	if got := preferredSlugSource("Basic conversation", "Percakapan dasar"); got != "Basic conversation" {
+		t.Fatalf("prefer english got %q", got)
+	}
+	if got := preferredSlugSource("", "Percakapan dasar"); got != "Percakapan dasar" {
+		t.Fatalf("fallback id got %q", got)
+	}
+}
+
+func TestPreferredSlugTitleFromLocales(t *testing.T) {
+	got := preferredSlugTitleFromLocales([]LocaleInput{
+		{Locale: "id", Title: "Percakapan dasar"},
+		{Locale: "en", Title: "Basic conversation"},
+	})
+	if got != "Basic conversation" {
+		t.Fatalf("got %q", got)
+	}
+	got = preferredSlugTitleFromLocales([]LocaleInput{
+		{Locale: "id", Title: "Salam"},
+	})
+	if got != "Salam" {
+		t.Fatalf("id-only got %q", got)
+	}
+}
+
 func TestNormalizeTagSlugList(t *testing.T) {
 	got := normalizeTagSlugList([]string{"Culture", "hiragana", "culture", ""}, "JLPT N5")
 	want := []string{"culture", "hiragana", "jlpt-n5"}

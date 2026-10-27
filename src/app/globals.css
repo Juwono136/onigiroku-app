@@ -234,13 +234,33 @@
    * Keeps brand red as accent; avoids pure-white glare from marketing pages.
    */
   .app-workspace {
-    --workspace-bg: #e8e4de;
-    --workspace-sidebar: #ddd8d0;
-    --workspace-elevated: #f1ede7;
-    --workspace-surface: #f4f0ea;
-    --workspace-card: #f7f3ee;
-    --workspace-footer: #d9d4cb;
+    --workspace-bg: #e3ddd4;
+    --workspace-sidebar: #d8d2c8;
+    --workspace-elevated: #ebe4da;
+    --workspace-surface: #efe8de;
+    --workspace-card: #f3ece3;
+    --workspace-footer: #d4cdc3;
     color-scheme: light;
+    background-color: var(--workspace-bg);
+  }
+
+  /* Keep page ends matching the workspace when content height changes (e.g. collapsed editors). */
+  html:has(.app-workspace),
+  body:has(.app-workspace) {
+    background-color: var(--workspace-bg, #e3ddd4);
+  }
+
+  /* Paper tones inside the signed-in app. Pure white glares during long study sessions. */
+  .app-workspace .bg-white {
+    background-color: var(--workspace-card);
+  }
+  .app-workspace .bg-white\/95,
+  .app-workspace .bg-white\/90,
+  .app-workspace .bg-white\/85,
+  .app-workspace .bg-white\/80,
+  .app-workspace .bg-white\/70,
+  .app-workspace .bg-white\/55 {
+    background-color: color-mix(in oklab, var(--workspace-card) 88%, var(--workspace-bg));
   }
 
   .bg-workspace-mesh {
@@ -420,7 +440,9 @@
   }
 
   .material-prose p.is-editor-empty:first-child::before,
-  .tiptap-content p.is-editor-empty:first-child::before {
+  .material-prose p.is-empty:first-child::before,
+  .tiptap-content p.is-editor-empty:first-child::before,
+  .tiptap-content p.is-empty:first-child::before {
     content: attr(data-placeholder);
     float: left;
     height: 0;

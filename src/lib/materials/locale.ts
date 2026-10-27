@@ -16,7 +16,7 @@ export function pickMaterialLocale(
     locale: preferred,
     title: material.title,
     excerpt: material.excerpt,
-    body: { type: "doc", content: [] },
+    body: { type: "doc", content: [{ type: "paragraph" }] },
     seoTitle: "",
     seoDescription: "",
   };

@@ -63,6 +63,7 @@ Migrasi: `drizzle/0003_user_status_soft_delete.sql`, `drizzle/0004_user_last_log
 - Purge soft-delete > 30 hari dijalankan idempotent saat list.
 - Inactive → revoke sessions (**expire** live sessions, jangan hapus baris) + blokir login; **`last_login_at` tetap** di kolom user
 - Soft delete → trash 30 hari; hard delete hanya dari trash + hapus avatar SeaweedFS
+- Berita atau materi yang ditulis akun itu tidak ikut terhapus. `author_id` dipindahkan ke admin yang menghapus (atau admin aktif lain saat purge), karena kolom itu `ON DELETE RESTRICT`. Progress, attempt kuis, dan akses paket akun itu ikut terhapus lewat cascade.
 - Self-protection: admin tidak bisa ubah/hapus akun sendiri
 - **Last login**: dibaca dari `user.last_login_at` (fallback `MAX(session.created_at)`). Diisi otomatis setiap login sukses via Better Auth `session.create.after`
 

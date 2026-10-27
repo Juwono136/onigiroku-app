@@ -4,6 +4,7 @@ import {
   BookOpen,
   ChevronLeft,
   ChevronRight,
+  GraduationCap,
   LayoutDashboard,
   Newspaper,
   Settings,
@@ -28,13 +29,14 @@ type NavHref =
   | "/dashboard/materials"
   | "/admin"
   | "/admin/users"
-  | "/admin/materials"
+  | "/admin/news"
+  | "/admin/learning"
   | "/settings";
 
 type NavItem = {
   href: NavHref;
   icon: typeof LayoutDashboard;
-  labelKey: "dashboard" | "admin" | "users" | "materials" | "settings";
+  labelKey: "dashboard" | "admin" | "users" | "materials" | "news" | "learning" | "settings";
 };
 
 export function AppSidebar({ role }: Props) {
@@ -50,7 +52,8 @@ export function AppSidebar({ role }: Props) {
       ? [
           { href: "/admin", icon: LayoutDashboard, labelKey: "admin" },
           { href: "/admin/users", icon: Users, labelKey: "users" },
-          { href: "/admin/materials", icon: Newspaper, labelKey: "materials" },
+          { href: "/admin/news", icon: Newspaper, labelKey: "news" },
+          { href: "/admin/learning", icon: GraduationCap, labelKey: "learning" },
           { href: "/settings", icon: Settings, labelKey: "settings" },
         ]
       : [

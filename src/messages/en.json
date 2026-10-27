@@ -605,6 +605,8 @@
   "adminMaterials": {
     "eyebrow": "Administration",
     "title": "Learning materials",
+    "newsTitle": "News",
+    "newsSubtitle": "Public articles that appear on the news page. Student lessons are managed under Learning.",
     "subtitle": "Create, publish, and manage bilingual study content for students and the public site.",
     "totalLabel": "{count} materials",
     "untitled": "Untitled",
@@ -659,9 +661,9 @@
       "seoDescription": "SEO description"
     },
     "editor": {
-      "createTitle": "New material",
-      "editTitle": "Edit material",
-      "subtitle": "Draft bilingual content, set audience and publish when ready.",
+      "createTitle": "New article",
+      "editTitle": "Edit article",
+      "subtitle": "Write the article in both languages. Published articles appear on the public homepage.",
       "localeTabs": "Content locale",
       "locale": {
         "id": "Indonesia",
@@ -687,7 +689,7 @@
       "featuredHint": "Only available when visibility is Public.",
       "coverEmpty": "No cover yet",
       "coverHint": "JPEG, PNG, WebP, or GIF · max 5MB · recommended 1600×900 (16:9)",
-      "imageHint": "Inline images use the same 5MB limit (JPEG, PNG, WebP, GIF).",
+      "imageHint": "You can insert several images. Each file uses the same 5MB limit (JPEG, PNG, WebP, GIF).",
       "tagsHint": "{count} / {max} tags",
       "tagsLocaleHint": "Tag labels follow the active content language (Indonesia / English). Click a tag to edit both names.",
       "tagsFormatHint": "Search existing tags or create one · max 80 characters · unused catalog tags can be deleted",
@@ -736,6 +738,8 @@
     },
     "actions": {
       "new": "New material",
+      "newArticle": "New article",
+      "backToNews": "Back to news",
       "edit": "Edit",
       "create": "Create material",
       "save": "Save changes",
@@ -824,6 +828,10 @@
       "tagsMax": "You can add up to 5 tags.",
       "tagDuplicate": "That tag is already added.",
       "TAG_IN_USE": "That tag is still used by materials."
+    },
+    "lesson": {
+      "passScore": "Passing score",
+      "passScoreHint": "Students must reach this score (50–100) on the practice at the end of the lesson before the next lesson unlocks."
     }
   },
   "appShell": {
@@ -834,6 +842,15 @@
       "admin": "Overview",
       "users": "Users",
       "materials": "Learning materials",
+      "news": "News",
+      "learning": "Learning",
+      "newsNew": "New article",
+      "newsEdit": "Edit article",
+      "categoryNew": "New category",
+      "categoryEdit": "Category",
+      "lessonNew": "New lesson",
+      "lessonEdit": "Edit lesson",
+      "path": "Path",
       "materialsNew": "New material",
       "materialsEdit": "Edit",
       "materialsRead": "Read",
@@ -846,6 +863,8 @@
       "admin": "Overview",
       "users": "Users",
       "materials": "Learning materials",
+      "news": "News",
+      "learning": "Learning",
       "settings": "Settings",
       "sectionLearn": "Learning",
       "sectionAdmin": "Administration",
@@ -866,6 +885,253 @@
       "terms": "Terms",
       "help": "Help",
       "copyright": "© {year} Onigiroku. All rights reserved."
+    }
+  },
+  "learningAdmin": {
+    "eyebrow": "Learning paths",
+    "title": "Categories",
+    "subtitle": "Group student lessons into ordered paths. A lesson stays locked until every earlier lesson in the same category is complete.",
+    "searchPlaceholder": "Search categories…",
+    "editTitle": "Edit category",
+    "createTitle": "New category",
+    "lessonCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
+    "prev": "Previous",
+    "next": "Next",
+    "showing": "Showing {from}–{to} of {total}",
+    "pageSize": "{count} / page",
+    "sort": {
+      "position": "Path order",
+      "updated": "Recently updated",
+      "name": "Name"
+    },
+    "filters": {
+      "all": "All statuses"
+    },
+    "lessonForm": {
+      "createTitle": "New lesson",
+      "editTitle": "Edit lesson",
+      "subtitle": "Write the reading students see first, set the passing score, then add practice at the end of the page.",
+      "reading": "Lesson reading",
+      "readingHint": "This is the article students read before practice. Each practice question has its own text, so use this field for the lesson itself.",
+      "readingPlaceholder": "Write the lesson students will read",
+      "back": "Back to category",
+      "createAction": "Create lesson",
+      "saveAction": "Save lesson"
+    },
+    "tabs": {
+      "id": "Indonesia",
+      "en": "English"
+    },
+    "orderHint": "Lesson order inside a category is assigned automatically. Use the arrows on each lesson to change it.",
+    "orderLabel": "Order {position}",
+    "actions": {
+      "new": "New category",
+      "back": "All categories",
+      "save": "Save category",
+      "archive": "Archive",
+      "delete": "Delete",
+      "cancel": "Cancel",
+      "uploadCover": "Upload cover"
+    },
+    "fields": {
+      "nameId": "Name (Indonesian)",
+      "nameEn": "Name (English)",
+      "descriptionId": "Description (Indonesian)",
+      "descriptionEn": "Description (English)",
+      "status": "Status",
+      "planKey": "Plan key",
+      "planHint": "Access package label, for example free. A payment gateway is not connected yet.",
+      "accessTitle": "Student access",
+      "accessNote": "Published paths are open to signed-in students. A payment package can be connected later without changing this form.",
+      "cover": "Cover",
+      "slug": "Student path",
+      "slugNote": "Students open the path from the learning library. This address is created from the category name.",
+      "slugPending": "Created when you save the category",
+      "coverEmpty": "Onigiroku logo is used when no cover is uploaded.",
+      "coverOptional": "Optional. JPEG, PNG, WebP, or GIF, up to 5MB. The Onigiroku logo is shown when this is empty.",
+      "coverHint": "JPEG, PNG, WebP, or GIF, up to 5MB."
+    },
+    "placeholders": {
+      "nameId": "Misalnya JLPT N5",
+      "nameEn": "For example JLPT N5",
+      "description": "What students will practice in this path"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published",
+      "ARCHIVED": "Archived"
+    },
+    "lessons": {
+      "title": "Lessons",
+      "new": "New lesson",
+      "orderHint": "Use Move up and Move down to change which lesson comes first.",
+      "afterSave": "Save the category first. Lessons will appear in this panel so you can add and reorder them.",
+      "empty": "No lessons in this category yet.",
+      "untitled": "Untitled lesson",
+      "up": "Move up",
+      "down": "Move down"
+    },
+    "quiz": {
+      "title": "Practice",
+      "hint": "One question field, so you can write Japanese freely. Students see this at the end of the lesson. Answers stay on the server until they submit.",
+      "prompt": "Question",
+      "options": "Choices and answer key",
+      "optionPlaceholder": "Choice, for example です",
+      "optionHint": "Select the radio next to the correct choice. Students see that choice after they submit.",
+      "markCorrect": "Mark as answer key",
+      "answerKeyBadge": "Answer key",
+      "accepted": "Accepted answers",
+      "answerKeys": "Answer keys",
+      "acceptedHint": "Add every wording that should count as correct. Matching folds hiragana and katakana together, ignores letter case, and ignores extra spaces.",
+      "back": "Card back",
+      "explanation": "Explanation",
+      "explanationHint": "Hidden while the student answers. Shown only after they submit, whether the answer is right or wrong.",
+      "explanationPlaceholder": "Explain the answer in Japanese or the language you teach with",
+      "preview": "Preview question",
+      "previewAll": "Preview practice",
+      "add": "Add question",
+      "shuffleQuestions": "Shuffle questions",
+      "shuffleQuestionsHint": "Each attempt shows practice questions in a new order.",
+      "shuffleChoices": "Shuffle choices",
+      "shuffleChoicesHint": "Multiple-choice options are randomized on every attempt.",
+      "previewTitle": "Student preview",
+      "previewHint": "Answer the way a student would. The score, correct choice, and explanation appear after you check the answers.",
+      "chars": "{count}/{max}",
+      "empty": "No questions yet. A lesson without questions is complete once the student opens it.",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove",
+      "removeTitle": "Remove this question?",
+      "removeBody": "The question and its choices are removed from this lesson. Save the lesson to keep the change.",
+      "promptId": "Question (Indonesian)",
+      "promptEn": "Question (English)",
+      "promptPlaceholder": "Write the question",
+      "correct": "Correct answer",
+      "optionId": "Option (Indonesian)",
+      "optionEn": "Option (English)",
+      "addOption": "Add option",
+      "acceptedPlaceholder": "Answer key, for example おはよう or ohayou",
+      "addAnswer": "Add answer key",
+      "backId": "Card back (Indonesian)",
+      "backEn": "Card back (English)",
+      "backPlaceholder": "Answer shown after the card is flipped",
+      "explainId": "Explanation (Indonesian)",
+      "explainEn": "Explanation (English)",
+      "types": {
+        "multiple_choice": "Multiple choice",
+        "short_answer": "Short answer",
+        "flashcard": "Card quiz"
+      },
+      "typeHint": {
+        "multiple_choice": "Students pick one choice",
+        "short_answer": "Students type an answer",
+        "flashcard": "Students flip the card, then mark what they knew"
+      }
+    },
+    "confirm": {
+      "saveTitle": "Save this category?",
+      "saveBody": "The name, description, cover, and status will be saved.",
+      "archiveTitle": "Archive this category?",
+      "archiveBody": "Students will no longer see this path. You can publish it again later.",
+      "deleteTitle": "Delete this category?",
+      "deleteBody": "The category and its cover are removed. This is blocked while lessons still belong to it.",
+      "unsavedTitle": "Leave without saving?",
+      "unsavedBody": "You have unsaved category changes. If you leave now, those edits will be lost.",
+      "unsavedConfirm": "Leave page"
+    },
+    "toast": {
+      "saved": "Category saved."
+    },
+    "empty": {
+      "title": "No categories yet",
+      "description": "Create a category, add ordered lessons, then publish it for students."
+    },
+    "errors": {
+      "load": "Could not load categories.",
+      "save": "Could not save. Check the form and try again.",
+      "cover": "Cover must be JPEG, PNG, WebP, or GIF and 5MB or smaller.",
+      "name": "Add a category name in Indonesian or English.",
+      "description": "Each description can be at most 1000 characters.",
+      "publishCover": "Upload a cover before publishing this category."
+    }
+  },
+  "learningStudent": {
+    "eyebrow": "Study",
+    "title": "Learning paths",
+    "subtitle": "Pick a category and follow the lessons in order. Later lessons unlock after you finish the ones before them.",
+    "searchPlaceholder": "Search categories…",
+    "showing": "Showing {from}–{to} of {total}",
+    "pageSize": "{count} / page",
+    "sort": {
+      "position": "Path order",
+      "name": "Name"
+    },
+    "pathProgress": "Path progress",
+    "progress": "{done} of {total} complete",
+    "actions": {
+      "back": "All categories",
+      "backToPath": "Back to path"
+    },
+    "prev": "Previous",
+    "next": "Next",
+    "empty": {
+      "title": "No learning paths yet",
+      "description": "Published categories will appear here.",
+      "lessons": "This path has no published lessons yet."
+    },
+    "locked": {
+      "title": "This lesson is locked",
+      "description": "Finish the earlier lessons in this path before opening this one."
+    },
+    "lesson": {
+      "done": "Completed",
+      "opened": "In progress",
+      "locked": "Locked",
+      "continue": "Continue",
+      "start": "Start",
+      "next": "Next lesson"
+    },
+    "quiz": {
+      "eyebrow": "Practice",
+      "title": "Check what you learned",
+      "subtitle": "Answer every question, then submit. You can try again as many times as you need.",
+      "shortPlaceholder": "Type your answer",
+      "reveal": "Flip card",
+      "markHint": "Mark whether you knew this after flipping the card.",
+      "knew": "I knew it",
+      "learning": "Still learning",
+      "correct": "Correct",
+      "incorrect": "Not yet",
+      "submit": "Submit answers",
+      "failed": "Could not submit. Please try again.",
+      "passed": "You passed. The next lesson is open.",
+      "retry": "Not a passing score yet. You can try again.",
+      "tryAgain": "Try again",
+      "score": "Score {score}%. Passing score is {pass}%.",
+      "explanation": "Explanation",
+      "acceptedShow": "Accepted answers",
+      "correctChoice": "Correct answer",
+      "correctAnswerLabel": "Correct answer:",
+      "answered": "{done} of {total} answered",
+      "missing": "Answer every question before you continue.",
+      "check": "Check answers",
+      "sending": "Checking…",
+      "resultPass": "Passing score reached",
+      "resultFail": "Below the passing score",
+      "cardFront": "Front",
+      "cardBack": "Back",
+      "tapFlip": "Tap to flip",
+      "tapFlipBack": "Tap to flip back",
+      "flipFirst": "Flip the card, then mark what you knew.",
+      "shortHint": "Hiragana, katakana, and Latin letters are accepted. Letter case does not matter.",
+      "choices": "Choices",
+      "emptyChoice": "Empty choice",
+      "questionOf": "Question {index} of {total}",
+      "types": {
+        "multiple_choice": "Multiple choice",
+        "short_answer": "Short answer",
+        "flashcard": "Card quiz"
+      }
     }
   },
   "studentMaterials": {

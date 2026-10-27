@@ -2,13 +2,13 @@ import type { AuthSession } from "@/lib/auth/session";
 import { getSessionRole } from "@/lib/auth/session";
 
 /**
- * Extension point for future Xendit-backed paid access to STUDENT materials.
+ * Extension point for paid access to a learning category.
  *
- * Today (access model 1A): any authenticated USER or ADMIN may access student
- * materials. Later, gate with `user_entitlement` / Xendit webhook grants via
- * something like `requireEntitled(session, "learning_materials")`.
- *
- * Do not wire checkout or webhooks here until billing goes live.
+ * Access is decided in the Go API (`assertCategoryAccess`). While
+ * LEARNING_PAYWALL_ENABLED is off, any signed-in USER or ADMIN may open
+ * published paths. When the flag is on, a category is open if its plan_key
+ * is `free` or the user has an active `user_learning_access` grant. A payment
+ * gateway writes that grant; this app does not talk to a gateway.
  */
 export async function assertCanAccessStudentMaterials(
   session: AuthSession,
