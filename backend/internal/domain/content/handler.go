@@ -53,14 +53,18 @@ func (h *Handler) RegisterAdmin(r gin.IRoutes) {
 	r.DELETE("/admin/learning/categories/:id", h.AdminArchiveCategory)
 	r.POST("/admin/learning/categories/:id/hard-delete", h.AdminHardDeleteCategory)
 	r.PUT("/admin/learning/categories/:id/lessons/order", h.AdminReorderLessons)
+	r.POST("/admin/learning/categories/:id/lessons/bulk-delete", h.AdminBulkDeleteLessons)
 }
 
 // RegisterStudent mounts student materials routes (RequireActor already applied).
 func (h *Handler) RegisterStudent(r gin.IRoutes) {
 	r.GET("/learning/categories", h.StudentListCategories)
+	r.GET("/learning/categories/tags", h.StudentListCategoryTags)
 	r.GET("/learning/categories/:slug", h.StudentGetCategory)
 	r.GET("/materials", h.StudentList)
 	r.POST("/materials/:slug/progress", h.StudentProgress)
+	r.GET("/materials/:slug/quiz/attempts/:attemptId", h.StudentQuizAttemptDetail)
+	r.GET("/materials/:slug/quiz/attempts", h.StudentQuizAttempts)
 	r.POST("/materials/:slug/quiz", h.StudentQuiz)
 	r.GET("/materials/:slug", h.StudentGet)
 }
@@ -267,7 +271,17 @@ func parseTagQueryParams(c *gin.Context) []string {
 func (h *Handler) AdminListCategories(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "12"))
-	result, err := h.Service.ListCategories(c.Request.Context(), page, pageSize, c.Query("search"), c.Query("status"), c.DefaultQuery("sortBy", "position"), c.DefaultQuery("sortDir", "asc"), true)
+	result, err := h.Service.ListCategories(
+		c.Request.Context(),
+		page,
+		pageSize,
+		c.Query("search"),
+		c.Query("status"),
+		c.DefaultQuery("sortBy", "position"),
+		c.DefaultQuery("sortDir", "asc"),
+		true,
+		parseTagQueryParams(c),
+	)
 	if err != nil {
 		response.AbortWithError(c, err)
 		return
@@ -343,17 +357,52 @@ func (h *Handler) AdminReorderLessons(c *gin.Context) {
 	response.OK(c, gin.H{"ok": true})
 }
 
+func (h *Handler) AdminBulkDeleteLessons(c *gin.Context) {
+	var body struct {
+		IDs []string `json:"ids"`
+	}
+	if err := c.ShouldBindJSON(&body); err != nil {
+		response.AbortWithError(c, apperrors.BadRequest("Invalid payload", "Payload tidak valid"))
+		return
+	}
+	deleted, err := h.Service.BulkHardDeleteLessons(c.Request.Context(), c.Param("id"), body.IDs)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, gin.H{"deleted": deleted, "ids": body.IDs})
+}
+
 func (h *Handler) StudentListCategories(c *gin.Context) {
 	actorID, _ := c.Get(middleware.ContextActorUserID)
 	actor, _ := actorID.(string)
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "12"))
-	result, err := h.Service.StudentCategories(c.Request.Context(), actor, page, pageSize, c.Query("search"), c.DefaultQuery("sortBy", "position"), c.DefaultQuery("sortDir", "asc"))
+	result, err := h.Service.StudentCategories(
+		c.Request.Context(),
+		actor,
+		page,
+		pageSize,
+		c.Query("search"),
+		c.DefaultQuery("sortBy", "position"),
+		c.DefaultQuery("sortDir", "asc"),
+		parseTagQueryParams(c),
+	)
 	if err != nil {
 		response.AbortWithError(c, err)
 		return
 	}
 	response.OK(c, result)
+}
+
+func (h *Handler) StudentListCategoryTags(c *gin.Context) {
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "40"))
+	tags, err := h.Service.ListStudentCategoryTags(c.Request.Context(), limit)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, tags)
 }
 
 func (h *Handler) StudentGetCategory(c *gin.Context) {
@@ -383,6 +432,39 @@ func (h *Handler) StudentProgress(c *gin.Context) {
 		return
 	}
 	response.OK(c, progress)
+}
+
+func (h *Handler) StudentQuizAttempts(c *gin.Context) {
+	actorID, _ := c.Get(middleware.ContextActorUserID)
+	actor, _ := actorID.(string)
+	limit := 50
+	if raw := strings.TrimSpace(c.Query("limit")); raw != "" {
+		if n, err := strconv.Atoi(raw); err == nil {
+			limit = n
+		}
+	}
+	result, err := h.Service.ListQuizAttempts(c.Request.Context(), actor, c.Param("slug"), limit)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, result)
+}
+
+func (h *Handler) StudentQuizAttemptDetail(c *gin.Context) {
+	actorID, _ := c.Get(middleware.ContextActorUserID)
+	actor, _ := actorID.(string)
+	result, err := h.Service.GetQuizAttempt(
+		c.Request.Context(),
+		actor,
+		c.Param("slug"),
+		c.Param("attemptId"),
+	)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, result)
 }
 
 func (h *Handler) StudentQuiz(c *gin.Context) {

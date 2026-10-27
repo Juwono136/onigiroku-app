@@ -608,6 +608,7 @@
     "newsTitle": "News",
     "newsSubtitle": "Public articles that appear on the news page. Student lessons are managed under Learning.",
     "subtitle": "Create, publish, and manage bilingual study content for students and the public site.",
+    "loadingEditor": "Loading editor…",
     "totalLabel": "{count} materials",
     "untitled": "Untitled",
     "searchPlaceholder": "Search by material title…",
@@ -688,7 +689,7 @@
       "slugLockedHint": "Slug is locked after first publish — same URL for Indonesia and English.",
       "featuredHint": "Only available when visibility is Public.",
       "coverEmpty": "No cover yet",
-      "coverHint": "JPEG, PNG, WebP, or GIF · max 5MB · recommended 1600×900 (16:9)",
+      "coverHint": "JPEG, PNG, WebP, or GIF · max 5MB · recommended 1600×900 (16:9) · min 640×360",
       "imageHint": "You can insert several images. Each file uses the same 5MB limit (JPEG, PNG, WebP, GIF).",
       "tagsHint": "{count} / {max} tags",
       "tagsLocaleHint": "Tag labels follow the active content language (Indonesia / English). Click a tag to edit both names.",
@@ -786,7 +787,7 @@
       "saveUpdateTitle": "Save these changes?",
       "saveUpdateBody": "Your edits will be saved and the material status will be “{status}”.",
       "removeCoverTitle": "Remove cover image?",
-      "removeCoverBody": "The cover will be cleared from this material. Save to persist the change; the previous file is cleaned up when a replacement is uploaded or the material is deleted.",
+      "removeCoverBody": "The cover will be cleared from this material. Unsaved uploads are removed from storage now. A cover that was already saved is deleted from storage when you save.",
       "deleteTagTitle": "Delete this tag?",
       "deleteTagBody": "“{name}” will be removed from the tag catalog. This is only allowed when the tag is unused.",
       "deleteTagConfirm": "Delete tag"
@@ -824,6 +825,9 @@
       "COVER_UPLOAD_FAILED": "Cover upload failed.",
       "COVER_TYPE_INVALID": "Cover must be JPEG, PNG, WebP, or GIF.",
       "COVER_SIZE_INVALID": "Image must be 5MB or smaller.",
+      "COVER_DECODE_FAILED": "That file could not be read as an image. Choose another JPEG, PNG, WebP, or GIF.",
+      "COVER_TOO_SMALL": "Cover is too small. Use at least 640×360 pixels (recommended 1600×900, 16:9).",
+      "COVER_ASPECT_WARN": "This image is not close to 16:9. Recommended size is 1600×900 so the published cover is not cropped oddly.",
       "FILE_REQUIRED": "Please choose an image file.",
       "tagsMax": "You can add up to 5 tags.",
       "tagDuplicate": "That tag is already added.",
@@ -891,6 +895,9 @@
     "eyebrow": "Learning paths",
     "title": "Categories",
     "subtitle": "Group student lessons into ordered paths. A lesson stays locked until every earlier lesson in the same category is complete.",
+    "loadingCategories": "Loading categories…",
+    "loadingCategory": "Loading category…",
+    "loadingLesson": "Loading lesson…",
     "searchPlaceholder": "Search categories…",
     "editTitle": "Edit category",
     "createTitle": "New category",
@@ -931,7 +938,11 @@
       "archive": "Archive",
       "delete": "Delete",
       "cancel": "Cancel",
-      "uploadCover": "Upload cover"
+      "uploadCover": "Upload cover",
+      "replaceCover": "Replace cover",
+      "removeCover": "Remove cover",
+      "removeTag": "Remove tag",
+      "deleteTag": "Delete unused tag"
     },
     "fields": {
       "nameId": "Name (Indonesian)",
@@ -944,12 +955,28 @@
       "accessTitle": "Student access",
       "accessNote": "Published paths are open to signed-in students. A payment package can be connected later without changing this form.",
       "cover": "Cover",
+      "tags": "Tags",
       "slug": "Student path",
       "slugNote": "Students open the path from the learning library. This address is created from the category name.",
       "slugPending": "Created when you save the category",
       "coverEmpty": "Onigiroku logo is used when no cover is uploaded.",
-      "coverOptional": "Optional. JPEG, PNG, WebP, or GIF, up to 5MB. The Onigiroku logo is shown when this is empty.",
-      "coverHint": "JPEG, PNG, WebP, or GIF, up to 5MB."
+      "coverOptional": "Optional. JPEG, PNG, WebP, or GIF, up to 5MB. Recommended 1600×900 (16:9) so the published cover is not cropped. Minimum 640×360. The Onigiroku logo is shown when this is empty.",
+      "coverHint": "JPEG, PNG, WebP, or GIF · max 5MB · recommended 1600×900 (16:9) · min 640×360"
+    },
+    "editor": {
+      "tagsHint": "{count} of {max} tags",
+      "tagsLocaleHint": "Tags help students filter learning paths. Add bilingual labels so ID and EN both work.",
+      "tagsFormatHint": "Press Enter to add. Letters, numbers, and spaces are fine — slugs are generated automatically.",
+      "tagPlaceholder": "Add a tag, for example Particles",
+      "tagEditTitle": "Edit tag labels",
+      "tagNameId": "Indonesian label",
+      "tagNameEn": "English label",
+      "tagNameIdPlaceholder": "For example Partikel",
+      "tagNameEnPlaceholder": "For example Particles",
+      "tagInUse": "Used {count} times",
+      "tagUnused": "Unused",
+      "createTag": "Create “{name}”",
+      "tagsEmpty": "No matching tags yet."
     },
     "placeholders": {
       "nameId": "Misalnya JLPT N5",
@@ -964,12 +991,17 @@
     "lessons": {
       "title": "Lessons",
       "new": "New lesson",
-      "orderHint": "Use Move up and Move down to change which lesson comes first.",
+      "orderHint": "Use Move up and Move down to change which lesson comes first. Select lessons to remove several at once before deleting the category.",
       "afterSave": "Save the category first. Lessons will appear in this panel so you can add and reorder them.",
       "empty": "No lessons in this category yet.",
       "untitled": "Untitled lesson",
       "up": "Move up",
-      "down": "Move down"
+      "down": "Move down",
+      "selectAll": "Select all lessons",
+      "selectHint": "Select lessons to delete",
+      "selectOne": "Select {title}",
+      "selectedCount": "{count} selected",
+      "deleteSelected": "Delete selected"
     },
     "quiz": {
       "title": "Practice",
@@ -1037,10 +1069,20 @@
       "deleteBody": "The category and its cover are removed. This is blocked while lessons still belong to it.",
       "unsavedTitle": "Leave without saving?",
       "unsavedBody": "You have unsaved category changes. If you leave now, those edits will be lost.",
-      "unsavedConfirm": "Leave page"
+      "unsavedConfirm": "Leave page",
+      "bulkDeleteTitle": "Delete selected lessons?",
+      "bulkDeleteBody": "{count, plural, one {# lesson} other {# lessons}} will be permanently removed, including practice questions, student attempts for those lessons, and cover images. This cannot be undone.",
+      "removeCoverTitle": "Remove cover image?",
+      "removeCoverBody": "The cover will be cleared from this category. Unsaved uploads are removed from storage now. A cover that was already saved is deleted from storage when you save.",
+      "deleteTagTitle": "Delete this unused tag?",
+      "deleteTagBody": "“{name}” will be removed from the shared tag catalog. This only works when no category or article uses it."
     },
     "toast": {
-      "saved": "Category saved."
+      "saved": "Category saved.",
+      "bulkDeleted": "{count, plural, one {# lesson deleted.} other {# lessons deleted.}}",
+      "coverUploaded": "Cover uploaded.",
+      "coverRemoved": "Cover removed.",
+      "tagDeleted": "Unused tag deleted."
     },
     "empty": {
       "title": "No categories yet",
@@ -1052,31 +1094,57 @@
       "cover": "Cover must be JPEG, PNG, WebP, or GIF and 5MB or smaller.",
       "name": "Add a category name in Indonesian or English.",
       "description": "Each description can be at most 1000 characters.",
-      "publishCover": "Upload a cover before publishing this category."
+      "publishCover": "Upload a cover before publishing this category.",
+      "bulkDelete": "Could not delete the selected lessons. Refresh and try again.",
+      "coverDecode": "That file could not be read as an image. Choose another JPEG, PNG, WebP, or GIF.",
+      "coverTooSmall": "Cover is too small. Use at least 640×360 pixels (recommended 1600×900, 16:9).",
+      "coverAspect": "This image is not close to 16:9. Recommended size is 1600×900 so the published cover is not cropped oddly.",
+      "tagsMax": "You can add up to 5 tags.",
+      "tagDelete": "Could not delete that tag. It may still be in use."
     }
   },
   "learningStudent": {
     "eyebrow": "Study",
     "title": "Learning paths",
     "subtitle": "Pick a category and follow the lessons in order. Later lessons unlock after you finish the ones before them.",
-    "searchPlaceholder": "Search categories…",
+    "searchPlaceholder": "Search paths by name…",
     "showing": "Showing {from}–{to} of {total}",
     "pageSize": "{count} / page",
     "sort": {
       "position": "Path order",
       "name": "Name"
     },
+    "filters": {
+      "tags": "Tags",
+      "multiHint": "Select one or more",
+      "all": "All tags",
+      "more": "More tags",
+      "searchTags": "Search tags…",
+      "clear": "Clear filters",
+      "sort": "Sort"
+    },
     "pathProgress": "Path progress",
     "progress": "{done} of {total} complete",
+    "lessonsCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
     "actions": {
       "back": "All categories",
-      "backToPath": "Back to path"
+      "backToPath": "Back to path",
+      "openPath": "Open path",
+      "toggleSidebar": "Lesson list",
+      "collapseSidebar": "Hide lesson list",
+      "expandSidebar": "Show lesson list"
+    },
+    "sidebar": {
+      "title": "Lessons in this path",
+      "progress": "{done}/{total}",
+      "current": "Reading now"
     },
     "prev": "Previous",
     "next": "Next",
     "empty": {
       "title": "No learning paths yet",
       "description": "Published categories will appear here.",
+      "filtered": "No paths match these filters. Try clearing tags or search.",
       "lessons": "This path has no published lessons yet."
     },
     "locked": {
@@ -1106,7 +1174,12 @@
       "failed": "Could not submit. Please try again.",
       "passed": "You passed. The next lesson is open.",
       "retry": "Not a passing score yet. You can try again.",
+      "savedLatest": "Latest practice score saved. You can try again anytime.",
       "tryAgain": "Try again",
+      "retryTitle": "Retake this practice?",
+      "retryDescription": "Your answers will reset for a new attempt. Progress still uses your newest score; earlier tries stay in your history.",
+      "retryConfirm": "Start new attempt",
+      "retryCancel": "Keep results",
       "score": "Score {score}%. Passing score is {pass}%.",
       "explanation": "Explanation",
       "acceptedShow": "Accepted answers",
@@ -1132,6 +1205,52 @@
         "short_answer": "Short answer",
         "flashcard": "Card quiz"
       }
+    },
+    "history": {
+      "open": "Attempt history",
+      "title": "Practice history",
+      "description": "Tap any attempt to review every question, your answers, and the explanations. Unlocking still uses your latest score only.",
+      "loading": "Loading history…",
+      "detailLoading": "Loading attempt…",
+      "failed": "Could not load history. Please try again.",
+      "detailFailed": "Could not load that attempt. Please try again.",
+      "retry": "Try again",
+      "empty": "No practice attempts yet. Submit answers to start your history.",
+      "footer": "{total} attempt(s) saved for this lesson",
+      "attempt": "Attempt {n}",
+      "latest": "Latest",
+      "passed": "Passed",
+      "failedLabel": "Not yet",
+      "viewDetail": "View questions",
+      "back": "Back to history",
+      "detailDescription": "Score {score}% · passing score {pass}%",
+      "yourChoice": "Your answer",
+      "correctChoice": "Correct",
+      "yourAnswer": "Your answer"
+    },
+    "completion": {
+      "eyebrow": "Path complete",
+      "title": "Congratulations!",
+      "subtitle": "You finished every lesson in “{path}”. Here is your score summary.",
+      "retakeNote": "You can reopen any lesson and retake practice anytime — new attempts are still recorded.",
+      "toast": "Path complete — great work!",
+      "lessonsDone": "Lessons",
+      "avgScore": "Avg. score",
+      "status": "Status",
+      "finished": "Finished",
+      "scoreBreakdown": "Lesson results",
+      "readingOnly": "Reading complete",
+      "attempts": "{n} attempt(s)",
+      "noPractice": "No practice yet",
+      "ok": "Done",
+      "reviewCta": "Review first lesson",
+      "openSummary": "Path results",
+      "nextEyebrow": "Continue learning",
+      "nextDescription": "Recommended next path — {done} of {total} lessons done so far.",
+      "nextCta": "Open next path",
+      "allDoneTitle": "You are caught up",
+      "allDoneBody": "There is no unfinished path after this one right now. Browse the library anytime for more — or revisit lessons below to keep practicing.",
+      "viewPath": "View path summary"
     }
   },
   "studentMaterials": {

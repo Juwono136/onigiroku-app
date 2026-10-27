@@ -41,4 +41,5 @@ export const CMS_IMAGE_MIME = new Set([
   "image/webp",
   "image/gif",
 ]);
-export const CMS_COVER_HINT = "JPEG, PNG, WebP, or GIF · max 5MB · recommended 1600×900";
+export const CMS_COVER_HINT =
+  "JPEG, PNG, WebP, or GIF · max 5MB · recommended 1600×900 (16:9) · min 640×360";

@@ -3,6 +3,7 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 
 import { LessonPractice } from "@/components/learning/lesson-practice";
+import { StudentLessonShell } from "@/components/learning/student-lesson-shell";
 import { StudyFocus } from "@/components/learning/study-focus";
 import { MaterialReader } from "@/components/materials/material-reader";
 import { Link } from "@/i18n/routing";
@@ -62,28 +63,48 @@ export default async function StudentMaterialReaderPage({
     );
   }
 
+  const categoryName =
+    locale === "en"
+      ? view.categoryNameEn || view.categoryNameId
+      : view.categoryNameId || view.categoryNameEn;
+
   return (
     <>
-    <StudyFocus />
-    <MaterialReader
-      material={view.material}
-      locale={locale}
-      backHref={`/dashboard/materials/categories/${view.categorySlug}`}
-      backLabel={t("actions.backToPath")}
-      footer={
-        <LessonPractice
-          slug={slug}
-          questions={view.questions}
-          shuffleQuestions={Boolean(view.material.shuffleQuestions)}
-          shuffleChoices={Boolean(view.material.shuffleChoices)}
-          completed={view.progress.completed}
-          lessonCount={view.lessonCount}
-          completedCount={view.completedCount}
-          nextSlug={view.nextSlug}
-          nextLocked={view.nextLocked}
+      <StudyFocus />
+      <StudentLessonShell
+        categorySlug={view.categorySlug}
+        categoryName={categoryName}
+        currentSlug={slug}
+        initialLessons={view.lessons ?? []}
+        initialCompletedCount={view.completedCount}
+        lessonCount={view.lessonCount}
+      >
+        <MaterialReader
+          material={view.material}
+          locale={locale}
+          backHref={`/dashboard/materials/categories/${view.categorySlug}`}
+          backLabel={t("actions.backToPath")}
+          eyebrow={t("eyebrow")}
+          wide
+          hideDate
+          hideTags
+          footer={
+            <LessonPractice
+              slug={slug}
+              categorySlug={view.categorySlug}
+              questions={view.questions}
+              shuffleQuestions={Boolean(view.material.shuffleQuestions)}
+              shuffleChoices={Boolean(view.material.shuffleChoices)}
+              completed={view.progress.completed}
+              lessonCount={view.lessonCount}
+              completedCount={view.completedCount}
+              nextSlug={view.nextSlug}
+              nextLocked={view.nextLocked}
+              initialCompletion={view.completion ?? null}
+            />
+          }
         />
-      }
-    />
+      </StudentLessonShell>
     </>
   );
 }

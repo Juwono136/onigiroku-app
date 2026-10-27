@@ -48,6 +48,52 @@ func jsonNumber(n int) string {
 	return string(b)
 }
 
+func normalizeCategoryTags(raw []TagInput) ([]TagInput, error) {
+	if len(raw) > MaxTagsPerMaterial {
+		return nil, apperrors.Validation("Maximum 5 tags", "Maksimal 5 tag")
+	}
+	tags := make([]TagInput, 0, len(raw))
+	seen := map[string]struct{}{}
+	for _, t := range raw {
+		nameID := strings.TrimSpace(t.NameID)
+		nameEN := strings.TrimSpace(t.NameEN)
+		if nameID == "" && nameEN == "" {
+			continue
+		}
+		if nameID == "" {
+			nameID = nameEN
+		}
+		if nameEN == "" {
+			nameEN = nameID
+		}
+		if len([]rune(nameID)) > 80 || len([]rune(nameEN)) > 80 {
+			return nil, apperrors.Validation("Tag name is too long", "Nama tag terlalu panjang")
+		}
+		slug := NormalizeTagSlug(t.Slug)
+		if slug == "" {
+			slug = NormalizeTagSlug(nameEN)
+		}
+		if slug == "" {
+			slug = NormalizeTagSlug(nameID)
+		}
+		if slug == "" {
+			continue
+		}
+		if _, ok := seen[slug]; ok {
+			continue
+		}
+		seen[slug] = struct{}{}
+		tags = append(tags, TagInput{NameID: nameID, NameEN: nameEN, Slug: slug})
+		if len(tags) >= MaxTagsPerMaterial {
+			break
+		}
+	}
+	if len(tags) > MaxTagsPerMaterial {
+		return nil, apperrors.Validation("Maximum 5 tags", "Maksimal 5 tag")
+	}
+	return tags, nil
+}
+
 func normalizeCategory(in CategoryInput, _ bool) (CategoryInput, error) {
 	in.NameID = strings.TrimSpace(in.NameID)
 	in.NameEN = strings.TrimSpace(in.NameEN)
@@ -91,7 +137,91 @@ func normalizeCategory(in CategoryInput, _ bool) (CategoryInput, error) {
 	if len(in.PlanKey) > 64 || !planKeyOK(in.PlanKey) {
 		return in, apperrors.Validation("Invalid plan key", "Kunci paket tidak valid")
 	}
+	tags, err := normalizeCategoryTags(in.Tags)
+	if err != nil {
+		return in, err
+	}
+	in.Tags = tags
 	return in, nil
+}
+
+func (s *Service) replaceCategoryTags(ctx context.Context, tx pgx.Tx, categoryID string, tags []TagInput) error {
+	if _, err := tx.Exec(ctx, `DELETE FROM learning_category_tag WHERE category_id = $1`, categoryID); err != nil {
+		return apperrors.Internal(err)
+	}
+	for _, t := range tags {
+		var tagID string
+		err := tx.QueryRow(ctx, `SELECT id FROM learning_tag WHERE slug = $1`, t.Slug).Scan(&tagID)
+		if err == pgx.ErrNoRows {
+			tagID = uuid.NewString()
+			if _, err := tx.Exec(ctx, `
+				INSERT INTO learning_tag (id, slug, name_id, name_en, created_at)
+				VALUES ($1,$2,$3,$4,NOW())
+			`, tagID, t.Slug, t.NameID, t.NameEN); err != nil {
+				return apperrors.Internal(err)
+			}
+		} else if err != nil {
+			return apperrors.Internal(err)
+		} else {
+			_, _ = tx.Exec(ctx, `
+				UPDATE learning_tag SET name_id = $2, name_en = $3 WHERE id = $1
+			`, tagID, t.NameID, t.NameEN)
+		}
+		if _, err := tx.Exec(ctx, `
+			INSERT INTO learning_category_tag (category_id, tag_id) VALUES ($1,$2)
+			ON CONFLICT DO NOTHING
+		`, categoryID, tagID); err != nil {
+			return apperrors.Internal(err)
+		}
+	}
+	return nil
+}
+
+func (s *Service) loadCategoryTagsMap(ctx context.Context, ids []string) (map[string][]TagDTO, error) {
+	out := map[string][]TagDTO{}
+	if len(ids) == 0 {
+		return out, nil
+	}
+	rows, err := s.Pool.Query(ctx, `
+		SELECT ct.category_id, t.id, t.slug, t.name_id, t.name_en
+		FROM learning_category_tag ct
+		JOIN learning_tag t ON t.id = ct.tag_id
+		WHERE ct.category_id = ANY($1)
+		ORDER BY t.slug
+	`, ids)
+	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var categoryID string
+		var t TagDTO
+		if err := rows.Scan(&categoryID, &t.ID, &t.Slug, &t.NameID, &t.NameEN); err != nil {
+			return nil, apperrors.Internal(err)
+		}
+		out[categoryID] = append(out[categoryID], t)
+	}
+	return out, rows.Err()
+}
+
+func (s *Service) attachCategoryTags(ctx context.Context, items []CategoryDTO) error {
+	ids := make([]string, len(items))
+	for i := range items {
+		ids[i] = items[i].ID
+		if items[i].Tags == nil {
+			items[i].Tags = []TagDTO{}
+		}
+	}
+	tagMap, err := s.loadCategoryTagsMap(ctx, ids)
+	if err != nil {
+		return err
+	}
+	for i := range items {
+		if tags := tagMap[items[i].ID]; tags != nil {
+			items[i].Tags = tags
+		}
+	}
+	return nil
 }
 
 func planKeyOK(key string) bool {
@@ -119,9 +249,10 @@ func categoryOrderSQL(sortBy, sortDir string) string {
 	}
 }
 
-func (s *Service) ListCategories(ctx context.Context, page, pageSize int, search, status, sortBy, sortDir string, admin bool) (*CategoryListResult, error) {
+func (s *Service) ListCategories(ctx context.Context, page, pageSize int, search, status, sortBy, sortDir string, admin bool, tagSlugs []string) (*CategoryListResult, error) {
 	page = normalizePage(page)
 	pageSize = normalizePageSize(pageSize)
+	tagSlugs = normalizeTagSlugList(tagSlugs, "")
 	where := []string{"deleted_at IS NULL"}
 	args := []any{}
 	if !admin {
@@ -134,6 +265,23 @@ func (s *Service) ListCategories(ctx context.Context, page, pageSize int, search
 		args = append(args, "%"+q+"%")
 		n := itoa(len(args))
 		where = append(where, "(name_id ILIKE $"+n+" OR name_en ILIKE $"+n+" OR slug ILIKE $"+n+")")
+	}
+	if len(tagSlugs) == 1 {
+		args = append(args, tagSlugs[0])
+		n := itoa(len(args))
+		where = append(where, `EXISTS (
+			SELECT 1 FROM learning_category_tag ct
+			JOIN learning_tag t ON t.id = ct.tag_id
+			WHERE ct.category_id = learning_category.id AND t.slug = $`+n+`
+		)`)
+	} else if len(tagSlugs) > 1 {
+		args = append(args, tagSlugs)
+		n := itoa(len(args))
+		where = append(where, `EXISTS (
+			SELECT 1 FROM learning_category_tag ct
+			JOIN learning_tag t ON t.id = ct.tag_id
+			WHERE ct.category_id = learning_category.id AND t.slug = ANY($`+n+`::text[])
+		)`)
 	}
 	whereSQL := strings.Join(where, " AND ")
 	lessonStatus := ""
@@ -173,13 +321,20 @@ func (s *Service) ListCategories(ctx context.Context, page, pageSize int, search
 		c.CoverURL = s.coverURL(c.CoverObjectKey)
 		c.CreatedAt = formatTime(created)
 		c.UpdatedAt = formatTime(updated)
+		c.Tags = []TagDTO{}
 		items = append(items, c)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	if err := s.attachCategoryTags(ctx, items); err != nil {
+		return nil, err
 	}
 	pages := 0
 	if total > 0 {
 		pages = int(math.Ceil(float64(total) / float64(pageSize)))
 	}
-	return &CategoryListResult{Items: items, Page: page, PageSize: pageSize, Total: total, TotalPages: pages}, rows.Err()
+	return &CategoryListResult{Items: items, Page: page, PageSize: pageSize, Total: total, TotalPages: pages}, nil
 }
 
 func (s *Service) GetCategory(ctx context.Context, id string) (*CategoryDTO, error) {
@@ -205,6 +360,14 @@ func (s *Service) GetCategory(ctx context.Context, id string) (*CategoryDTO, err
 	c.CoverURL = s.coverURL(c.CoverObjectKey)
 	c.CreatedAt = formatTime(created)
 	c.UpdatedAt = formatTime(updated)
+	c.Tags = []TagDTO{}
+	tagMap, err := s.loadCategoryTagsMap(ctx, []string{c.ID})
+	if err != nil {
+		return nil, err
+	}
+	if tags := tagMap[c.ID]; tags != nil {
+		c.Tags = tags
+	}
 	return &c, nil
 }
 
@@ -222,7 +385,12 @@ func (s *Service) CreateCategory(ctx context.Context, in CategoryInput) (*Catego
 		return nil, apperrors.Internal(err)
 	}
 	id := uuid.NewString()
-	_, err = s.Pool.Exec(ctx, `
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	_, err = tx.Exec(ctx, `
 		INSERT INTO learning_category (
 		  id, slug, name_id, name_en, description_id, description_en, cover_object_key,
 		  position, status, plan_key, created_at, updated_at
@@ -230,6 +398,12 @@ func (s *Service) CreateCategory(ctx context.Context, in CategoryInput) (*Catego
 	`, id, slug, normalized.NameID, normalized.NameEN, normalized.DescriptionID, normalized.DescriptionEN,
 		nullIfEmptyPtr(normalized.CoverObjectKey), next, normalized.Status, normalized.PlanKey)
 	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	if err := s.replaceCategoryTags(ctx, tx, id, normalized.Tags); err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
 		return nil, apperrors.Internal(err)
 	}
 	return s.GetCategory(ctx, id)
@@ -256,7 +430,12 @@ func (s *Service) UpdateCategory(ctx context.Context, id string, in CategoryInpu
 		}
 		slug = nextSlug
 	}
-	_, err = s.Pool.Exec(ctx, `
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+	_, err = tx.Exec(ctx, `
 		UPDATE learning_category
 		SET slug=$2, name_id=$3, name_en=$4, description_id=$5, description_en=$6,
 		    cover_object_key=$7, status=$8::learning_category_status, plan_key=$9, updated_at=NOW()
@@ -264,6 +443,12 @@ func (s *Service) UpdateCategory(ctx context.Context, id string, in CategoryInpu
 	`, id, slug, normalized.NameID, normalized.NameEN, normalized.DescriptionID, normalized.DescriptionEN,
 		cover, normalized.Status, normalized.PlanKey)
 	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	if err := s.replaceCategoryTags(ctx, tx, id, normalized.Tags); err != nil {
+		return nil, err
+	}
+	if err := tx.Commit(ctx); err != nil {
 		return nil, apperrors.Internal(err)
 	}
 	if existing.CoverObjectKey != nil && (cover == nil || *existing.CoverObjectKey != *cover) && s.Media != nil {
@@ -310,6 +495,135 @@ func (s *Service) HardDeleteCategory(ctx context.Context, id string) error {
 		_ = s.Media.DeleteObject(*cover)
 	}
 	return nil
+}
+
+func (s *Service) BulkHardDeleteLessons(ctx context.Context, categoryID string, ids []string) (int, error) {
+	if _, err := s.GetCategory(ctx, categoryID); err != nil {
+		return 0, err
+	}
+	if len(ids) == 0 || len(ids) > 50 {
+		return 0, apperrors.Validation("Select between 1 and 50 lessons to delete", "Pilih 1 sampai 50 materi untuk dihapus")
+	}
+	seen := map[string]struct{}{}
+	clean := make([]string, 0, len(ids))
+	for _, id := range ids {
+		id = strings.TrimSpace(id)
+		if id == "" {
+			continue
+		}
+		if _, ok := seen[id]; ok {
+			continue
+		}
+		seen[id] = struct{}{}
+		clean = append(clean, id)
+	}
+	if len(clean) == 0 {
+		return 0, apperrors.Validation("Select at least one lesson", "Pilih minimal satu materi")
+	}
+
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return 0, apperrors.Internal(err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	if _, err := tx.Exec(ctx, `SELECT id FROM learning_category WHERE id=$1 AND deleted_at IS NULL FOR UPDATE`, categoryID); err != nil {
+		return 0, apperrors.Internal(err)
+	}
+
+	rows, err := tx.Query(ctx, `
+		SELECT id, cover_object_key
+		FROM learning_material
+		WHERE category_id = $1
+		  AND deleted_at IS NULL
+		  AND visibility = 'STUDENT'
+		  AND id = ANY($2)
+		FOR UPDATE
+	`, categoryID, clean)
+	if err != nil {
+		return 0, apperrors.Internal(err)
+	}
+	found := map[string]struct{}{}
+	covers := make([]string, 0, len(clean))
+	for rows.Next() {
+		var id string
+		var cover *string
+		if err := rows.Scan(&id, &cover); err != nil {
+			rows.Close()
+			return 0, apperrors.Internal(err)
+		}
+		found[id] = struct{}{}
+		if cover != nil && strings.TrimSpace(*cover) != "" {
+			covers = append(covers, strings.TrimSpace(*cover))
+		}
+	}
+	rows.Close()
+	if err := rows.Err(); err != nil {
+		return 0, apperrors.Internal(err)
+	}
+	if len(found) != len(clean) {
+		return 0, apperrors.Validation(
+			"One or more lessons are not in this category",
+			"Satu atau lebih materi tidak ada di kategori ini",
+		)
+	}
+
+	tag, err := tx.Exec(ctx, `
+		DELETE FROM learning_material
+		WHERE category_id = $1
+		  AND visibility = 'STUDENT'
+		  AND id = ANY($2)
+	`, categoryID, clean)
+	if err != nil {
+		return 0, apperrors.Internal(err)
+	}
+	deleted := int(tag.RowsAffected())
+
+	remain, err := tx.Query(ctx, `
+		SELECT id FROM learning_material
+		WHERE category_id = $1 AND deleted_at IS NULL AND visibility = 'STUDENT'
+		ORDER BY position ASC NULLS LAST, created_at ASC, id ASC
+	`, categoryID)
+	if err != nil {
+		return 0, apperrors.Internal(err)
+	}
+	remainIDs := make([]string, 0, 32)
+	for remain.Next() {
+		var id string
+		if err := remain.Scan(&id); err != nil {
+			remain.Close()
+			return 0, apperrors.Internal(err)
+		}
+		remainIDs = append(remainIDs, id)
+	}
+	remain.Close()
+	if err := remain.Err(); err != nil {
+		return 0, apperrors.Internal(err)
+	}
+	for i, id := range remainIDs {
+		if _, err := tx.Exec(ctx, `
+			UPDATE learning_material SET position = $2, updated_at = NOW() WHERE id = $1
+		`, id, -(i + 1)); err != nil {
+			return 0, apperrors.Internal(err)
+		}
+	}
+	for i, id := range remainIDs {
+		if _, err := tx.Exec(ctx, `
+			UPDATE learning_material SET position = $2, updated_at = NOW() WHERE id = $1
+		`, id, i+1); err != nil {
+			return 0, apperrors.Internal(err)
+		}
+	}
+
+	if err := tx.Commit(ctx); err != nil {
+		return 0, apperrors.Internal(err)
+	}
+	if s.Media != nil {
+		for _, key := range covers {
+			_ = s.Media.DeleteObject(key)
+		}
+	}
+	return deleted, nil
 }
 
 func (s *Service) ReorderLessons(ctx context.Context, categoryID string, ids []string) error {
@@ -367,8 +681,8 @@ func (s *Service) ReorderLessons(ctx context.Context, categoryID string, ids []s
 	return tx.Commit(ctx)
 }
 
-func (s *Service) StudentCategories(ctx context.Context, userID string, page, pageSize int, search, sortBy, sortDir string) (*CategoryListResult, error) {
-	result, err := s.ListCategories(ctx, page, pageSize, search, "PUBLISHED", sortBy, sortDir, false)
+func (s *Service) StudentCategories(ctx context.Context, userID string, page, pageSize int, search, sortBy, sortDir string, tagSlugs []string) (*CategoryListResult, error) {
+	result, err := s.ListCategories(ctx, page, pageSize, search, "PUBLISHED", sortBy, sortDir, false, tagSlugs)
 	if err != nil {
 		return nil, err
 	}
@@ -419,6 +733,36 @@ func (s *Service) StudentCategories(ctx context.Context, userID string, page, pa
 	return result, nil
 }
 
+func (s *Service) ListStudentCategoryTags(ctx context.Context, limit int) ([]TagDTO, error) {
+	if limit < 1 || limit > 80 {
+		limit = 40
+	}
+	rows, err := s.Pool.Query(ctx, `
+		SELECT t.id, t.slug, t.name_id, t.name_en, COUNT(*)::int AS usage_count
+		FROM learning_tag t
+		JOIN learning_category_tag ct ON ct.tag_id = t.id
+		JOIN learning_category c ON c.id = ct.category_id
+		WHERE c.deleted_at IS NULL
+		  AND c.status = 'PUBLISHED'
+		GROUP BY t.id, t.slug, t.name_id, t.name_en
+		ORDER BY usage_count DESC, t.slug ASC
+		LIMIT $1
+	`, limit)
+	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	defer rows.Close()
+	out := make([]TagDTO, 0, limit)
+	for rows.Next() {
+		var t TagDTO
+		if err := rows.Scan(&t.ID, &t.Slug, &t.NameID, &t.NameEN, &t.UsageCount); err != nil {
+			return nil, apperrors.Internal(err)
+		}
+		out = append(out, t)
+	}
+	return out, rows.Err()
+}
+
 func (s *Service) StudentCategoryPath(ctx context.Context, userID, slug, locale string) (*StudentCategoryDetail, error) {
 	var id, plan string
 	var card StudentCategoryCard
@@ -437,8 +781,16 @@ func (s *Service) StudentCategoryPath(ctx context.Context, userID, slug, locale 
 	card.ID = id
 	card.PlanKey = plan
 	card.CoverURL = s.coverURL(cover)
+	card.Tags = []TagDTO{}
 	if err := s.assertCategoryAccess(ctx, userID, plan); err != nil {
 		return nil, err
+	}
+	tagMap, err := s.loadCategoryTagsMap(ctx, []string{id})
+	if err != nil {
+		return nil, err
+	}
+	if tags := tagMap[id]; tags != nil {
+		card.Tags = tags
 	}
 	lessons, err := s.publishedLessons(ctx, id, locale)
 	if err != nil {
@@ -459,20 +811,28 @@ func (s *Service) StudentCategoryPath(ctx context.Context, userID, slug, locale 
 		out = append(out, PathLessonDTO{
 			ID: l.ID, Slug: l.Slug, Title: l.Title, Excerpt: l.Excerpt, Position: l.Position,
 			Status: l.Status, CoverURL: s.coverURL(l.CoverKey),
+			// Completed lessons stay open forever for review/retake; only incomplete future steps lock.
 			Locked: locked && !isDone, Completed: isDone,
 			InProgress: !isDone && !locked && reading[l.ID] > 0,
 			ReadingPercent: reading[l.ID],
 		})
 	}
-	// A previously completed lesson stays readable, but a gap locks everything after it.
-	for i := range out {
-		if !lessonUnlocked(lessons, done, lessons[i].ID) {
-			out[i].Locked = true
-		}
-	}
 	card.LessonCount = len(out)
 	card.CompletedCount = completed
-	return &StudentCategoryDetail{StudentCategoryCard: card, Lessons: out}, nil
+	pathCompleted := len(out) > 0 && completed >= len(out)
+	detail := &StudentCategoryDetail{
+		StudentCategoryCard: card,
+		Lessons:             out,
+		PathCompleted:       pathCompleted,
+	}
+	if pathCompleted {
+		completion, err := s.buildPathCompletion(ctx, userID, id, locale)
+		if err != nil {
+			return nil, err
+		}
+		detail.Completion = completion
+	}
+	return detail, nil
 }
 
 func (s *Service) OpenStudentLesson(ctx context.Context, userID, slug, locale string, bypassLock bool) (*StudentLessonView, error) {
@@ -507,7 +867,8 @@ func (s *Service) OpenStudentLesson(ctx context.Context, userID, slug, locale st
 	if err != nil {
 		return nil, err
 	}
-	if !bypassLock && !lessonUnlocked(lessons, done, detail.ID) {
+	// Completed lessons remain reopenable for review and unlimited practice retries.
+	if !bypassLock && !done[detail.ID] && !lessonUnlocked(lessons, done, detail.ID) {
 		return nil, apperrors.LessonLocked()
 	}
 	qs, err := s.loadQuestions(ctx, detail.ID, false)
@@ -515,10 +876,20 @@ func (s *Service) OpenStudentLesson(ctx context.Context, userID, slug, locale st
 		return nil, err
 	}
 	completed := 0
+	pathLessons := make([]PathLessonDTO, 0, len(lessons))
 	for _, l := range lessons {
-		if done[l.ID] {
+		isDone := done[l.ID]
+		if isDone {
 			completed++
 		}
+		locked := !lessonUnlocked(lessons, done, l.ID)
+		pathLessons = append(pathLessons, PathLessonDTO{
+			ID: l.ID, Slug: l.Slug, Title: l.Title, Excerpt: l.Excerpt, Position: l.Position,
+			Status: l.Status, CoverURL: s.coverURL(l.CoverKey),
+			Locked: locked && !isDone, Completed: isDone,
+			InProgress: !isDone && !locked && reading[l.ID] > 0,
+			ReadingPercent: reading[l.ID],
+		})
 	}
 	var next *string
 	nextLocked := false
@@ -526,13 +897,22 @@ func (s *Service) OpenStudentLesson(ctx context.Context, userID, slug, locale st
 		if l.ID == detail.ID && i+1 < len(lessons) {
 			slugNext := lessons[i+1].Slug
 			next = &slugNext
-			nextLocked = !lessonUnlocked(lessons, done, lessons[i+1].ID)
+			nextDone := done[lessons[i+1].ID]
+			nextLocked = !nextDone && !lessonUnlocked(lessons, done, lessons[i+1].ID)
 			break
 		}
 	}
 	status := "in_progress"
 	if done[detail.ID] {
 		status = "completed"
+	}
+	pathCompleted := len(lessons) > 0 && completed >= len(lessons)
+	var completion *PathCompletionDTO
+	if pathCompleted && detail.CategoryID != nil {
+		completion, err = s.buildPathCompletion(ctx, userID, *detail.CategoryID, locale)
+		if err != nil {
+			return nil, err
+		}
 	}
 	return &StudentLessonView{
 		Material: detail, CategorySlug: catSlug, CategoryNameID: nameID, CategoryNameEN: nameEN,
@@ -545,7 +925,9 @@ func (s *Service) OpenStudentLesson(ctx context.Context, userID, slug, locale st
 			detail.ShuffleQuestions,
 			detail.ShuffleChoices,
 		),
+		Lessons: pathLessons,
 		NextSlug: next, NextLocked: nextLocked,
+		PathCompleted: pathCompleted, Completion: completion,
 	}, nil
 }
 
@@ -702,6 +1084,12 @@ func (s *Service) SubmitQuiz(ctx context.Context, userID, slug string, in QuizSu
 		return nil, apperrors.Internal(err)
 	}
 	defer func() { _ = tx.Rollback(ctx) }()
+	// Serialize concurrent submits for the same student/lesson.
+	if _, err := tx.Exec(ctx, `
+		SELECT pg_advisory_xact_lock(hashtext($1), hashtext($2))
+	`, userID, view.Material.ID); err != nil {
+		return nil, apperrors.Internal(err)
+	}
 	_, err = tx.Exec(ctx, `
 		INSERT INTO learning_quiz_attempt (id, user_id, material_id, score, passed, created_at)
 		VALUES ($1,$2,$3,$4,$5,NOW())
@@ -716,6 +1104,18 @@ func (s *Service) SubmitQuiz(ctx context.Context, userID, slug string, in QuizSu
 		`, attemptID, g.q.ID, g.optID, g.text, g.knew, g.correct); err != nil {
 			return nil, apperrors.Internal(err)
 		}
+	}
+	// Cap history per lesson (answers cascade) so storage stays bounded under heavy retry traffic.
+	if _, err := tx.Exec(ctx, `
+		DELETE FROM learning_quiz_attempt
+		WHERE id IN (
+			SELECT id FROM learning_quiz_attempt
+			WHERE user_id = $1 AND material_id = $2
+			ORDER BY created_at DESC
+			OFFSET 50
+		)
+	`, userID, view.Material.ID); err != nil {
+		return nil, apperrors.Internal(err)
 	}
 	if passed {
 		if _, err := tx.Exec(ctx, `
@@ -736,31 +1136,37 @@ func (s *Service) SubmitQuiz(ctx context.Context, userID, slug string, in QuizSu
 	return s.quizResultFromAttempt(ctx, userID, slug, attemptID, score, passed)
 }
 
-func (s *Service) quizResultFromAttempt(ctx context.Context, userID, slug, attemptID string, score int, passed bool) (*QuizSubmitResult, error) {
-	view, err := s.OpenStudentLesson(ctx, userID, slug, "id", true)
-	if err != nil {
-		return nil, err
-	}
-	adminQs, err := s.loadQuestions(ctx, view.Material.ID, true)
-	if err != nil {
-		return nil, err
-	}
+type storedAnswer struct {
+	correct  bool
+	optID    string
+	text     string
+	knew     *bool
+}
+
+func (s *Service) loadAttemptAnswers(ctx context.Context, attemptID string) (map[string]storedAnswer, error) {
 	rows, err := s.Pool.Query(ctx, `
-		SELECT question_id, correct FROM learning_quiz_answer WHERE attempt_id=$1
+		SELECT question_id, correct, COALESCE(selected_option_id, ''), COALESCE(text_answer, ''), knew
+		FROM learning_quiz_answer WHERE attempt_id = $1
 	`, attemptID)
 	if err != nil {
 		return nil, apperrors.Internal(err)
 	}
 	defer rows.Close()
-	correctBy := map[string]bool{}
+	out := map[string]storedAnswer{}
 	for rows.Next() {
 		var qid string
-		var ok bool
-		if err := rows.Scan(&qid, &ok); err != nil {
+		var a storedAnswer
+		var knew *bool
+		if err := rows.Scan(&qid, &a.correct, &a.optID, &a.text, &knew); err != nil {
 			return nil, apperrors.Internal(err)
 		}
-		correctBy[qid] = ok
+		a.knew = knew
+		out[qid] = a
 	}
+	return out, rows.Err()
+}
+
+func buildReviewsFromAttempt(adminQs []QuestionAdminDTO, answers map[string]storedAnswer) []QuestionReviewDTO {
 	reviews := make([]QuestionReviewDTO, 0, len(adminQs))
 	for _, q := range adminQs {
 		pub := toPublicQuestions([]QuestionAdminDTO{q})[0]
@@ -771,6 +1177,7 @@ func (s *Service) quizResultFromAttempt(ctx context.Context, userID, slug, attem
 				break
 			}
 		}
+		ans := answers[q.ID]
 		reviews = append(reviews, QuestionReviewDTO{
 			QuestionPublicDTO: pub,
 			ExplanationID:     q.ExplanationID,
@@ -779,15 +1186,370 @@ func (s *Service) quizResultFromAttempt(ctx context.Context, userID, slug, attem
 			AnswerEN:          q.AnswerEN,
 			AcceptedAnswers:   q.AcceptedAnswers,
 			CorrectOptionID:   correctOpt,
-			Correct:           correctBy[q.ID],
+			Correct:           ans.correct,
+			SelectedOptionID:  ans.optID,
+			TextAnswer:        ans.text,
+			Knew:              ans.knew,
 		})
+	}
+	return reviews
+}
+
+func (s *Service) quizResultFromAttempt(ctx context.Context, userID, slug, attemptID string, score int, passed bool) (*QuizSubmitResult, error) {
+	view, err := s.OpenStudentLesson(ctx, userID, slug, "id", true)
+	if err != nil {
+		return nil, err
+	}
+	adminQs, err := s.loadQuestions(ctx, view.Material.ID, true)
+	if err != nil {
+		return nil, err
+	}
+	answers, err := s.loadAttemptAnswers(ctx, attemptID)
+	if err != nil {
+		return nil, err
+	}
+	reviews := buildReviewsFromAttempt(adminQs, answers)
+	passScore := view.Material.PassScore
+	if passScore < 50 {
+		passScore = 80
+	}
+	pathCompleted := view.LessonCount > 0 && view.CompletedCount >= view.LessonCount
+	var completion *PathCompletionDTO
+	if pathCompleted && view.Material.CategoryID != nil {
+		completion, err = s.buildPathCompletion(ctx, userID, *view.Material.CategoryID, "id")
+		if err != nil {
+			return nil, err
+		}
+	}
+	return &QuizSubmitResult{
+		AttemptID: attemptID, Score: score, Passed: passed, PassScore: passScore,
+		Reviews: reviews, NextSlug: view.NextSlug, NextLocked: view.NextLocked,
+		PathCompleted: pathCompleted, Completion: completion,
+	}, nil
+}
+
+const quizAttemptHistoryCap = 50
+
+// ListQuizAttempts returns practice history for the current student on one lesson.
+// Unlock/progress still use the newest attempt; older rows stay for student review.
+func (s *Service) ListQuizAttempts(ctx context.Context, userID, slug string, limit int) (*QuizAttemptListResult, error) {
+	if limit < 1 || limit > quizAttemptHistoryCap {
+		limit = quizAttemptHistoryCap
+	}
+	view, err := s.OpenStudentLesson(ctx, userID, slug, "id", false)
+	if err != nil {
+		return nil, err
+	}
+	var total int
+	if err := s.Pool.QueryRow(ctx, `
+		SELECT COUNT(*)::int FROM learning_quiz_attempt
+		WHERE user_id = $1 AND material_id = $2
+	`, userID, view.Material.ID).Scan(&total); err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	rows, err := s.Pool.Query(ctx, `
+		SELECT id, score, passed, created_at
+		FROM learning_quiz_attempt
+		WHERE user_id = $1 AND material_id = $2
+		ORDER BY created_at DESC
+		LIMIT $3
+	`, userID, view.Material.ID, limit)
+	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	defer rows.Close()
+	items := make([]QuizAttemptSummary, 0, limit)
+	for rows.Next() {
+		var item QuizAttemptSummary
+		var createdAt time.Time
+		if err := rows.Scan(&item.ID, &item.Score, &item.Passed, &createdAt); err != nil {
+			return nil, apperrors.Internal(err)
+		}
+		item.CreatedAt = createdAt.UTC().Format(time.RFC3339)
+		items = append(items, item)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	// Number oldest→newest across full history (not just this page).
+	for i := range items {
+		items[i].AttemptNumber = total - i
+	}
+	return &QuizAttemptListResult{Items: items, Total: total, LatestOnly: true}, nil
+}
+
+// GetQuizAttempt returns one owned attempt with full question-level review for study.
+func (s *Service) GetQuizAttempt(ctx context.Context, userID, slug, attemptID string) (*QuizAttemptDetail, error) {
+	attemptID = strings.TrimSpace(attemptID)
+	if _, err := uuid.Parse(attemptID); err != nil {
+		return nil, apperrors.Validation("Invalid attempt id", "ID percobaan tidak valid")
+	}
+	view, err := s.OpenStudentLesson(ctx, userID, slug, "id", false)
+	if err != nil {
+		return nil, err
+	}
+	var owner, materialID string
+	var score int
+	var passed bool
+	var createdAt time.Time
+	err = s.Pool.QueryRow(ctx, `
+		SELECT user_id, material_id, score, passed, created_at
+		FROM learning_quiz_attempt WHERE id = $1
+	`, attemptID).Scan(&owner, &materialID, &score, &passed, &createdAt)
+	if err == pgx.ErrNoRows {
+		return nil, apperrors.NotFound("attempt")
+	}
+	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	if owner != userID || materialID != view.Material.ID {
+		// Do not leak existence of other users' attempts.
+		return nil, apperrors.NotFound("attempt")
+	}
+	var older int
+	if err := s.Pool.QueryRow(ctx, `
+		SELECT COUNT(*)::int FROM learning_quiz_attempt
+		WHERE user_id = $1 AND material_id = $2 AND created_at < $3
+	`, userID, view.Material.ID, createdAt).Scan(&older); err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	adminQs, err := s.loadQuestions(ctx, view.Material.ID, true)
+	if err != nil {
+		return nil, err
+	}
+	answers, err := s.loadAttemptAnswers(ctx, attemptID)
+	if err != nil {
+		return nil, err
 	}
 	passScore := view.Material.PassScore
 	if passScore < 50 {
 		passScore = 80
 	}
-	return &QuizSubmitResult{
-		AttemptID: attemptID, Score: score, Passed: passed, PassScore: passScore,
-		Reviews: reviews, NextSlug: view.NextSlug, NextLocked: view.NextLocked,
-	}, rows.Err()
+	return &QuizAttemptDetail{
+		QuizAttemptSummary: QuizAttemptSummary{
+			ID: attemptID, Score: score, Passed: passed,
+			CreatedAt: createdAt.UTC().Format(time.RFC3339),
+			AttemptNumber: older + 1,
+		},
+		PassScore: passScore,
+		Reviews:   buildReviewsFromAttempt(adminQs, answers),
+	}, nil
+}
+
+func (s *Service) buildPathCompletion(ctx context.Context, userID, categoryID, locale string) (*PathCompletionDTO, error) {
+	var slug, nameID, nameEN string
+	var position int
+	if err := s.Pool.QueryRow(ctx, `
+		SELECT slug, name_id, name_en, position
+		FROM learning_category
+		WHERE id = $1 AND deleted_at IS NULL AND status = 'PUBLISHED'
+	`, categoryID).Scan(&slug, &nameID, &nameEN, &position); err != nil {
+		if err == pgx.ErrNoRows {
+			return nil, apperrors.NotFound("category")
+		}
+		return nil, apperrors.Internal(err)
+	}
+	lessons, err := s.publishedLessons(ctx, categoryID, locale)
+	if err != nil {
+		return nil, err
+	}
+	done, _, err := s.completedSet(ctx, userID, lessons)
+	if err != nil {
+		return nil, err
+	}
+	ids := make([]string, 0, len(lessons))
+	for _, l := range lessons {
+		ids = append(ids, l.ID)
+	}
+	qCount := map[string]int{}
+	passBy := map[string]int{}
+	if len(ids) > 0 {
+		qRows, err := s.Pool.Query(ctx, `
+			SELECT material_id::text, COUNT(*)::int
+			FROM learning_question
+			WHERE material_id::text = ANY($1)
+			GROUP BY material_id
+		`, ids)
+		if err != nil {
+			return nil, apperrors.Internal(err)
+		}
+		for qRows.Next() {
+			var mid string
+			var n int
+			if err := qRows.Scan(&mid, &n); err != nil {
+				qRows.Close()
+				return nil, apperrors.Internal(err)
+			}
+			qCount[mid] = n
+		}
+		qRows.Close()
+		if err := qRows.Err(); err != nil {
+			return nil, apperrors.Internal(err)
+		}
+		pRows, err := s.Pool.Query(ctx, `
+			SELECT id::text, pass_score FROM learning_material WHERE id::text = ANY($1)
+		`, ids)
+		if err != nil {
+			return nil, apperrors.Internal(err)
+		}
+		for pRows.Next() {
+			var mid string
+			var ps int
+			if err := pRows.Scan(&mid, &ps); err != nil {
+				pRows.Close()
+				return nil, apperrors.Internal(err)
+			}
+			passBy[mid] = clampPassScore(ps)
+		}
+		pRows.Close()
+		if err := pRows.Err(); err != nil {
+			return nil, apperrors.Internal(err)
+		}
+	}
+	type attemptAgg struct {
+		score  int
+		passed bool
+		count  int
+	}
+	latest := map[string]attemptAgg{}
+	if len(ids) > 0 {
+		aRows, err := s.Pool.Query(ctx, `
+			SELECT DISTINCT ON (material_id)
+			       material_id::text, score, passed,
+			       (SELECT COUNT(*)::int FROM learning_quiz_attempt a2
+			        WHERE a2.user_id = a.user_id AND a2.material_id = a.material_id) AS attempt_count
+			FROM learning_quiz_attempt a
+			WHERE user_id = $1 AND material_id::text = ANY($2)
+			ORDER BY material_id, created_at DESC
+		`, userID, ids)
+		if err != nil {
+			return nil, apperrors.Internal(err)
+		}
+		for aRows.Next() {
+			var mid string
+			var agg attemptAgg
+			if err := aRows.Scan(&mid, &agg.score, &agg.passed, &agg.count); err != nil {
+				aRows.Close()
+				return nil, apperrors.Internal(err)
+			}
+			latest[mid] = agg
+		}
+		aRows.Close()
+		if err := aRows.Err(); err != nil {
+			return nil, apperrors.Internal(err)
+		}
+	}
+	outLessons := make([]PathLessonScoreDTO, 0, len(lessons))
+	completed := 0
+	scoreSum := 0
+	scoreN := 0
+	for _, l := range lessons {
+		isDone := done[l.ID]
+		if isDone {
+			completed++
+		}
+		hasQ := qCount[l.ID] > 0
+		ps := passBy[l.ID]
+		if ps < 50 {
+			ps = 80
+		}
+		row := PathLessonScoreDTO{
+			Slug: l.Slug, Title: l.Title, Position: l.Position,
+			Completed: isDone, HasQuestions: hasQ, PassScore: ps,
+			ReadingOnly: !hasQ,
+		}
+		if agg, ok := latest[l.ID]; ok {
+			score := agg.score
+			row.LatestScore = &score
+			row.Passed = agg.passed
+			row.AttemptCount = agg.count
+			scoreSum += agg.score
+			scoreN++
+		} else if !hasQ && isDone {
+			row.Passed = true
+		}
+		outLessons = append(outLessons, row)
+	}
+	var avg *float64
+	if scoreN > 0 {
+		v := float64(scoreSum) / float64(scoreN)
+		avg = &v
+	}
+	nextPath, err := s.findNextLearningPath(ctx, userID, categoryID, position)
+	if err != nil {
+		return nil, err
+	}
+	return &PathCompletionDTO{
+		CategorySlug: slug, CategoryNameID: nameID, CategoryNameEN: nameEN,
+		LessonCount: len(lessons), CompletedCount: completed,
+		AverageScore: avg, Lessons: outLessons, NextPath: nextPath,
+	}, nil
+}
+
+func (s *Service) findNextLearningPath(ctx context.Context, userID, currentCategoryID string, currentPosition int) (*NextPathCardDTO, error) {
+	rows, err := s.Pool.Query(ctx, `
+		SELECT c.id, c.slug, c.name_id, c.name_en, c.cover_object_key, c.plan_key, c.position,
+		       (SELECT COUNT(*)::int FROM learning_material m
+		        WHERE m.category_id = c.id AND m.deleted_at IS NULL
+		          AND m.status = 'PUBLISHED' AND m.visibility = 'STUDENT') AS lesson_count
+		FROM learning_category c
+		WHERE c.deleted_at IS NULL AND c.status = 'PUBLISHED' AND c.id <> $1
+		ORDER BY
+		  CASE WHEN c.position > $2 THEN 0 ELSE 1 END,
+		  c.position ASC,
+		  c.updated_at DESC
+	`, currentCategoryID, currentPosition)
+	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	defer rows.Close()
+	type cand struct {
+		id, slug, nameID, nameEN, plan string
+		cover *string
+		lessons int
+	}
+	cands := make([]cand, 0, 16)
+	for rows.Next() {
+		var c cand
+		var pos int
+		if err := rows.Scan(&c.id, &c.slug, &c.nameID, &c.nameEN, &c.cover, &c.plan, &pos, &c.lessons); err != nil {
+			return nil, apperrors.Internal(err)
+		}
+		if c.lessons == 0 {
+			continue
+		}
+		ok, err := s.userHasPlan(ctx, userID, c.plan)
+		if err != nil {
+			return nil, err
+		}
+		if !ok {
+			continue
+		}
+		cands = append(cands, c)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	for _, c := range cands {
+		var done int
+		if err := s.Pool.QueryRow(ctx, `
+			SELECT COUNT(*)::int
+			FROM learning_lesson_progress p
+			JOIN learning_material m ON m.id = p.material_id
+			WHERE p.user_id = $1 AND m.category_id = $2
+			  AND p.status = 'completed'
+			  AND m.deleted_at IS NULL AND m.status = 'PUBLISHED' AND m.visibility = 'STUDENT'
+		`, userID, c.id).Scan(&done); err != nil {
+			return nil, apperrors.Internal(err)
+		}
+		if done >= c.lessons {
+			continue // already finished — keep looking
+		}
+		return &NextPathCardDTO{
+			Slug: c.slug, NameID: c.nameID, NameEN: c.nameEN,
+			CoverURL: s.coverURL(c.cover), LessonCount: c.lessons,
+			CompletedCount: done, PlanKey: c.plan,
+		}, nil
+	}
+	return nil, nil
 }

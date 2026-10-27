@@ -1,6 +1,16 @@
 "use client";
 
-import { Archive, ArrowDown, ArrowLeft, ArrowUp, Loader2, Plus, Trash2 } from "lucide-react";
+import {
+  Archive,
+  ArrowDown,
+  ArrowLeft,
+  ArrowUp,
+  ImageIcon,
+  Loader2,
+  Plus,
+  Trash2,
+  X,
+} from "lucide-react";
 
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { useLocale, useTranslations } from "next-intl";
@@ -8,6 +18,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AdminConfirmDialog } from "@/components/admin/admin-confirm-dialog";
+import { AdminCategoryEditorSkeleton } from "@/components/admin/admin-loading";
+import {
+  CategoryTagsField,
+  normalizeCategoryTags,
+} from "@/components/admin/learning/category-tags-field";
 import { IconTooltip } from "@/components/ui/icon-tooltip";
 import { RichTextField } from "@/components/admin/learning/rich-text-field";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -16,9 +31,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useRouter } from "@/i18n/routing";
 import { CATEGORY_DESCRIPTION_MAX, visibleLength } from "@/lib/learning/rich-text";
-import type { LearningCategory, LearningStatus } from "@/lib/learning/types";
+import type {
+  LearningCategory,
+  LearningCategoryTagInput,
+  LearningStatus,
+} from "@/lib/learning/types";
 import type { MaterialListItem, MaterialListResult } from "@/lib/materials/types";
-import { CMS_IMAGE_ACCEPT, CMS_IMAGE_MAX_BYTES } from "@/lib/materials/plain-text";
+import { inspectCoverImage } from "@/lib/materials/cover-image";
+import { CMS_IMAGE_ACCEPT } from "@/lib/materials/plain-text";
 import { toBrowserMediaUrl } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +53,7 @@ type CategorySnapshot = {
   status: LearningStatus;
   planKey: string;
   coverObjectKey: string | null;
+  tags: LearningCategoryTagInput[];
 };
 
 function snapshotKey(s: CategorySnapshot): string {
@@ -55,10 +76,21 @@ export function CategoryEditor({ categoryId }: Props) {
   const [coverObjectKey, setCoverObjectKey] = useState<string | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [slug, setSlug] = useState("");
+  const [tags, setTags] = useState<LearningCategoryTagInput[]>([]);
   const [lessons, setLessons] = useState<MaterialListItem[]>([]);
   const [confirm, setConfirm] = useState<"archive" | "delete" | "save" | null>(null);
   const [pending, setPending] = useState(false);
   const [nameError, setNameError] = useState(false);
+  const [selectedLessonIds, setSelectedLessonIds] = useState<string[]>([]);
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
+  const [uploadingCover, setUploadingCover] = useState(false);
+  const [removeCoverOpen, setRemoveCoverOpen] = useState(false);
+  const [removingCover, setRemovingCover] = useState(false);
+  /** Bumps TipTap remount after server load/save so description stays in sync. */
+  const [descriptionEditorKey, setDescriptionEditorKey] = useState(0);
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const savedCoverKeyRef = useRef<string | null>(null);
   const [baseline, setBaseline] = useState<string | null>(() =>
     categoryId
       ? null
@@ -70,6 +102,7 @@ export function CategoryEditor({ categoryId }: Props) {
           status: "DRAFT",
           planKey: "free",
           coverObjectKey: null,
+          tags: [],
         }),
   );
   const [leaveOpen, setLeaveOpen] = useState(false);
@@ -87,8 +120,9 @@ export function CategoryEditor({ categoryId }: Props) {
       status,
       planKey,
       coverObjectKey,
+      tags: normalizeCategoryTags(tags),
     }),
-    [nameId, nameEn, descriptionId, descriptionEn, status, planKey, coverObjectKey],
+    [nameId, nameEn, descriptionId, descriptionEn, status, planKey, coverObjectKey, tags],
   );
 
   useEffect(() => {
@@ -168,6 +202,13 @@ export function CategoryEditor({ categoryId }: Props) {
         const payload = (await res.json()) as { data?: LearningCategory };
         if (!res.ok || !payload.data) throw new Error("load");
         const c = payload.data;
+        const nextTags = normalizeCategoryTags(
+          (c.tags ?? []).map((tag) => ({
+            nameId: tag.nameId,
+            nameEn: tag.nameEn,
+            slug: tag.slug,
+          })),
+        );
         const next: CategorySnapshot = {
           nameId: c.nameId,
           nameEn: c.nameEn,
@@ -176,6 +217,7 @@ export function CategoryEditor({ categoryId }: Props) {
           status: c.status,
           planKey: c.planKey || "free",
           coverObjectKey: c.coverObjectKey,
+          tags: nextTags,
         };
         setNameId(next.nameId);
         setNameEn(next.nameEn);
@@ -184,8 +226,11 @@ export function CategoryEditor({ categoryId }: Props) {
         setStatus(next.status);
         setPlanKey(next.planKey);
         setCoverObjectKey(next.coverObjectKey);
+        setTags(nextTags);
         setCoverUrl(c.coverUrl);
+        savedCoverKeyRef.current = next.coverObjectKey;
         setSlug(c.slug);
+        setDescriptionEditorKey((key) => key + 1);
         setBaseline(snapshotKey(next));
         window.setTimeout(() => {
           const snap = snapshotRef.current;
@@ -197,6 +242,7 @@ export function CategoryEditor({ categoryId }: Props) {
         );
         const listPayload = (await list.json()) as { data?: MaterialListResult };
         setLessons(listPayload.data?.items ?? []);
+        setSelectedLessonIds([]);
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
         toast.error(t("errors.load"));
@@ -208,20 +254,68 @@ export function CategoryEditor({ categoryId }: Props) {
   }, [categoryId, locale, t]);
 
   async function uploadCover(file: File) {
-    if (file.size > CMS_IMAGE_MAX_BYTES) {
-      toast.error(t("errors.cover"));
+    const inspected = await inspectCoverImage(file);
+    if (!inspected.ok) {
+      if (inspected.code === "COVER_TOO_SMALL") {
+        toast.error(t("errors.coverTooSmall"));
+      } else if (inspected.code === "COVER_DECODE_FAILED") {
+        toast.error(t("errors.coverDecode"));
+      } else {
+        toast.error(t("errors.cover"));
+      }
       return;
     }
-    const body = new FormData();
-    body.set("file", file);
-    const res = await fetch("/api/admin/materials/cover", { method: "POST", body, credentials: "same-origin" });
-    const payload = (await res.json()) as { data?: { objectKey: string; publicUrl: string } };
-    if (!res.ok || !payload.data) {
-      toast.error(t("errors.cover"));
-      return;
+    if (inspected.aspectWarning) {
+      toast.message(t("errors.coverAspect"));
     }
-    setCoverObjectKey(payload.data.objectKey);
-    setCoverUrl(payload.data.publicUrl);
+    setUploadingCover(true);
+    try {
+      const body = new FormData();
+      body.set("file", file);
+      // Only purge an unsaved previous upload; a saved cover is removed on save by Go.
+      if (coverObjectKey && coverObjectKey !== savedCoverKeyRef.current) {
+        body.set("previousObjectKey", coverObjectKey);
+      }
+      const res = await fetch("/api/admin/materials/cover", {
+        method: "POST",
+        body,
+        credentials: "same-origin",
+      });
+      const payload = (await res.json()) as {
+        data?: { objectKey: string; publicUrl: string };
+      };
+      if (!res.ok || !payload.data) {
+        toast.error(t("errors.cover"));
+        return;
+      }
+      setCoverObjectKey(payload.data.objectKey);
+      setCoverUrl(payload.data.publicUrl);
+      toast.success(t("toast.coverUploaded"));
+    } finally {
+      setUploadingCover(false);
+      if (coverInputRef.current) coverInputRef.current.value = "";
+    }
+  }
+
+  async function confirmRemoveCover() {
+    const key = coverObjectKey;
+    setRemovingCover(true);
+    try {
+      if (key && key !== savedCoverKeyRef.current) {
+        await fetch("/api/admin/materials/cover", {
+          method: "DELETE",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ objectKey: key }),
+        });
+      }
+      setCoverObjectKey(null);
+      setCoverUrl(null);
+      setRemoveCoverOpen(false);
+      toast.success(t("toast.coverRemoved"));
+    } finally {
+      setRemovingCover(false);
+    }
   }
 
   function validate() {
@@ -244,14 +338,21 @@ export function CategoryEditor({ categoryId }: Props) {
     setSaving(true);
     try {
       const name = nameId.trim() || nameEn.trim();
+      // Mirror the filled locale into the empty one (same as names) so TipTap
+      // does not land on a blank sibling field after save.
+      const descPrimary = descriptionId.trim() || descriptionEn.trim();
+      const nextDescriptionId = descriptionId.trim() || descPrimary;
+      const nextDescriptionEn = descriptionEn.trim() || descPrimary;
+      const nextTags = normalizeCategoryTags(tags);
       const payloadBody = {
         nameId: nameId.trim() || name,
         nameEn: nameEn.trim() || name,
-        descriptionId,
-        descriptionEn,
+        descriptionId: nextDescriptionId,
+        descriptionEn: nextDescriptionEn,
         status,
         planKey: planKey || "free",
         coverObjectKey,
+        tags: nextTags,
       };
       const res = await fetch(
         categoryId ? `/api/admin/learning/categories/${categoryId}` : "/api/admin/learning/categories",
@@ -268,20 +369,34 @@ export function CategoryEditor({ categoryId }: Props) {
         return;
       }
       toast.success(t("toast.saved"));
+      if (!categoryId) {
+        // Navigate first so the edit page loads descriptions from the server
+        // with a fresh TipTap instance (avoids empty editor after create).
+        allowLeaveRef.current = true;
+        router.replace(`/admin/learning/${payload.data.id}`);
+        return;
+      }
       setNameId(payload.data.nameId);
       setNameEn(payload.data.nameEn);
-      setDescriptionId(payload.data.descriptionId);
-      setDescriptionEn(payload.data.descriptionEn);
+      setDescriptionId(payload.data.descriptionId ?? "");
+      setDescriptionEn(payload.data.descriptionEn ?? "");
       setStatus(payload.data.status);
       setPlanKey(payload.data.planKey || "free");
       setCoverObjectKey(payload.data.coverObjectKey);
       setCoverUrl(payload.data.coverUrl);
+      savedCoverKeyRef.current = payload.data.coverObjectKey;
       setSlug(payload.data.slug);
+      setTags(
+        normalizeCategoryTags(
+          (payload.data.tags ?? []).map((tag) => ({
+            nameId: tag.nameId,
+            nameEn: tag.nameEn,
+            slug: tag.slug,
+          })),
+        ),
+      );
+      setDescriptionEditorKey((key) => key + 1);
       markEditorClean();
-      if (!categoryId) {
-        allowLeaveRef.current = true;
-        router.replace(`/admin/learning/${payload.data.id}`);
-      }
     } finally {
       setSaving(false);
     }
@@ -313,8 +428,62 @@ export function CategoryEditor({ categoryId }: Props) {
     if (!res.ok) toast.error(t("errors.save"));
   }
 
+  const allLessonsSelected =
+    lessons.length > 0 && selectedLessonIds.length === lessons.length;
+  const someLessonsSelected =
+    selectedLessonIds.length > 0 && selectedLessonIds.length < lessons.length;
+
+  function toggleLessonSelection(id: string) {
+    setSelectedLessonIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+    );
+  }
+
+  function toggleSelectAllLessons() {
+    if (allLessonsSelected) {
+      setSelectedLessonIds([]);
+      return;
+    }
+    setSelectedLessonIds(lessons.map((lesson) => lesson.id));
+  }
+
+  async function confirmBulkDeleteLessons() {
+    if (!categoryId || selectedLessonIds.length === 0) return;
+    setBulkDeleting(true);
+    try {
+      const res = await fetch(
+        `/api/admin/learning/categories/${encodeURIComponent(categoryId)}/lessons/bulk-delete`,
+        {
+          method: "POST",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: selectedLessonIds }),
+        },
+      );
+      const payload = (await res.json()) as {
+        data?: { deleted?: number };
+        error?: { message?: string };
+      };
+      if (!res.ok) {
+        toast.error(payload.error?.message ?? t("errors.bulkDelete"));
+        return;
+      }
+      const removed = new Set(selectedLessonIds);
+      setLessons((prev) => prev.filter((lesson) => !removed.has(lesson.id)));
+      setSelectedLessonIds([]);
+      setBulkDeleteOpen(false);
+      toast.success(
+        t("toast.bulkDeleted", {
+          count: payload.data?.deleted ?? selectedLessonIds.length,
+        }),
+      );
+    } finally {
+      setBulkDeleting(false);
+    }
+  }
+
   if (loading) {
-    return <div className="flex justify-center py-20"><Loader2 className="size-6 animate-spin text-brand" /></div>;
+    return <AdminCategoryEditorSkeleton label={t("loadingCategory")} />;
   }
 
   const cover = toBrowserMediaUrl(coverUrl ?? coverObjectKey);
@@ -378,7 +547,7 @@ export function CategoryEditor({ categoryId }: Props) {
         <div className="space-y-1.5">
           <Label>{tab === "id" ? t("fields.descriptionId") : t("fields.descriptionEn")}</Label>
           <RichTextField
-            key={tab}
+            key={`${tab}-${descriptionEditorKey}`}
             value={activeDescription}
             max={CATEGORY_DESCRIPTION_MAX}
             placeholder={t("placeholders.description")}
@@ -390,6 +559,12 @@ export function CategoryEditor({ categoryId }: Props) {
           />
         </div>
 
+        <CategoryTagsField
+          tags={tags}
+          locale={tab}
+          onChange={(next) => setTags(normalizeCategoryTags(next))}
+        />
+
         <div className="flex flex-col gap-4 rounded-2xl border border-charcoal/10 p-4 sm:flex-row sm:items-center">
           <div className="flex aspect-[2/1] max-h-36 w-full items-center justify-center overflow-hidden rounded-xl bg-[var(--workspace-surface)] sm:aspect-video sm:max-h-none sm:w-52 sm:shrink-0">
             {cover ? (
@@ -399,12 +574,46 @@ export function CategoryEditor({ categoryId }: Props) {
               <BrandLogo size={72} alt="" />
             )}
           </div>
-          <div className="min-w-0 space-y-2">
+          <div className="min-w-0 flex-1 space-y-2">
             <Label>{t("fields.cover")}</Label>
-            <label className={cn(buttonVariants({ variant: "outline" }), "h-11 w-fit cursor-pointer rounded-2xl")}>
-              {t("actions.uploadCover")}
-              <input type="file" accept={CMS_IMAGE_ACCEPT} className="sr-only" onChange={(e) => { const file = e.target.files?.[0]; if (file) void uploadCover(file); }} />
-            </label>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <Button
+                type="button"
+                variant="outline"
+                disabled={uploadingCover || removingCover}
+                className="h-11 w-full cursor-pointer gap-2 rounded-2xl font-semibold sm:w-auto"
+                onClick={() => coverInputRef.current?.click()}
+              >
+                {uploadingCover ? (
+                  <Loader2 className="size-4 animate-spin" aria-hidden />
+                ) : (
+                  <ImageIcon className="size-4" aria-hidden />
+                )}
+                {cover ? t("actions.replaceCover") : t("actions.uploadCover")}
+              </Button>
+              {cover ? (
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={uploadingCover || removingCover}
+                  className="h-11 w-full cursor-pointer gap-2 rounded-2xl font-semibold text-destructive sm:w-auto"
+                  onClick={() => setRemoveCoverOpen(true)}
+                >
+                  <X className="size-4" aria-hidden />
+                  {t("actions.removeCover")}
+                </Button>
+              ) : null}
+            </div>
+            <input
+              ref={coverInputRef}
+              type="file"
+              accept={CMS_IMAGE_ACCEPT}
+              className="sr-only"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) void uploadCover(file);
+              }}
+            />
             <p className="text-[11px] leading-relaxed text-charcoal/50">{t("fields.coverOptional")}</p>
           </div>
         </div>
@@ -474,7 +683,7 @@ export function CategoryEditor({ categoryId }: Props) {
       <aside className="min-w-0 space-y-3 rounded-[1.35rem] border border-charcoal/10 bg-[var(--workspace-card)] p-3 shadow-sm sm:p-5 xl:sticky xl:top-24">
         {categoryId ? (
           <>
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
               <h2 className="text-lg font-bold text-ink">{t("lessons.title")}</h2>
               <p className="text-xs leading-relaxed text-charcoal/55">{t("lessons.orderHint")}</p>
@@ -484,10 +693,60 @@ export function CategoryEditor({ categoryId }: Props) {
               {t("lessons.new")}
             </Link>
           </div>
+          {lessons.length > 0 ? (
+            <div className="flex flex-col gap-3 rounded-2xl border border-charcoal/10 bg-[var(--workspace-surface)] px-3 py-3">
+              <label className="flex min-w-0 cursor-pointer items-start gap-2.5 text-sm font-semibold text-ink">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 size-4 shrink-0 accent-[var(--brand)]"
+                  checked={allLessonsSelected}
+                  ref={(el) => {
+                    if (el) el.indeterminate = someLessonsSelected;
+                  }}
+                  onChange={toggleSelectAllLessons}
+                  aria-label={t("lessons.selectAll")}
+                />
+                <span className="min-w-0 flex-1 leading-snug">
+                  {selectedLessonIds.length > 0
+                    ? t("lessons.selectedCount", { count: selectedLessonIds.length })
+                    : t("lessons.selectHint")}
+                </span>
+              </label>
+              <Button
+                type="button"
+                variant="outline"
+                disabled={selectedLessonIds.length === 0 || bulkDeleting}
+                className="h-10 w-full shrink-0 cursor-pointer gap-2 rounded-xl text-destructive"
+                onClick={() => setBulkDeleteOpen(true)}
+              >
+                <Trash2 className="size-4" aria-hidden />
+                {t("lessons.deleteSelected")}
+              </Button>
+            </div>
+          ) : null}
           {lessons.length === 0 ? <p className="text-sm text-charcoal/55">{t("lessons.empty")}</p> : null}
           <ol className="max-h-[min(70vh,36rem)] space-y-2 overflow-y-auto pr-1">
-            {lessons.map((lesson, index) => (
-              <li key={lesson.id} className="flex items-center gap-2.5 rounded-2xl border border-charcoal/10 bg-[var(--workspace-surface)] px-2.5 py-2">
+            {lessons.map((lesson, index) => {
+              const selected = selectedLessonIds.includes(lesson.id);
+              return (
+              <li
+                key={lesson.id}
+                className={cn(
+                  "flex items-center gap-2 rounded-2xl border px-2 py-2 transition duration-200 sm:gap-2.5 sm:px-2.5",
+                  selected
+                    ? "border-brand/35 bg-brand/5"
+                    : "border-charcoal/10 bg-[var(--workspace-surface)]",
+                )}
+              >
+                <input
+                  type="checkbox"
+                  className="size-4 shrink-0 cursor-pointer accent-[var(--brand)]"
+                  checked={selected}
+                  onChange={() => toggleLessonSelection(lesson.id)}
+                  aria-label={t("lessons.selectOne", {
+                    title: lesson.title || t("lessons.untitled"),
+                  })}
+                />
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-brand/10 text-xs font-bold text-brand">{index + 1}</span>
                 <div className="min-w-0 flex-1">
                   <Link href={`/admin/learning/${categoryId}/lessons/${lesson.id}`} className="block truncate font-semibold text-ink hover:text-brand">
@@ -504,7 +763,8 @@ export function CategoryEditor({ categoryId }: Props) {
                     </IconTooltip>
                 </div>
               </li>
-            ))}
+              );
+            })}
           </ol>
           </>
         ) : (
@@ -528,6 +788,40 @@ export function CategoryEditor({ categoryId }: Props) {
         cancelLabel={t("actions.cancel")}
         tone="danger"
         onConfirm={confirmLeave}
+      />
+
+      <AdminConfirmDialog
+        open={bulkDeleteOpen}
+        onOpenChange={(open) => {
+          if (bulkDeleting) return;
+          setBulkDeleteOpen(open);
+        }}
+        title={t("confirm.bulkDeleteTitle")}
+        description={t("confirm.bulkDeleteBody", { count: selectedLessonIds.length })}
+        confirmLabel={t("lessons.deleteSelected")}
+        cancelLabel={t("actions.cancel")}
+        pending={bulkDeleting}
+        tone="danger"
+        onConfirm={() => {
+          void confirmBulkDeleteLessons();
+        }}
+      />
+
+      <AdminConfirmDialog
+        open={removeCoverOpen}
+        onOpenChange={(open) => {
+          if (removingCover) return;
+          setRemoveCoverOpen(open);
+        }}
+        title={t("confirm.removeCoverTitle")}
+        description={t("confirm.removeCoverBody")}
+        confirmLabel={t("actions.removeCover")}
+        cancelLabel={t("actions.cancel")}
+        pending={removingCover}
+        tone="danger"
+        onConfirm={() => {
+          void confirmRemoveCover();
+        }}
       />
 
       <AdminConfirmDialog

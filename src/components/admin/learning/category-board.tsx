@@ -1,11 +1,12 @@
 "use client";
 
-import { Loader2, Plus, Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { useLocale, useTranslations } from "next-intl";
 import { useEffect, useState } from "react";
 
+import { AdminCategoryBoardSkeleton } from "@/components/admin/admin-loading";
 import { buttonVariants } from "@/components/ui/button";
 import { FilterSelect } from "@/components/ui/filter-select";
 import { Input } from "@/components/ui/input";
@@ -137,8 +138,11 @@ export function CategoryBoard() {
         </div>
 
         {loading && !data ? (
-          <div className="flex justify-center py-20" role="status">
-            <Loader2 className="size-6 animate-spin text-brand" />
+          <div className="p-4 sm:p-5">
+            <AdminCategoryBoardSkeleton
+              cards={Math.min(pageSize, 6)}
+              label={t("loadingCategories")}
+            />
           </div>
         ) : error && !data ? (
           <p className="px-6 py-16 text-center text-sm text-destructive">{t("errors.load")}</p>
@@ -148,44 +152,63 @@ export function CategoryBoard() {
             <p className="mt-1 text-sm text-charcoal/60">{t("empty.description")}</p>
           </div>
         ) : (
-          <ul className={cn("grid gap-4 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3", loading && "opacity-60")}>
-            {items.map((item) => {
-              const name = locale === "en" ? item.nameEn || item.nameId : item.nameId;
-              const description = plainExcerpt(locale === "en" ? item.descriptionEn || item.descriptionId : item.descriptionId);
-              const cover = toBrowserMediaUrl(item.coverUrl);
-              return (
-                <li key={item.id}>
-                  <Link
-                    href={`/admin/learning/${item.id}`}
-                    className="group flex h-full flex-col overflow-hidden rounded-2xl border border-charcoal/10 bg-white transition duration-300 hover:-translate-y-0.5 hover:border-brand/25 hover:shadow-md"
-                  >
-                    <div className="relative aspect-[16/9] bg-soft">
-                      {cover ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={cover} alt="" className="size-full object-cover transition duration-700 group-hover:scale-[1.03]" />
-                      ) : (
-                        <div className="flex size-full items-center justify-center bg-[var(--workspace-surface)]">
-                          <BrandLogo size={64} alt="" />
-                        </div>
-                      )}
-                      <span className="absolute top-3 left-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold tracking-wide text-ink uppercase shadow-sm">
-                        {t(`status.${item.status as LearningStatus}`)}
-                      </span>
-                    </div>
-                    <div className="flex flex-1 flex-col gap-1 p-4">
-                      <h2 className="font-jp text-lg font-bold text-ink group-hover:text-brand">{name}</h2>
-                      {description ? <p className="line-clamp-2 text-sm text-charcoal/60">{description}</p> : null}
-                      <p className="mt-auto pt-2">
-                        <span className="inline-flex rounded-full bg-[var(--workspace-surface)] px-2.5 py-1 text-xs font-semibold text-charcoal/70">
-                          {t("lessonCount", { count: item.lessonCount })}
+          <div className="relative">
+            {loading ? (
+              <div
+                className="absolute inset-0 z-10 flex items-start justify-center bg-[color-mix(in_oklab,var(--workspace-card)_72%,transparent)] pt-16 backdrop-blur-[1px]"
+                role="status"
+                aria-live="polite"
+                aria-label={t("loadingCategories")}
+              >
+                <span className="rounded-full border border-charcoal/10 bg-white px-3 py-1.5 text-xs font-semibold text-charcoal/70 shadow-sm">
+                  {t("loadingCategories")}
+                </span>
+              </div>
+            ) : null}
+            <ul
+              className={cn(
+                "grid gap-4 p-4 transition-opacity duration-200 sm:grid-cols-2 sm:p-5 xl:grid-cols-3",
+                loading && "pointer-events-none opacity-50",
+              )}
+            >
+              {items.map((item) => {
+                const name = locale === "en" ? item.nameEn || item.nameId : item.nameId;
+                const description = plainExcerpt(locale === "en" ? item.descriptionEn || item.descriptionId : item.descriptionId);
+                const cover = toBrowserMediaUrl(item.coverUrl);
+                return (
+                  <li key={item.id}>
+                    <Link
+                      href={`/admin/learning/${item.id}`}
+                      className="group flex h-full flex-col overflow-hidden rounded-2xl border border-charcoal/10 bg-white transition duration-300 hover:-translate-y-0.5 hover:border-brand/25 hover:shadow-md"
+                    >
+                      <div className="relative aspect-[16/9] bg-soft">
+                        {cover ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={cover} alt="" className="size-full object-cover transition duration-700 group-hover:scale-[1.03]" />
+                        ) : (
+                          <div className="flex size-full items-center justify-center bg-[var(--workspace-surface)]">
+                            <BrandLogo size={64} alt="" />
+                          </div>
+                        )}
+                        <span className="absolute top-3 left-3 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold tracking-wide text-ink uppercase shadow-sm">
+                          {t(`status.${item.status as LearningStatus}`)}
                         </span>
-                      </p>
-                    </div>
-                  </Link>
-                </li>
-              );
-            })}
-          </ul>
+                      </div>
+                      <div className="flex flex-1 flex-col gap-1 p-4">
+                        <h2 className="font-jp text-lg font-bold text-ink group-hover:text-brand">{name}</h2>
+                        {description ? <p className="line-clamp-2 text-sm text-charcoal/60">{description}</p> : null}
+                        <p className="mt-auto pt-2">
+                          <span className="inline-flex rounded-full bg-[var(--workspace-surface)] px-2.5 py-1 text-xs font-semibold text-charcoal/70">
+                            {t("lessonCount", { count: item.lessonCount })}
+                          </span>
+                        </p>
+                      </div>
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
         )}
 
         <div className="flex flex-col gap-3 border-t border-charcoal/10 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">

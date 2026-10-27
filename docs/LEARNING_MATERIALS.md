@@ -17,11 +17,17 @@ News and student lessons share `learning_material` (TipTap + SeaweedFS `cms/`). 
 
 One lesson belongs to one category and has `position` (1, 2, 3…). Other categories are open. Inside a category, lesson N opens only after lessons 1..N−1 are completed for that user. Admin preview bypasses the lock. The check lives in Go (`OpenStudentLesson`); a locked GET returns `403 LESSON_LOCKED`.
 
-Completed means the lesson was opened and, when it has questions, the latest attempt score is at least `pass_score` (default 80, admin range 50–100). Retries are unlimited. Inserting a lesson in the middle does not delete earlier completions; that new lesson locks every later step until it is passed.
+Completed means the lesson was opened and, when it has questions, the **latest** attempt score is at least `pass_score` (default 80, admin range 50–100). Retries are unlimited at any score (including after a pass). Failing a later retry does **not** re-lock a lesson that was already completed. Inserting a lesson in the middle does not delete earlier completions; that new lesson locks every later step until it is passed.
 
 ### Practice
 
-Questions sit at the bottom of the same lesson page: multiple choice (one correct option), short answer (several accepted answers, compared after Unicode/case/space normalization), and card quiz (student flips, then marks knew / still learning; knew counts as correct). Answer keys are omitted from the read payload and returned only in the submit review. When `shuffle_questions` or `shuffle_choices` is on, the student lesson payload randomizes question order and/or multiple-choice option order (crypto shuffle on the Go API); a failed retry reshuffles again in the browser. Grading always keys off question and option IDs, so shuffle never changes the score. Submit is idempotent on the client `attemptId` (UUID). A retry must use a new id. Every submit writes `learning_quiz_attempt` + `learning_quiz_answer` (pass and fail) so personal tracking and monitoring can use the same store later.
+Questions sit at the bottom of the same lesson page: multiple choice (one correct option), short answer (several accepted answers, compared after Unicode/case/space normalization), and card quiz (student flips, then marks knew / still learning; knew counts as correct). Answer keys are omitted from the read payload and returned only in the submit review. When `shuffle_questions` or `shuffle_choices` is on, the student lesson payload randomizes question order and/or multiple-choice option order (crypto shuffle on the Go API); **any** retry reshuffles again in the browser. Grading always keys off question and option IDs, so shuffle never changes the score. Submit is idempotent on the client `attemptId` (UUID). A retry must use a new id and confirms via a modal before clearing the review UI.
+
+**History + latest for progress:** each submit **appends** a `learning_quiz_attempt` (+ answers) inside a transaction guarded by `pg_advisory_xact_lock`. Older attempts are kept for the student history UI (`GET /api/materials/:slug/quiz/attempts`, capped at 50 newest per lesson; older rows pruned on insert). Opening an attempt (`GET .../quiz/attempts/:attemptId`) returns the full per-question review (student answer, correct answer, explanation) for study — ownership-checked (other users’ attempts return 404). Unlock/progress still key off the newest score and `learning_lesson_progress`. Passing unlocks the next lesson in the path sidebar immediately (client event + `router.refresh()`); **Next lesson** is a full brand button. **Attempt history** opens from the practice header; tapping a row drills into that attempt’s questions.
+
+**Completed lessons stay open:** once a lesson is completed, it never re-locks for that student. They can reread and retake practice anytime; new attempts keep appending to history. Incomplete later lessons still wait on the sequential unlock rule.
+
+**Path complete:** when every published lesson in the category is completed, quiz submit returns `pathCompleted` + a `completion` summary (per-lesson latest scores, average, recommended **next path** by category `position`, skipping finished/inaccessible paths). The wide congratulations dialog (logo + two-column desktop layout) also appears; the same summary stays available anytime on the path page card, via **Path results** on finished lessons, and as a **Finished** badge on the library grid. Finishing a path does **not** archive or lock it.
 
 Reading progress is a debounced scroll percent (`POST /api/materials/:slug/progress`). A lesson with no questions completes on that first progress touch.
 
@@ -36,6 +42,7 @@ Migration `drizzle/0005_learning_materials.sql`:
 - `learning_material` — slug (unique), visibility, status (`DRAFT`\|`PUBLISHED`\|`ARCHIVED`), featured, cover key, author, published_at, soft `deleted_at`
 - `learning_material_locale` — `(material_id, locale)` with `id`\|`en`; title, excerpt, TipTap JSON `body`, `body_text` for search, plus optional `seo_title` / `seo_description` (migration `0007_material_locale_seo.sql`)
 - `learning_tag` + `learning_material_tag` — max **5** tags per material (enforced in Go)
+- `learning_category_tag` (migration `0010_category_tags.sql`) — max **5** tags per learning path/category; same `learning_tag` catalog as news, separate join so student filters only show tags used on published categories
 
 Migration `drizzle/0008_learning_paths.sql`:
 
@@ -57,10 +64,11 @@ Migration `drizzle/0008_learning_paths.sql`:
 
 ### Tags
 
-- Max **5** tags per material
-- Admin suggest returns up to 50 matches with `usageCount`
-- Unused catalog tags can be deleted via `DELETE /api/admin/materials/tags/:tagId` (409 `TAG_IN_USE` if still linked)
-- Tags linked to materials stay until unlinked / material hard-deleted
+- Max **5** tags per material (news) and max **5** tags per learning category/path
+- Shared `learning_tag` catalog; news uses `learning_material_tag`, learning paths use `learning_category_tag`
+- Admin suggest returns up to 50 matches with `usageCount` (material + category links)
+- Unused catalog tags can be deleted via `DELETE /api/admin/materials/tags/:tagId` (409 `TAG_IN_USE` if still linked to a material **or** category)
+- Tags linked to materials or categories stay until unlinked / parent hard-deleted
 
 ### Excerpt
 
@@ -79,29 +87,29 @@ Only meaningful for `PUBLIC` + `PUBLISHED`. Landing slider loads up to **5** ite
 | Group | Routes | Authz |
 | --- | --- | --- |
 | Admin | CRUD `/api/admin/materials*`, tag suggest + delete unused | Secret + `RequireAdminActor` |
-| Student | `/api/materials/:slug`, `POST .../progress`, `POST .../quiz`, `/api/learning/categories`, `/api/learning/categories/:slug` | Secret + `RequireActor`; published lesson must be unlocked |
-| Admin learning | CRUD `/api/admin/learning/categories`, archive, hard-delete, `PUT .../lessons/order` | Secret + `RequireAdminActor` |
+| Student | `/api/materials/:slug`, `POST .../progress`, `POST .../quiz`, `GET .../quiz/attempts`, `GET .../quiz/attempts/:attemptId`, `/api/learning/categories`, `/api/learning/categories/tags`, `/api/learning/categories/:slug` | Secret + `RequireActor`; published lesson must be unlocked **or already completed**; attempt detail is owner-only; category detail may include `completion` when path finished; category list accepts `?tag=` / `?tags=` (OR) |
+| Admin learning | CRUD `/api/admin/learning/categories` (incl. tags on create/update), archive, hard-delete, `PUT .../lessons/order`, `POST .../lessons/bulk-delete` | Secret + `RequireAdminActor` |
 | Public | `/api/news`, `/api/news/:slug`, `/api/news/featured` | Secret; PUBLIC+PUBLISHED only |
 
-Media: cover/content images via existing media presign with `folder: cms`, cleanup on hard delete. Max **5MB** per image; MIME jpeg/png/webp/gif; recommended cover ~1600×900 (16:9 preview).
+Media: cover/content images via existing media presign with `folder: cms`, cleanup on hard delete. Max **5MB** per image; MIME jpeg/png/webp/gif. Cover upload validates type/size/decodability and rejects images under **640×360**; recommends **1600×900 (16:9)** and warns when the aspect ratio is far from 16:9 so published cards are less likely to crop oddly.
 
 ### Next BFF
 
 - `/api/admin/materials/**` — CSRF origin check + fresh ADMIN session
-- `/api/admin/materials/cover` — multipart upload to `cms/` (5MB limit)
+- `/api/admin/materials/cover` — multipart upload to `cms/` (5MB limit); `DELETE` with `{ objectKey }` removes an unsaved CMS object (admin-only, `cms/` prefix). Replace of a saved cover waits until category/lesson save so Go deletes the previous key; replacing an unsaved pick deletes the previous upload immediately to avoid duplicates.
 - `/api/admin/materials/tags` — suggest; `DELETE .../tags/:tagId` for unused catalog cleanup
-- `/api/admin/learning/categories/**` — category CRUD, archive, hard-delete, lesson order
-- `/api/learning/categories/**` — student category list and path
+- `/api/admin/learning/categories/**` — category CRUD, archive, hard-delete, lesson order, bulk lesson delete (1–50 ids, scoped to that category)
+- `/api/learning/categories/**` — student category list (search, sort, multi-tag filter, pagination), tag catalog for filters, and path detail
 - `/api/materials/:slug/progress` and `/quiz` — session USER/ADMIN, trusted mutation origin
-- `/api/materials/**` — session USER/ADMIN; category access is enforced in Go
+- `/api/materials/**` — session USER/ADMIN; category access is enforced in Go; lesson payload includes the ordered path lesson list for the in-lesson sidebar
 - Public news preferably loaded RSC → `goListNews` / `goGetNews` / `goFeaturedNews`
 
 ## Admin UI
 
-- Sidebar **News** → `/admin/news`. Every news row is `PUBLIC`; the editor does not show a visibility control. Featured, status, SEO, and Preview stay. Sidebar **Learning** → `/admin/learning` (categories, ordered lessons, practice builder, pass score). Lesson editor has no visibility, featured, or SEO fields.
+- Sidebar **News** → `/admin/news`. Every news row is `PUBLIC`; the editor does not show a visibility control. Featured, status, SEO, and Preview stay. Sidebar **Learning** → `/admin/learning` (categories, ordered lessons, practice builder, pass score). Lesson editor has no visibility, featured, or SEO fields. Route transitions and first data loads use shared skeleton loaders (`AdminCategoryBoardSkeleton`, `AdminCategoryEditorSkeleton`, `AdminMaterialEditorSkeleton`) plus App Router `loading.tsx` under `/admin/learning/**`, so back/refresh/navigation never flash an empty form while data is fetching.
 - Breadcrumbs are separate: News uses Home → News → New article / Edit article. Learning uses Home → Learning → New category / Category → New lesson / Edit lesson. The list pages do not append a create crumb. `/admin/news` must not be treated as a “new” route.
 - News list: debounced search, status/sort filters, pagination. Learning category list: debounced search, status filter, sort (recently updated, name), page size, pagination. Path order is stored automatically and is not a list filter. Both stay on their own APIs.
-- News editor: locale tabs + TipTap; side panel with cover, status, featured, tags. No visibility field. Learning category editor uses Indonesia/English tabs, a rich-text description (1000 visible characters), an optional cover, and status. The page uses the same `max-w-[96rem]` width as the learning list and the lesson editor. From the `xl` breakpoint the lesson list sits beside the form in a side column up to 26rem, and the form uses the remaining width. Below that, the list is a full-width panel under the form and scrolls when a category has many lessons. On a phone, each lesson stays one compact row. **Archive** and **Delete** are icon buttons with tooltips next to Save. Category form dirty state (name, description, cover, status) uses the same leave confirmation + beforeunload pattern as the lesson editor. Question cards put the title above the icon actions on a phone, and sit on one row from the small breakpoint up. The text toolbar scrolls sideways on a phone and wraps onto extra rows from the medium breakpoint up. The student path is read-only information, not a form field. Plan key stays `free` in the database and is not an admin input until a payment package is connected. A cover is optional. When none is stored, admin and student surfaces show the Onigiroku logo (`/images/onigiroku-logo.png`). Required fields are marked with an asterisk. Name is required. Cover, description, and status have defaults.
+- News editor: locale tabs + TipTap; side panel with cover, status, featured, tags. No visibility field. Learning category editor uses Indonesia/English tabs, a rich-text description (1000 visible characters), an optional cover, **path tags (max 5, news-like suggest/create/edit with bilingual labels)**, and status. The page uses the same `max-w-[96rem]` width as the learning list and the lesson editor. From the `xl` breakpoint the lesson list sits beside the form in a side column up to 26rem, and the form uses the remaining width. Below that, the list is a full-width panel under the form and scrolls when a category has many lessons. On a phone, each lesson stays one compact row. **Archive** and **Delete** are icon buttons with tooltips next to Save. The lessons panel supports multi-select checkboxes, select-all, and **Delete selected** with a danger confirmation dialog. Bulk delete permanently removes those lessons (questions, attempts, covers via SeaweedFS) inside the category, then renumbers remaining positions so the category can be hard-deleted once empty. Category form dirty state (name, description, cover, status, **tags**) uses the same leave confirmation + beforeunload pattern as the lesson editor. Question cards put the title above the icon actions on a phone, and sit on one row from the small breakpoint up. The text toolbar scrolls sideways on a phone and wraps onto extra rows from the medium breakpoint up. The student path is read-only information, not a form field. Plan key stays `free` in the database and is not an admin input until a payment package is connected. A cover is optional. When none is stored, admin and student surfaces show the Onigiroku logo (`/images/onigiroku-logo.png`). Required fields are marked with an asterisk. Name is required. Cover, description, and status have defaults.
 - Lesson editor keeps a **Lesson reading** body. That body is the article students read before practice. The reading TipTap starts shorter (`min-h` ~200–220px) with a vertical resize handle and a viewport-based max height so Practice stays reachable without endless scroll. Practice questions are separate and sit at the end of the page. New questions are added from one menu (multiple choice, short answer, card quiz). Each question collapses. Question, explanation, and flashcard-back fields use the same TipTap toolbar in a shorter, resizable scrolling area. Admins can toggle **Shuffle questions** and **Shuffle choices** per lesson. Images still upload through the existing `cms/` media route (multi-select supported). Removing a question asks for confirmation. Preview, reorder, and remove are aligned icon buttons with tooltips; the collapse chevron stays vertically centered with the action strip.
 - Lesson (and news) editors treat reading body, cover, status, **pass score**, **shuffle flags**, and **practice questions** as dirty state. With unsaved edits, in-app links (including **Back to category**) open a leave confirmation dialog, and a browser refresh/close shows the native beforeunload prompt so drafted questions and content are not lost by accident.
 - **Practice preview** uses the same `PracticeSession` component as the student lesson page: choose or type an answer, flip a card, then check. The score, the correct choice, accepted answer keys, and the explanation appear only after that check. Explanation never appears while answering. Grading in the preview stays in the browser because the draft may not be saved yet. The live attempt is still graded only by the Go API.
@@ -121,11 +129,12 @@ Media: cover/content images via existing media presign with `folder: cms`, clean
 
 ## Student UI
 
-- `/dashboard/materials` — category cards (cover, name, `completed/total` bar, debounced search). Empty state does not ask the student to clear a tag filter
-- `/dashboard/materials/categories/[slug]` — vertical timeline. Locked lessons are not links; the API also returns 403
-- `/dashboard/materials/[slug]` — existing reader plus category progress and practice at the bottom of the same page. Practice uses the same cards as the admin preview: choice buttons, a typed answer, or a flipping card, then a score with explanation. Passing unlocks the next lesson
+- `/dashboard/materials` — wide library (`max-w-[96rem]`): debounced search (~300ms), multi-select **category tag** filters (popular chips + searchable overflow; OR match), sort (path order / name), page size + pagination, responsive cards with cover, tags, and progress
+- `/dashboard/materials/categories/[slug]` — learning-path layout (not news): outline back button to the library, wide hero + sticky lesson rail on large screens, **brand-visible category tags**, per-step timeline (connector under each badge, not a single misaligned line), progress. Stacks to one column on smaller viewports. Locked lessons are not links; the API also returns 403
+- `/dashboard/materials/[slug]` — lesson reader + practice without published date (not a news article). Collapsible **lesson-list sidebar** sticks **below** the app topbar (`top-14` / `sm:top-16`, `z-10` under the header) so breadcrumbs and chrome stay usable; collapse/expand persists in localStorage; mobile opens a sheet from a floating **Lesson list** control. Practice submit bar is full-width (count left, button right): **sticky on `sm+` / desktop only**, in-flow on small screens so it does not collide with scroll-to-top or the lesson-list FAB. Flashcards use grid-stacked faces so long prompts wrap cleanly. After submit, **Try again** is always available (confirm modal); **Attempt history** lists prior scores; **Next lesson** is a primary CTA when unlocked. Passing unlocks the next lesson in the sidebar immediately. Finishing the whole path opens a **congratulations** dialog with score breakdown + next-path recommendation
+- `/dashboard/materials/categories/[slug]` — when the path is fully completed, shows the same completion summary card (scores + next path) above the hero
 - `robots` noindex; no share UI; unauthenticated → login redirect
-- Progress (`learning_lesson_progress`) and every quiz attempt (`learning_quiz_attempt` + `learning_quiz_answer`) are stored on submit for future personal monitoring and tracking dashboards. That dashboard UI is not built yet; the data path is live and idempotent on `attemptId`
+- Progress (`learning_lesson_progress`) plus **full attempt history** (`learning_quiz_attempt` + answers, last 50 per lesson) are stored on submit. Unlock still uses the newest score. Idempotent on `attemptId`
 
 ## Public News
 

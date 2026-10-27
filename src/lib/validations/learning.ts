@@ -19,6 +19,12 @@ const planKey = z
   .max(64)
   .regex(/^[a-z0-9][a-z0-9_-]*$/i, "Invalid plan key");
 
+const categoryTagInputSchema = z.object({
+  nameId: z.string().trim().min(1).max(80),
+  nameEn: z.string().trim().max(80).optional().default(""),
+  slug: z.string().trim().max(80).optional(),
+});
+
 export const categoryUpsertSchema = z
   .object({
     nameId: z.string().trim().max(120).optional().default(""),
@@ -28,6 +34,7 @@ export const categoryUpsertSchema = z
     coverObjectKey: z.string().trim().max(512).nullable().optional(),
     status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
     planKey: planKey.optional().default("free"),
+    tags: z.array(categoryTagInputSchema).max(5).optional().default([]),
   })
   .superRefine((value, ctx) => {
     if (!value.nameId && !value.nameEn) {
@@ -40,6 +47,10 @@ export const categoryUpsertSchema = z
 
 export const lessonOrderSchema = z.object({
   ids: z.array(z.string().uuid()).min(1).max(200),
+});
+
+export const lessonBulkDeleteSchema = z.object({
+  ids: z.array(z.string().uuid()).min(1).max(50),
 });
 
 const optionSchema = z.object({

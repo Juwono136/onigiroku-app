@@ -615,6 +615,8 @@ func (s *Service) SuggestTags(ctx context.Context, q string, limit int) ([]TagDT
 		SELECT t.id, t.slug, t.name_id, t.name_en,
 		       COALESCE((
 		         SELECT COUNT(*)::int FROM learning_material_tag mt WHERE mt.tag_id = t.id
+		       ), 0) + COALESCE((
+		         SELECT COUNT(*)::int FROM learning_category_tag ct WHERE ct.tag_id = t.id
 		       ), 0) AS usage_count
 		FROM learning_tag t
 		WHERE $1 = '' OR t.slug ILIKE $2 OR t.name_id ILIKE $2 OR t.name_en ILIKE $2
@@ -636,7 +638,7 @@ func (s *Service) SuggestTags(ctx context.Context, q string, limit int) ([]TagDT
 	return out, rows.Err()
 }
 
-// DeleteTag removes an unused catalog tag. Tags still linked to materials are rejected.
+// DeleteTag removes an unused catalog tag. Tags still linked to materials or categories are rejected.
 func (s *Service) DeleteTag(ctx context.Context, tagID string) error {
 	tagID = strings.TrimSpace(tagID)
 	if tagID == "" {
@@ -644,7 +646,9 @@ func (s *Service) DeleteTag(ctx context.Context, tagID string) error {
 	}
 	var usage int
 	err := s.Pool.QueryRow(ctx, `
-		SELECT COUNT(*)::int FROM learning_material_tag WHERE tag_id = $1
+		SELECT
+		  COALESCE((SELECT COUNT(*)::int FROM learning_material_tag WHERE tag_id = $1), 0) +
+		  COALESCE((SELECT COUNT(*)::int FROM learning_category_tag WHERE tag_id = $1), 0)
 	`, tagID).Scan(&usage)
 	if err != nil {
 		return apperrors.Internal(err)

@@ -54,6 +54,7 @@ export async function POST(request: Request) {
       descriptionId: parsed.data.descriptionId ?? "",
       descriptionEn: parsed.data.descriptionEn ?? "",
       planKey: parsed.data.planKey ?? "free",
+      tags: parsed.data.tags ?? [],
     });
     return NextResponse.json({ success: true, data }, { status: 201 });
   } catch (error) {

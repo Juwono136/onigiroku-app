@@ -41,8 +41,8 @@ export function ScrollToTopButton() {
       onClick={scrollToTop}
       className={cn(
         buttonVariants({ size: "icon" }),
-        "fixed z-50 size-11 rounded-2xl bg-brand text-white shadow-[0_12px_30px_-10px_rgba(230,0,18,0.55)] transition-all duration-300 hover:bg-[var(--brand-hover)]",
-        "right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1rem,env(safe-area-inset-bottom))] sm:right-6 sm:bottom-6",
+        "fixed z-40 size-11 rounded-2xl bg-brand text-white shadow-[0_12px_30px_-10px_rgba(230,0,18,0.55)] transition-all duration-300 hover:bg-[var(--brand-hover)]",
+        "right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1.25rem,env(safe-area-inset-bottom))] sm:right-6 sm:bottom-6",
         visible
           ? "pointer-events-auto translate-y-0 opacity-100"
           : "pointer-events-none translate-y-3 opacity-0",

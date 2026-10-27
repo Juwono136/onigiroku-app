@@ -44,6 +44,23 @@ export type QuestionReview = QuestionPublic & {
   acceptedAnswers?: string[];
   correctOptionId?: string;
   correct: boolean;
+  selectedOptionId?: string;
+  textAnswer?: string;
+  knew?: boolean | null;
+};
+
+export type LearningCategoryTag = {
+  id: string;
+  slug: string;
+  nameId: string;
+  nameEn: string;
+  usageCount?: number;
+};
+
+export type LearningCategoryTagInput = {
+  nameId: string;
+  nameEn?: string;
+  slug?: string;
 };
 
 export type LearningCategory = {
@@ -60,6 +77,7 @@ export type LearningCategory = {
   planKey: string;
   lessonCount: number;
   completedCount?: number;
+  tags?: LearningCategoryTag[];
   createdAt: string;
   updatedAt: string;
 };
@@ -80,6 +98,7 @@ export type CategoryInput = {
   coverObjectKey?: string | null;
   status: LearningStatus;
   planKey: string;
+  tags?: LearningCategoryTagInput[];
 };
 
 export type PathLesson = {
@@ -107,10 +126,66 @@ export type StudentCategoryCard = {
   planKey: string;
   lessonCount: number;
   completedCount: number;
+  tags?: LearningCategoryTag[];
 };
 
 export type StudentCategoryDetail = StudentCategoryCard & {
   lessons: PathLesson[];
+  pathCompleted?: boolean;
+  completion?: PathCompletion | null;
+};
+
+export type QuizAttemptSummary = {
+  id: string;
+  score: number;
+  passed: boolean;
+  createdAt: string;
+  attemptNumber: number;
+};
+
+export type QuizAttemptListResult = {
+  items: QuizAttemptSummary[];
+  total: number;
+  latestOnly: boolean;
+};
+
+export type QuizAttemptDetail = QuizAttemptSummary & {
+  passScore: number;
+  reviews: QuestionReview[];
+};
+
+export type PathLessonScore = {
+  slug: string;
+  title: string;
+  position: number;
+  completed: boolean;
+  hasQuestions: boolean;
+  passScore: number;
+  latestScore: number | null;
+  passed: boolean;
+  attemptCount: number;
+  readingOnly: boolean;
+};
+
+export type NextPathCard = {
+  slug: string;
+  nameId: string;
+  nameEn: string;
+  coverUrl: string | null;
+  lessonCount: number;
+  completedCount: number;
+  planKey: string;
+};
+
+export type PathCompletion = {
+  categorySlug: string;
+  categoryNameId: string;
+  categoryNameEn: string;
+  lessonCount: number;
+  completedCount: number;
+  averageScore: number | null;
+  lessons: PathLessonScore[];
+  nextPath: NextPathCard | null;
 };
 
 export type LessonProgress = {
@@ -128,8 +203,11 @@ export type StudentLessonView = {
   lessonCount: number;
   progress: LessonProgress;
   questions: QuestionPublic[];
+  lessons: PathLesson[];
   nextSlug: string | null;
   nextLocked: boolean;
+  pathCompleted?: boolean;
+  completion?: PathCompletion | null;
 };
 
 export type QuizSubmitResult = {
@@ -140,4 +218,6 @@ export type QuizSubmitResult = {
   reviews: QuestionReview[];
   nextSlug: string | null;
   nextLocked: boolean;
+  pathCompleted?: boolean;
+  completion?: PathCompletion | null;
 };

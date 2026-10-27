@@ -77,41 +77,46 @@ type QuestionPublicDTO struct {
 
 type QuestionReviewDTO struct {
 	QuestionPublicDTO
-	ExplanationID  string   `json:"explanationId"`
-	ExplanationEN  string   `json:"explanationEn"`
-	AnswerID       string   `json:"answerId,omitempty"`
-	AnswerEN       string   `json:"answerEn,omitempty"`
-	AcceptedAnswers []string `json:"acceptedAnswers,omitempty"`
-	CorrectOptionID string  `json:"correctOptionId,omitempty"`
-	Correct        bool     `json:"correct"`
+	ExplanationID    string   `json:"explanationId"`
+	ExplanationEN    string   `json:"explanationEn"`
+	AnswerID         string   `json:"answerId,omitempty"`
+	AnswerEN         string   `json:"answerEn,omitempty"`
+	AcceptedAnswers  []string `json:"acceptedAnswers,omitempty"`
+	CorrectOptionID  string   `json:"correctOptionId,omitempty"`
+	Correct          bool     `json:"correct"`
+	SelectedOptionID string   `json:"selectedOptionId,omitempty"`
+	TextAnswer       string   `json:"textAnswer,omitempty"`
+	Knew             *bool    `json:"knew,omitempty"`
 }
 
 type CategoryInput struct {
-	NameID         string  `json:"nameId"`
-	NameEN         string  `json:"nameEn"`
-	DescriptionID  string  `json:"descriptionId"`
-	DescriptionEN  string  `json:"descriptionEn"`
-	CoverObjectKey *string `json:"coverObjectKey"`
-	Status         string  `json:"status"`
-	PlanKey        string  `json:"planKey"`
+	NameID         string     `json:"nameId"`
+	NameEN         string     `json:"nameEn"`
+	DescriptionID  string     `json:"descriptionId"`
+	DescriptionEN  string     `json:"descriptionEn"`
+	CoverObjectKey *string    `json:"coverObjectKey"`
+	Status         string     `json:"status"`
+	PlanKey        string     `json:"planKey"`
+	Tags           []TagInput `json:"tags"`
 }
 
 type CategoryDTO struct {
-	ID             string  `json:"id"`
-	Slug           string  `json:"slug"`
-	NameID         string  `json:"nameId"`
-	NameEN         string  `json:"nameEn"`
-	DescriptionID  string  `json:"descriptionId"`
-	DescriptionEN  string  `json:"descriptionEn"`
-	CoverObjectKey *string `json:"coverObjectKey"`
-	CoverURL       *string `json:"coverUrl"`
-	Position       int     `json:"position"`
-	Status         string  `json:"status"`
-	PlanKey        string  `json:"planKey"`
-	LessonCount    int     `json:"lessonCount"`
-	CompletedCount int     `json:"completedCount,omitempty"`
-	CreatedAt      string  `json:"createdAt"`
-	UpdatedAt      string  `json:"updatedAt"`
+	ID             string   `json:"id"`
+	Slug           string   `json:"slug"`
+	NameID         string   `json:"nameId"`
+	NameEN         string   `json:"nameEn"`
+	DescriptionID  string   `json:"descriptionId"`
+	DescriptionEN  string   `json:"descriptionEn"`
+	CoverObjectKey *string  `json:"coverObjectKey"`
+	CoverURL       *string  `json:"coverUrl"`
+	Position       int      `json:"position"`
+	Status         string   `json:"status"`
+	PlanKey        string   `json:"planKey"`
+	LessonCount    int      `json:"lessonCount"`
+	CompletedCount int      `json:"completedCount,omitempty"`
+	Tags           []TagDTO `json:"tags"`
+	CreatedAt      string   `json:"createdAt"`
+	UpdatedAt      string   `json:"updatedAt"`
 }
 
 type CategoryListResult struct {
@@ -137,21 +142,81 @@ type PathLessonDTO struct {
 }
 
 type StudentCategoryCard struct {
-	ID              string  `json:"id"`
-	Slug            string  `json:"slug"`
-	NameID          string  `json:"nameId"`
-	NameEN          string  `json:"nameEn"`
-	DescriptionID   string  `json:"descriptionId"`
-	DescriptionEN   string  `json:"descriptionEn"`
-	CoverURL        *string `json:"coverUrl"`
-	PlanKey         string  `json:"planKey"`
-	LessonCount     int     `json:"lessonCount"`
-	CompletedCount  int     `json:"completedCount"`
+	ID             string   `json:"id"`
+	Slug           string   `json:"slug"`
+	NameID         string   `json:"nameId"`
+	NameEN         string   `json:"nameEn"`
+	DescriptionID  string   `json:"descriptionId"`
+	DescriptionEN  string   `json:"descriptionEn"`
+	CoverURL       *string  `json:"coverUrl"`
+	PlanKey        string   `json:"planKey"`
+	LessonCount    int      `json:"lessonCount"`
+	CompletedCount int      `json:"completedCount"`
+	Tags           []TagDTO `json:"tags"`
 }
 
 type StudentCategoryDetail struct {
 	StudentCategoryCard
-	Lessons []PathLessonDTO `json:"lessons"`
+	Lessons       []PathLessonDTO    `json:"lessons"`
+	PathCompleted bool               `json:"pathCompleted"`
+	Completion    *PathCompletionDTO `json:"completion,omitempty"`
+}
+
+// QuizAttemptSummary is one practice try for the history list (no answer keys).
+type QuizAttemptSummary struct {
+	ID            string `json:"id"`
+	Score         int    `json:"score"`
+	Passed        bool   `json:"passed"`
+	CreatedAt     string `json:"createdAt"`
+	AttemptNumber int    `json:"attemptNumber"`
+}
+
+type QuizAttemptListResult struct {
+	Items      []QuizAttemptSummary `json:"items"`
+	Total      int                  `json:"total"`
+	LatestOnly bool                 `json:"latestOnly"` // progress/unlock still uses newest score
+}
+
+// QuizAttemptDetail is one historical attempt with full per-question review.
+type QuizAttemptDetail struct {
+	QuizAttemptSummary
+	PassScore int                 `json:"passScore"`
+	Reviews   []QuestionReviewDTO `json:"reviews"`
+}
+
+// PathLessonScoreDTO is the latest practice outcome for one lesson in a finished path.
+type PathLessonScoreDTO struct {
+	Slug          string `json:"slug"`
+	Title         string `json:"title"`
+	Position      int    `json:"position"`
+	Completed     bool   `json:"completed"`
+	HasQuestions  bool   `json:"hasQuestions"`
+	PassScore     int    `json:"passScore"`
+	LatestScore   *int   `json:"latestScore"`
+	Passed        bool   `json:"passed"`
+	AttemptCount  int    `json:"attemptCount"`
+	ReadingOnly   bool   `json:"readingOnly"`
+}
+
+type NextPathCardDTO struct {
+	Slug           string  `json:"slug"`
+	NameID         string  `json:"nameId"`
+	NameEN         string  `json:"nameEn"`
+	CoverURL       *string `json:"coverUrl"`
+	LessonCount    int     `json:"lessonCount"`
+	CompletedCount int     `json:"completedCount"`
+	PlanKey        string  `json:"planKey"`
+}
+
+type PathCompletionDTO struct {
+	CategorySlug   string               `json:"categorySlug"`
+	CategoryNameID string               `json:"categoryNameId"`
+	CategoryNameEN string               `json:"categoryNameEn"`
+	LessonCount    int                  `json:"lessonCount"`
+	CompletedCount int                  `json:"completedCount"`
+	AverageScore   *float64             `json:"averageScore"`
+	Lessons        []PathLessonScoreDTO `json:"lessons"`
+	NextPath       *NextPathCardDTO     `json:"nextPath"`
 }
 
 type LessonProgressDTO struct {
@@ -161,16 +226,19 @@ type LessonProgressDTO struct {
 }
 
 type StudentLessonView struct {
-	Material       *MaterialDetail      `json:"material"`
-	CategorySlug   string               `json:"categorySlug"`
-	CategoryNameID string               `json:"categoryNameId"`
-	CategoryNameEN string               `json:"categoryNameEn"`
-	CompletedCount int                  `json:"completedCount"`
-	LessonCount    int                  `json:"lessonCount"`
-	Progress       LessonProgressDTO    `json:"progress"`
-	Questions      []QuestionPublicDTO  `json:"questions"`
-	NextSlug       *string              `json:"nextSlug"`
-	NextLocked     bool                 `json:"nextLocked"`
+	Material       *MaterialDetail     `json:"material"`
+	CategorySlug   string              `json:"categorySlug"`
+	CategoryNameID string              `json:"categoryNameId"`
+	CategoryNameEN string              `json:"categoryNameEn"`
+	CompletedCount int                 `json:"completedCount"`
+	LessonCount    int                 `json:"lessonCount"`
+	Progress       LessonProgressDTO   `json:"progress"`
+	Questions      []QuestionPublicDTO `json:"questions"`
+	Lessons        []PathLessonDTO     `json:"lessons"`
+	NextSlug       *string             `json:"nextSlug"`
+	NextLocked     bool                `json:"nextLocked"`
+	PathCompleted  bool                `json:"pathCompleted"`
+	Completion     *PathCompletionDTO  `json:"completion,omitempty"`
 }
 
 type QuizAnswerInput struct {
@@ -186,13 +254,15 @@ type QuizSubmitInput struct {
 }
 
 type QuizSubmitResult struct {
-	AttemptID string              `json:"attemptId"`
-	Score     int                 `json:"score"`
-	Passed    bool                `json:"passed"`
-	PassScore int                 `json:"passScore"`
-	Reviews   []QuestionReviewDTO `json:"reviews"`
-	NextSlug  *string             `json:"nextSlug"`
-	NextLocked bool               `json:"nextLocked"`
+	AttemptID     string              `json:"attemptId"`
+	Score         int                 `json:"score"`
+	Passed        bool                `json:"passed"`
+	PassScore     int                 `json:"passScore"`
+	Reviews       []QuestionReviewDTO `json:"reviews"`
+	NextSlug      *string             `json:"nextSlug"`
+	NextLocked    bool                `json:"nextLocked"`
+	PathCompleted bool                `json:"pathCompleted"`
+	Completion    *PathCompletionDTO  `json:"completion,omitempty"`
 }
 
 func paywallEnabled() bool {

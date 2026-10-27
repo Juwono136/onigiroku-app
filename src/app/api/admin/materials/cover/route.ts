@@ -19,6 +19,51 @@ const COVER_ALLOWED = new Set([
 ]);
 const COVER_MAX = 5 * 1024 * 1024;
 
+function assertCmsObjectKey(raw: string): string | null {
+  const key = extractOwnedObjectKey(raw.trim());
+  if (!key || !key.startsWith("cms/")) return null;
+  return key;
+}
+
+/**
+ * Delete a CMS cover object from SeaweedFS (idempotent).
+ * Used when discarding an unsaved upload so storage stays free of orphans.
+ */
+export async function DELETE(request: Request) {
+  const gate = await requireAdminApi(request);
+  if ("response" in gate) return gate.response;
+
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return jsonError("Invalid JSON body");
+  }
+  const raw =
+    body && typeof body === "object" && "objectKey" in body
+      ? String((body as { objectKey?: unknown }).objectKey ?? "")
+      : "";
+  const objectKey = assertCmsObjectKey(raw);
+  if (!objectKey) {
+    return jsonError("Invalid object key", 422, "VALIDATION_ERROR");
+  }
+
+  try {
+    await deleteObject(objectKey);
+    return NextResponse.json({
+      success: true,
+      data: { deleted: true, objectKey },
+    });
+  } catch (error) {
+    logger.error("CMS cover delete failed", {
+      actorId: gate.actorId,
+      objectKey,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return mapAdminUserError(error);
+  }
+}
+
 /** Upload / replace CMS cover image (folder: cms/). */
 export async function POST(request: Request) {
   const gate = await requireAdminApi(request);
@@ -50,7 +95,7 @@ export async function POST(request: Request) {
   const previousRaw = form.get("previousObjectKey");
   const previousKey =
     typeof previousRaw === "string" && previousRaw.trim()
-      ? extractOwnedObjectKey(previousRaw.trim())
+      ? assertCmsObjectKey(previousRaw)
       : null;
 
   const filename = file.name || `cover.${file.type.split("/")[1] ?? "png"}`;

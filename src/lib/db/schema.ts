@@ -293,6 +293,26 @@ export const learningCategory = pgTable(
   ],
 );
 
+/** Category ↔ tag join (max 5 tags per learning path; shared learning_tag catalog). */
+export const learningCategoryTag = pgTable(
+  "learning_category_tag",
+  {
+    categoryId: text("category_id")
+      .notNull()
+      .references(() => learningCategory.id, { onDelete: "cascade" }),
+    tagId: text("tag_id")
+      .notNull()
+      .references(() => learningTag.id, { onDelete: "cascade" }),
+  },
+  (t) => [
+    primaryKey({
+      name: "learning_category_tag_category_id_tag_id_pk",
+      columns: [t.tagId, t.categoryId],
+    }),
+    index("learning_category_tag_tag_idx").on(t.tagId),
+  ],
+);
+
 export const learningQuestion = pgTable(
   "learning_question",
   {
@@ -434,6 +454,7 @@ export const schema = {
   learningTag,
   learningMaterialTag,
   learningCategory,
+  learningCategoryTag,
   learningQuestion,
   learningQuestionOption,
   learningLessonProgress,

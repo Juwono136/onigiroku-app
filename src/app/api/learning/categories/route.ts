@@ -24,6 +24,12 @@ export async function GET(request: Request) {
   const url = new URL(request.url);
   const page = Number(url.searchParams.get("page") ?? "1");
   const pageSize = Number(url.searchParams.get("pageSize") ?? "12");
+  const tagParams = [
+    ...url.searchParams.getAll("tag"),
+    ...(url.searchParams.get("tags")?.split(",") ?? []),
+  ]
+    .map((t) => t.trim())
+    .filter(Boolean);
   const user = getSessionUser(session);
   try {
     const data = await goStudentListCategories(user.id, getSessionRole(session), {
@@ -32,6 +38,7 @@ export async function GET(request: Request) {
       search: url.searchParams.get("search") ?? "",
       sortBy: url.searchParams.get("sortBy") ?? "position",
       sortDir: url.searchParams.get("sortDir") ?? "asc",
+      tags: tagParams,
     });
     return NextResponse.json({ success: true, data });
   } catch (error) {

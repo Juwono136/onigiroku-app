@@ -608,6 +608,7 @@
     "newsTitle": "Berita",
     "newsSubtitle": "Artikel publik yang tampil di halaman berita. Materi siswa dikelola di Pembelajaran.",
     "subtitle": "Buat, terbitkan, dan kelola konten belajar dwibahasa untuk siswa dan situs publik.",
+    "loadingEditor": "Memuat editor…",
     "totalLabel": "{count} materi",
     "untitled": "Tanpa judul",
     "searchPlaceholder": "Cari berdasarkan judul materi…",
@@ -688,7 +689,7 @@
       "slugLockedHint": "Slug terkunci setelah pertama kali diterbitkan — URL yang sama untuk Indonesia dan English.",
       "featuredHint": "Hanya tersedia jika visibilitas Publik.",
       "coverEmpty": "Belum ada sampul",
-      "coverHint": "JPEG, PNG, WebP, atau GIF · maks 5MB · disarankan 1600×900 (16:9)",
+      "coverHint": "JPEG, PNG, WebP, atau GIF · maks 5MB · disarankan 1600×900 (16:9) · min 640×360",
       "imageHint": "Anda bisa menyisipkan beberapa gambar. Setiap file memakai batas 5MB yang sama (JPEG, PNG, WebP, GIF).",
       "tagsHint": "{count} / {max} tag",
       "tagsLocaleHint": "Label tag mengikuti bahasa konten aktif (Indonesia / English). Klik tag untuk mengedit kedua nama.",
@@ -786,7 +787,7 @@
       "saveUpdateTitle": "Simpan perubahan ini?",
       "saveUpdateBody": "Perubahan Anda akan disimpan dan status materi menjadi “{status}”.",
       "removeCoverTitle": "Hapus gambar sampul?",
-      "removeCoverBody": "Sampul akan dihapus dari materi ini. Simpan untuk menerapkan perubahan; berkas lama dibersihkan saat diganti atau materi dihapus permanen.",
+      "removeCoverBody": "Sampul akan dihapus dari materi ini. Unggahan yang belum disimpan dihapus dari storage sekarang. Sampul yang sudah tersimpan dihapus dari storage saat Anda menyimpan.",
       "deleteTagTitle": "Hapus tag ini?",
       "deleteTagBody": "“{name}” akan dihapus dari katalog tag. Hanya diperbolehkan jika tag tidak sedang dipakai.",
       "deleteTagConfirm": "Hapus tag"
@@ -824,6 +825,9 @@
       "COVER_UPLOAD_FAILED": "Unggah sampul gagal.",
       "COVER_TYPE_INVALID": "Sampul harus JPEG, PNG, WebP, atau GIF.",
       "COVER_SIZE_INVALID": "Gambar maksimal 5MB.",
+      "COVER_DECODE_FAILED": "Berkas ini tidak bisa dibaca sebagai gambar. Pilih JPEG, PNG, WebP, atau GIF lain.",
+      "COVER_TOO_SMALL": "Sampul terlalu kecil. Minimal 640×360 piksel (disarankan 1600×900, 16:9).",
+      "COVER_ASPECT_WARN": "Rasio gambar tidak mendekati 16:9. Ukuran yang disarankan 1600×900 agar sampul terbit tidak terpotong aneh.",
       "FILE_REQUIRED": "Pilih berkas gambar.",
       "tagsMax": "Maksimal 5 tag.",
       "tagDuplicate": "Tag itu sudah ditambahkan.",
@@ -891,6 +895,9 @@
     "eyebrow": "Jalur belajar",
     "title": "Kategori",
     "subtitle": "Kelompokkan materi siswa menjadi jalur berurutan. Materi tetap terkunci sampai setiap materi sebelumnya di kategori yang sama selesai.",
+    "loadingCategories": "Memuat kategori…",
+    "loadingCategory": "Memuat kategori…",
+    "loadingLesson": "Memuat materi…",
     "searchPlaceholder": "Cari kategori…",
     "editTitle": "Edit kategori",
     "createTitle": "Kategori baru",
@@ -931,7 +938,11 @@
       "archive": "Arsipkan",
       "delete": "Hapus",
       "cancel": "Batal",
-      "uploadCover": "Unggah sampul"
+      "uploadCover": "Unggah sampul",
+      "replaceCover": "Ganti sampul",
+      "removeCover": "Hapus sampul",
+      "removeTag": "Hapus tag",
+      "deleteTag": "Hapus tag kosong"
     },
     "fields": {
       "nameId": "Nama (Indonesia)",
@@ -944,12 +955,28 @@
       "accessTitle": "Akses siswa",
       "accessNote": "Jalur yang terbit terbuka untuk siswa yang sudah masuk. Paket pembayaran bisa dihubungkan nanti tanpa mengubah formulir ini.",
       "cover": "Sampul",
+      "tags": "Tag",
       "slug": "Jalur siswa",
       "slugNote": "Siswa membuka jalur ini dari perpustakaan belajar. Alamatnya dibuat dari nama kategori.",
       "slugPending": "Dibuat saat kategori disimpan",
       "coverEmpty": "Logo Onigiroku dipakai jika sampul kosong.",
-      "coverOptional": "Opsional. JPEG, PNG, WebP, atau GIF, maksimal 5MB. Logo Onigiroku ditampilkan jika kosong.",
-      "coverHint": "JPEG, PNG, WebP, atau GIF, maksimal 5MB."
+      "coverOptional": "Opsional. JPEG, PNG, WebP, atau GIF, maksimal 5MB. Disarankan 1600×900 (16:9) agar sampul terbit tidak terpotong. Minimal 640×360. Logo Onigiroku ditampilkan jika kosong.",
+      "coverHint": "JPEG, PNG, WebP, atau GIF · maks 5MB · disarankan 1600×900 (16:9) · min 640×360"
+    },
+    "editor": {
+      "tagsHint": "{count} dari {max} tag",
+      "tagsLocaleHint": "Tag membantu siswa memfilter jalur belajar. Isi label bilingual agar ID dan EN sama-sama berguna.",
+      "tagsFormatHint": "Tekan Enter untuk menambah. Huruf, angka, dan spasi boleh — slug dibuat otomatis.",
+      "tagPlaceholder": "Tambah tag, misalnya Partikel",
+      "tagEditTitle": "Edit label tag",
+      "tagNameId": "Label Indonesia",
+      "tagNameEn": "Label Inggris",
+      "tagNameIdPlaceholder": "Misalnya Partikel",
+      "tagNameEnPlaceholder": "Misalnya Particles",
+      "tagInUse": "Dipakai {count} kali",
+      "tagUnused": "Belum dipakai",
+      "createTag": "Buat “{name}”",
+      "tagsEmpty": "Belum ada tag yang cocok."
     },
     "placeholders": {
       "nameId": "Misalnya JLPT N5",
@@ -964,12 +991,17 @@
     "lessons": {
       "title": "Materi",
       "new": "Materi baru",
-      "orderHint": "Gunakan Naikkan dan Turunkan untuk mengubah materi mana yang tampil lebih dulu.",
+      "orderHint": "Gunakan Naikkan dan Turunkan untuk mengubah materi mana yang tampil lebih dulu. Pilih materi untuk menghapus beberapa sekaligus sebelum menghapus kategori.",
       "afterSave": "Simpan kategori terlebih dahulu. Materi akan muncul di panel ini agar bisa ditambah dan diurutkan.",
       "empty": "Belum ada materi di kategori ini.",
       "untitled": "Materi tanpa judul",
       "up": "Naikkan",
-      "down": "Turunkan"
+      "down": "Turunkan",
+      "selectAll": "Pilih semua materi",
+      "selectHint": "Pilih materi untuk dihapus",
+      "selectOne": "Pilih {title}",
+      "selectedCount": "{count} dipilih",
+      "deleteSelected": "Hapus terpilih"
     },
     "quiz": {
       "title": "Latihan",
@@ -1037,10 +1069,20 @@
       "deleteBody": "Kategori dan sampulnya dihapus. Penghapusan ditolak selama masih ada materi di dalamnya.",
       "unsavedTitle": "Keluar tanpa menyimpan?",
       "unsavedBody": "Ada perubahan kategori yang belum disimpan. Jika keluar sekarang, perubahan itu akan hilang.",
-      "unsavedConfirm": "Keluar"
+      "unsavedConfirm": "Keluar",
+      "bulkDeleteTitle": "Hapus materi terpilih?",
+      "bulkDeleteBody": "{count, plural, one {# materi} other {# materi}} akan dihapus permanen, termasuk soal latihan, percobaan siswa pada materi itu, dan gambar sampul. Tindakan ini tidak bisa dibatalkan.",
+      "removeCoverTitle": "Hapus gambar sampul?",
+      "removeCoverBody": "Sampul akan dihapus dari kategori ini. Unggahan yang belum disimpan dihapus dari storage sekarang. Sampul yang sudah tersimpan dihapus dari storage saat Anda menyimpan.",
+      "deleteTagTitle": "Hapus tag yang tidak terpakai?",
+      "deleteTagBody": "“{name}” akan dihapus dari katalog tag bersama. Hanya berhasil jika tidak dipakai kategori atau artikel mana pun."
     },
     "toast": {
-      "saved": "Kategori disimpan."
+      "saved": "Kategori disimpan.",
+      "bulkDeleted": "{count, plural, one {# materi dihapus.} other {# materi dihapus.}}",
+      "coverUploaded": "Sampul diunggah.",
+      "coverRemoved": "Sampul dihapus.",
+      "tagDeleted": "Tag kosong dihapus."
     },
     "empty": {
       "title": "Belum ada kategori",
@@ -1052,31 +1094,57 @@
       "cover": "Sampul harus JPEG, PNG, WebP, atau GIF dan maksimal 5MB.",
       "name": "Isi nama kategori dalam bahasa Indonesia atau Inggris.",
       "description": "Setiap deskripsi maksimal 1000 karakter.",
-      "publishCover": "Unggah sampul sebelum menerbitkan kategori ini."
+      "publishCover": "Unggah sampul sebelum menerbitkan kategori ini.",
+      "bulkDelete": "Gagal menghapus materi terpilih. Muat ulang lalu coba lagi.",
+      "coverDecode": "Berkas ini tidak bisa dibaca sebagai gambar. Pilih JPEG, PNG, WebP, atau GIF lain.",
+      "coverTooSmall": "Sampul terlalu kecil. Minimal 640×360 piksel (disarankan 1600×900, 16:9).",
+      "coverAspect": "Rasio gambar tidak mendekati 16:9. Ukuran yang disarankan 1600×900 agar sampul terbit tidak terpotong aneh.",
+      "tagsMax": "Maksimal 5 tag.",
+      "tagDelete": "Tidak bisa menghapus tag itu. Mungkin masih dipakai."
     }
   },
   "learningStudent": {
     "eyebrow": "Belajar",
     "title": "Jalur belajar",
     "subtitle": "Pilih kategori dan ikuti materi sesuai urutan. Materi berikutnya terbuka setelah materi sebelumnya selesai.",
-    "searchPlaceholder": "Cari kategori…",
+    "searchPlaceholder": "Cari jalur berdasarkan nama…",
     "showing": "Menampilkan {from}–{to} dari {total}",
     "pageSize": "{count} / halaman",
     "sort": {
       "position": "Urutan jalur",
       "name": "Nama"
     },
+    "filters": {
+      "tags": "Tag",
+      "multiHint": "Pilih satu atau lebih",
+      "all": "Semua tag",
+      "more": "Tag lainnya",
+      "searchTags": "Cari tag…",
+      "clear": "Hapus filter",
+      "sort": "Urutkan"
+    },
     "pathProgress": "Kemajuan jalur",
     "progress": "{done} dari {total} selesai",
+    "lessonsCount": "{count, plural, =0 {Belum ada materi} other {# materi}}",
     "actions": {
       "back": "Semua kategori",
-      "backToPath": "Kembali ke jalur"
+      "backToPath": "Kembali ke jalur",
+      "openPath": "Buka jalur",
+      "toggleSidebar": "Daftar materi",
+      "collapseSidebar": "Sembunyikan daftar materi",
+      "expandSidebar": "Tampilkan daftar materi"
+    },
+    "sidebar": {
+      "title": "Materi di jalur ini",
+      "progress": "{done}/{total}",
+      "current": "Sedang dibaca"
     },
     "prev": "Sebelumnya",
     "next": "Berikutnya",
     "empty": {
       "title": "Belum ada jalur belajar",
       "description": "Kategori yang sudah terbit akan muncul di sini.",
+      "filtered": "Tidak ada jalur yang cocok. Coba hapus tag atau pencarian.",
       "lessons": "Jalur ini belum punya materi yang terbit."
     },
     "locked": {
@@ -1106,7 +1174,12 @@
       "failed": "Gagal mengirim. Silakan coba lagi.",
       "passed": "Anda lulus. Materi berikutnya terbuka.",
       "retry": "Nilai belum lulus. Anda bisa mencoba lagi.",
+      "savedLatest": "Nilai latihan terbaru disimpan. Anda bisa mencoba lagi kapan saja.",
       "tryAgain": "Coba lagi",
+      "retryTitle": "Kerjakan ulang latihan ini?",
+      "retryDescription": "Jawaban Anda akan direset untuk percobaan baru. Progress tetap memakai nilai terbaru; percobaan sebelumnya tetap ada di riwayat.",
+      "retryConfirm": "Mulai percobaan baru",
+      "retryCancel": "Pertahankan hasil",
       "score": "Nilai {score}%. Nilai lulus {pass}%.",
       "explanation": "Pembahasan",
       "acceptedShow": "Jawaban yang diterima",
@@ -1132,6 +1205,52 @@
         "short_answer": "Isian singkat",
         "flashcard": "Kuis kartu"
       }
+    },
+    "history": {
+      "open": "Riwayat pengerjaan",
+      "title": "Riwayat latihan",
+      "description": "Ketuk percobaan mana pun untuk melihat semua soal, jawaban Anda, dan pembahasannya. Pembukaan materi berikutnya tetap memakai nilai terbaru saja.",
+      "loading": "Memuat riwayat…",
+      "detailLoading": "Memuat percobaan…",
+      "failed": "Gagal memuat riwayat. Silakan coba lagi.",
+      "detailFailed": "Gagal memuat percobaan itu. Silakan coba lagi.",
+      "retry": "Coba lagi",
+      "empty": "Belum ada percobaan. Kirim jawaban untuk memulai riwayat.",
+      "footer": "{total} percobaan tersimpan untuk materi ini",
+      "attempt": "Percobaan {n}",
+      "latest": "Terbaru",
+      "passed": "Lulus",
+      "failedLabel": "Belum",
+      "viewDetail": "Lihat soal",
+      "back": "Kembali ke riwayat",
+      "detailDescription": "Nilai {score}% · nilai lulus {pass}%",
+      "yourChoice": "Jawaban Anda",
+      "correctChoice": "Benar",
+      "yourAnswer": "Jawaban Anda"
+    },
+    "completion": {
+      "eyebrow": "Jalur selesai",
+      "title": "Selamat!",
+      "subtitle": "Anda menyelesaikan semua materi di “{path}”. Berikut ringkasan nilai Anda.",
+      "retakeNote": "Anda bisa membuka ulang materi apa pun dan mengerjakan latihan lagi kapan saja — percobaan baru tetap dicatat.",
+      "toast": "Jalur selesai — kerja bagus!",
+      "lessonsDone": "Materi",
+      "avgScore": "Rata-rata",
+      "status": "Status",
+      "finished": "Selesai",
+      "scoreBreakdown": "Hasil per materi",
+      "readingOnly": "Bacaan selesai",
+      "attempts": "{n} percobaan",
+      "noPractice": "Belum ada latihan",
+      "ok": "Selesai",
+      "reviewCta": "Ulas materi pertama",
+      "openSummary": "Hasil jalur",
+      "nextEyebrow": "Lanjut belajar",
+      "nextDescription": "Jalur berikutnya yang direkomendasikan — {done} dari {total} materi sudah dikerjakan.",
+      "nextCta": "Buka jalur berikutnya",
+      "allDoneTitle": "Anda sudah mengejar semua",
+      "allDoneBody": "Belum ada jalur yang belum selesai setelah ini. Jelajahi perpustakaan kapan saja — atau ulangi materi di bawah untuk terus berlatih.",
+      "viewPath": "Lihat ringkasan jalur"
     }
   },
   "studentMaterials": {

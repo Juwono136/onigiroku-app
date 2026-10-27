@@ -18,6 +18,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AdminConfirmDialog } from "@/components/admin/admin-confirm-dialog";
+import { AdminMaterialEditorSkeleton } from "@/components/admin/admin-loading";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { LessonQuizBuilder } from "@/components/admin/learning/lesson-quiz-builder";
 import { MaterialPreviewDialog } from "@/components/admin/materials/material-preview-dialog";
@@ -31,10 +32,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useRouter } from "@/i18n/routing";
+import { inspectCoverImage } from "@/lib/materials/cover-image";
 import {
   CMS_IMAGE_ACCEPT,
-  CMS_IMAGE_MAX_BYTES,
-  CMS_IMAGE_MIME,
   excerptFromBody,
 } from "@/lib/materials/plain-text";
 import { previewMaterialSlug } from "@/lib/materials/slug";
@@ -230,6 +230,7 @@ export function MaterialEditor({
   const [leaveOpen, setLeaveOpen] = useState(false);
   const [saveConfirmOpen, setSaveConfirmOpen] = useState(false);
   const [removeCoverOpen, setRemoveCoverOpen] = useState(false);
+  const [removingCover, setRemovingCover] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [seoTitleTouched, setSeoTitleTouched] = useState(false);
   const [seoDescriptionTouched, setSeoDescriptionTouched] = useState(false);
@@ -240,6 +241,7 @@ export function MaterialEditor({
   > | null>(null);
 
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const savedCoverKeyRef = useRef<string | null>(null);
   const tagBoxRef = useRef<HTMLDivElement>(null);
   const snapshotRef = useRef<Snapshot | null>(null);
   const cleanTokenRef = useRef(0);
@@ -398,6 +400,7 @@ export function MaterialEditor({
         setFeatured(nextFeatured);
         setCoverObjectKey(nextCover);
         setCoverUrl(detail.coverUrl);
+        savedCoverKeyRef.current = nextCover;
         setSlug(detail.slug);
         setSlugLocked(detail.status !== "DRAFT");
         const nextPassScore =
@@ -590,19 +593,20 @@ export function MaterialEditor({
   }
 
   async function uploadCover(file: File) {
-    if (!CMS_IMAGE_MIME.has(file.type)) {
-      toast.error(t("errors.COVER_TYPE_INVALID"));
+    const inspected = await inspectCoverImage(file);
+    if (!inspected.ok) {
+      toast.error(t(`errors.${inspected.code}` as "errors.COVER_TYPE_INVALID"));
       return;
     }
-    if (file.size <= 0 || file.size > CMS_IMAGE_MAX_BYTES) {
-      toast.error(t("errors.COVER_SIZE_INVALID"));
-      return;
+    if (inspected.aspectWarning) {
+      toast.message(t("errors.COVER_ASPECT_WARN"));
     }
     setUploadingCover(true);
     try {
       const form = new FormData();
       form.append("file", file);
-      if (coverObjectKey) {
+      // Purge only an unsaved previous upload; a saved cover is removed on save by Go.
+      if (coverObjectKey && coverObjectKey !== savedCoverKeyRef.current) {
         form.append("previousObjectKey", coverObjectKey);
       }
       const res = await fetch("/api/admin/materials/cover", {
@@ -630,6 +634,27 @@ export function MaterialEditor({
     } finally {
       setUploadingCover(false);
       if (coverInputRef.current) coverInputRef.current.value = "";
+    }
+  }
+
+  async function confirmRemoveCover() {
+    const key = coverObjectKey;
+    setRemovingCover(true);
+    try {
+      if (key && key !== savedCoverKeyRef.current) {
+        await fetch("/api/admin/materials/cover", {
+          method: "DELETE",
+          credentials: "same-origin",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ objectKey: key }),
+        });
+      }
+      setCoverObjectKey(null);
+      setCoverUrl(null);
+      setRemoveCoverOpen(false);
+      toast.success(t("toast.coverRemoved"));
+    } finally {
+      setRemovingCover(false);
     }
   }
 
@@ -824,6 +849,7 @@ export function MaterialEditor({
       setSlugLocked(payload.data.status !== "DRAFT");
       setCoverObjectKey(nextCover);
       setCoverUrl(payload.data.coverUrl);
+      savedCoverKeyRef.current = nextCover;
       if (surface === "lesson") {
         setPassScore(nextPassScore);
         setShuffleQuestions(nextShuffleQuestions);
@@ -911,17 +937,13 @@ export function MaterialEditor({
 
   if (loading) {
     return (
-      <div className="relative flex flex-1 flex-col">
-        <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-52 bg-workspace-mesh"
-          aria-hidden
-        />
-        <div className="relative mx-auto w-full max-w-[96rem] space-y-4 px-4 py-6 sm:px-6 sm:py-8 lg:px-8 xl:px-10">
-          <div className="h-8 w-48 animate-pulse rounded-xl bg-charcoal/10" />
-          <div className="h-12 w-full max-w-xl animate-pulse rounded-2xl bg-charcoal/10" />
-          <div className="h-[420px] w-full animate-pulse rounded-[1.35rem] bg-charcoal/10" />
-        </div>
-      </div>
+      <AdminMaterialEditorSkeleton
+        label={
+          surface === "lesson"
+            ? lessonCopy("loadingLesson")
+            : t("loadingEditor")
+        }
+      />
     );
   }
 
@@ -1329,12 +1351,12 @@ export function MaterialEditor({
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-2 p-3">
+                  <div className="flex flex-col gap-2 p-3 sm:flex-row">
                     <Button
                       type="button"
                       variant="outline"
-                      disabled={uploadingCover}
-                      className="h-10 flex-1 cursor-pointer rounded-xl font-semibold"
+                      disabled={uploadingCover || removingCover}
+                      className="h-10 w-full cursor-pointer gap-2 rounded-xl font-semibold sm:flex-1"
                       onClick={() => coverInputRef.current?.click()}
                     >
                       {uploadingCover ? (
@@ -1349,18 +1371,21 @@ export function MaterialEditor({
                     {coverPreview ? (
                       <Button
                         type="button"
-                        variant="ghost"
-                        className="h-10 cursor-pointer rounded-xl"
+                        variant="outline"
+                        disabled={uploadingCover || removingCover}
+                        className="h-10 w-full cursor-pointer gap-2 rounded-xl font-semibold text-destructive sm:w-auto"
                         aria-label={t("actions.removeCover")}
-                        title={t("actions.removeCover")}
                         onClick={() => setRemoveCoverOpen(true)}
                       >
                         <X className="size-4" aria-hidden />
+                        <span className="sm:sr-only">{t("actions.removeCover")}</span>
                       </Button>
                     ) : null}
                   </div>
                   <p className="border-t border-charcoal/8 px-3 py-2 text-[11px] leading-relaxed text-charcoal/50">
-                    {surface === "lesson" ? lessonCopy("fields.coverOptional") : t("editor.coverHint")}
+                    {surface === "lesson"
+                      ? lessonCopy("fields.coverOptional")
+                      : t("editor.coverHint")}
                   </p>
                   <input
                     ref={coverInputRef}
@@ -1685,18 +1710,17 @@ export function MaterialEditor({
       <AdminConfirmDialog
         open={removeCoverOpen}
         onOpenChange={(open) => {
+          if (removingCover) return;
           if (!open) setRemoveCoverOpen(false);
         }}
         title={t("confirm.removeCoverTitle")}
         description={t("confirm.removeCoverBody")}
         confirmLabel={t("actions.removeCover")}
         cancelLabel={t("actions.cancel")}
+        pending={removingCover}
         tone="danger"
         onConfirm={() => {
-          setCoverObjectKey(null);
-          setCoverUrl(null);
-          setRemoveCoverOpen(false);
-          toast.success(t("toast.coverRemoved"));
+          void confirmRemoveCover();
         }}
       />
 

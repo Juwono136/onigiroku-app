@@ -21,6 +21,10 @@ type Props = {
   showExcerpt?: boolean;
   /** Wider article column for tables / media-heavy news. */
   wide?: boolean;
+  /** Hide published date (student lessons are not news). */
+  hideDate?: boolean;
+  /** Hide material tags under the title. */
+  hideTags?: boolean;
   /** Show share control (public news). */
   shareUrl?: string;
   /** Optional footer below the article body (e.g. latest news). */
@@ -54,14 +58,16 @@ export async function MaterialReader({
   eyebrow,
   showExcerpt = false,
   wide = false,
+  hideDate = false,
+  hideTags = false,
   shareUrl,
   footer,
 }: Props) {
   const t = await getTranslations("studentMaterials");
   const loc = pickMaterialLocale(material, locale);
   const cover = toBrowserMediaUrl(material.coverUrl);
-  const published = formatDate(material.publishedAt, locale);
-  const tags = material.tags ?? [];
+  const published = hideDate ? null : formatDate(material.publishedAt, locale);
+  const tags = hideTags ? [] : (material.tags ?? []);
   const resolvedShare =
     shareUrl ??
     (backHref === "/news"
@@ -69,7 +75,7 @@ export async function MaterialReader({
       : undefined);
 
   return (
-    <article className="relative flex flex-1 flex-col">
+    <article className="relative flex min-w-0 flex-1 flex-col">
       <div
         className="pointer-events-none absolute inset-x-0 top-0 h-64 bg-workspace-mesh"
         aria-hidden
@@ -82,7 +88,7 @@ export async function MaterialReader({
       <div
         className={cn(
           "relative mx-auto w-full flex-1 px-4 py-6 sm:px-6 sm:py-10 lg:px-8",
-          wide ? "max-w-6xl" : "max-w-4xl",
+          wide ? "max-w-[96rem]" : "max-w-4xl",
         )}
       >
         <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -114,25 +120,27 @@ export async function MaterialReader({
             </p>
           ) : null}
 
-          <div className="mt-5 flex flex-wrap items-center gap-2.5 text-sm text-charcoal/60">
-            {published ? (
-              <span className="inline-flex items-center gap-1.5 rounded-full border border-charcoal/10 bg-white/80 px-2.5 py-1">
-                <CalendarDays className="size-3.5" aria-hidden />
-                {published}
-              </span>
-            ) : null}
-            {tags.map((tag) => (
-              <Link
-                key={tag.id}
-                href={`${backHref}?tag=${encodeURIComponent(tag.slug)}`}
-                className="rounded-full border border-charcoal/12 bg-white/80 px-2.5 py-1 text-xs font-semibold text-charcoal/75 transition-colors hover:border-brand/30 hover:text-brand"
-              >
-                {locale === "en"
-                  ? tag.nameEn || tag.nameId
-                  : tag.nameId || tag.nameEn}
-              </Link>
-            ))}
-          </div>
+          {published || tags.length > 0 ? (
+            <div className="mt-5 flex flex-wrap items-center gap-2.5 text-sm text-charcoal/60">
+              {published ? (
+                <span className="inline-flex items-center gap-1.5 rounded-full border border-charcoal/10 bg-white/80 px-2.5 py-1">
+                  <CalendarDays className="size-3.5" aria-hidden />
+                  {published}
+                </span>
+              ) : null}
+              {tags.map((tag) => (
+                <Link
+                  key={tag.id}
+                  href={`${backHref}?tag=${encodeURIComponent(tag.slug)}`}
+                  className="rounded-full border border-charcoal/12 bg-white/80 px-2.5 py-1 text-xs font-semibold text-charcoal/75 transition-colors hover:border-brand/30 hover:text-brand"
+                >
+                  {locale === "en"
+                    ? tag.nameEn || tag.nameId
+                    : tag.nameId || tag.nameEn}
+                </Link>
+              ))}
+            </div>
+          ) : null}
         </header>
 
         {cover ? (
