@@ -5,9 +5,13 @@
     "keywords": "belajar bahasa Jepang, JLPT, onigiroku, quiz Jepang, assessment Jepang"
   },
   "nav": {
+    "home": "Beranda",
+    "learningPath": "Jalur belajar",
+    "classes": "Kelas",
+    "news": "Berita",
+    "about": "Tentang Kami",
     "features": "Fitur",
     "howItWorks": "Cara Kerja",
-    "news": "Berita",
     "pricing": "Paket",
     "faq": "FAQ",
     "login": "Masuk",
@@ -18,6 +22,92 @@
     "settings": "Pengaturan saya",
     "logout": "Keluar",
     "accountMenu": "Menu akun"
+  },
+  "landingCourses": {
+    "eyebrow": "Jalur belajar populer",
+    "title": "Jalur belajar favorit peserta",
+    "subtitle": "Tiga jalur belajar yang paling sering dikunjungi — pratinjau lesson list sebelum mulai belajar.",
+    "viewAll": "Lihat semua jalur belajar",
+    "viewDetail": "Lihat jalur belajar",
+    "popular": "Populer",
+    "lessons": "{count, plural, =0 {Tanpa lesson} one {# lesson} other {# lesson}}"
+  },
+  "courses": {
+    "meta": {
+      "title": "Jalur belajar",
+      "description": "Jelajahi jalur belajar Onigiroku yang sudah dipublikasikan. Pratinjau lesson bebas; masuk sebagai peserta untuk belajar."
+    },
+    "eyebrow": "Katalog pembelajaran",
+    "title": "Jalur belajar",
+    "subtitle": "Jalur belajar terpublikasi dengan daftar lesson terstruktur. Pratinjau semua path; buka belajar setelah masuk sebagai peserta.",
+    "searchPlaceholder": "Cari jalur belajar berdasarkan nama…",
+    "resultCount": "{count, plural, =0 {Tidak ada jalur belajar} one {# jalur belajar} other {# jalur belajar}}",
+    "lessonsCount": "{count, plural, =0 {Tanpa lesson} one {# lesson} other {# lesson}}",
+    "views": "{count, plural, one {# kunjungan} other {# kunjungan}}",
+    "sort": {
+      "label": "Urutkan",
+      "position": "Unggulan",
+      "popular": "Paling populer",
+      "name": "Nama"
+    },
+    "filters": {
+      "tags": "Tag"
+    },
+    "actions": {
+      "viewCourse": "Lihat jalur belajar",
+      "backToList": "Kembali ke jalur belajar",
+      "clearSearch": "Hapus pencarian",
+      "clearFilters": "Hapus filter",
+      "loginToStudy": "Masuk untuk belajar",
+      "startLearning": "Mulai belajar"
+    },
+    "pagination": {
+      "label": "Paginasi jalur belajar",
+      "prev": "Sebelumnya",
+      "next": "Berikutnya",
+      "page": "{page} / {total}",
+      "showing": "Menampilkan {from}–{to} dari {total}"
+    },
+    "empty": {
+      "title": "Jalur belajar tidak ditemukan",
+      "description": "Coba kata kunci lain atau hapus filter Anda."
+    },
+    "detail": {
+      "eyebrow": "Jalur belajar",
+      "noDescription": "Detail path ini akan segera tersedia.",
+      "accessEyebrow": "Akses",
+      "accessGuestTitle": "Hanya pratinjau",
+      "accessGuestBody": "Siapa pun bisa melihat path ini dan daftar lesson-nya. Masuk dengan akun peserta untuk membuka lesson dan latihan.",
+      "accessStudentTitle": "Siap belajar",
+      "accessStudentBody": "Buka path ini di dashboard pembelajaran untuk mengakses setiap lesson dan melacak progress Anda.",
+      "lessonList": "Daftar lesson",
+      "lessonListHint": "Lesson terkunci di katalog publik. Masuk untuk belajar.",
+      "noLessons": "Belum ada lesson terpublikasi di path ini."
+    },
+    "notFound": "Jalur belajar ini tidak tersedia.",
+    "errors": {
+      "loadFailed": "Gagal memuat jalur belajar. Silakan coba lagi."
+    }
+  },
+  "classesPage": {
+    "meta": {
+      "title": "Kelas",
+      "description": "Kelas Onigiroku terjadwal — segera hadir."
+    },
+    "eyebrow": "Segera hadir",
+    "title": "Kelas",
+    "description": "Pengalaman kelas terbimbing sedang disiapkan. Sementara itu, jelajahi jalur belajar mandiri.",
+    "cta": "Jelajahi jalur belajar"
+  },
+  "aboutPage": {
+    "meta": {
+      "title": "Tentang Kami",
+      "description": "Kenali Onigiroku — pembelajaran bahasa Jepang berbasis evidence."
+    },
+    "eyebrow": "Segera hadir",
+    "title": "Tentang Kami",
+    "description": "Kami sedang menyiapkan cerita lengkap tentang misi dan pendekatan kami. Jelajahi jalur belajar sementara halaman ini diselesaikan.",
+    "cta": "Jelajahi jalur belajar"
   },
   "hero": {
     "eyebrow": "Platform belajar bahasa Jepang berbasis evidence",

@@ -5,9 +5,13 @@
     "keywords": "learn Japanese, JLPT, onigiroku, Japanese quiz, Japanese assessment"
   },
   "nav": {
+    "home": "Home",
+    "learningPath": "Learning path",
+    "classes": "Classes",
+    "news": "News",
+    "about": "About Us",
     "features": "Features",
     "howItWorks": "How it works",
-    "news": "News",
     "pricing": "Pricing",
     "faq": "FAQ",
     "login": "Log in",
@@ -18,6 +22,92 @@
     "settings": "My settings",
     "logout": "Sign out",
     "accountMenu": "Account menu"
+  },
+  "landingCourses": {
+    "eyebrow": "Popular learning paths",
+    "title": "Learning paths students love",
+    "subtitle": "Explore the three most visited learning paths — curated paths with structured lessons you can preview before you study.",
+    "viewAll": "Browse all learning paths",
+    "viewDetail": "View learning path",
+    "popular": "Popular",
+    "lessons": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}"
+  },
+  "courses": {
+    "meta": {
+      "title": "Learning paths",
+      "description": "Browse published Onigiroku learning paths. Preview lessons freely; sign in as a student to study."
+    },
+    "eyebrow": "Learning catalog",
+    "title": "Learning paths",
+    "subtitle": "Published learning paths with structured lesson lists. Preview every path; unlock study when you sign in as a student.",
+    "searchPlaceholder": "Search learning paths by name…",
+    "resultCount": "{count, plural, =0 {No learning paths} one {# learning path} other {# learning paths}}",
+    "lessonsCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
+    "views": "{count, plural, one {# visit} other {# visits}}",
+    "sort": {
+      "label": "Sort",
+      "position": "Featured",
+      "popular": "Most popular",
+      "name": "Name"
+    },
+    "filters": {
+      "tags": "Tags"
+    },
+    "actions": {
+      "viewCourse": "View learning path",
+      "backToList": "Back to learning paths",
+      "clearSearch": "Clear search",
+      "clearFilters": "Clear filters",
+      "loginToStudy": "Sign in to study",
+      "startLearning": "Start learning"
+    },
+    "pagination": {
+      "label": "Learning path pagination",
+      "prev": "Previous",
+      "next": "Next",
+      "page": "{page} / {total}",
+      "showing": "Showing {from}–{to} of {total}"
+    },
+    "empty": {
+      "title": "No learning paths found",
+      "description": "Try a different search or clear your filters."
+    },
+    "detail": {
+      "eyebrow": "Learning path",
+      "noDescription": "Details for this path will appear here soon.",
+      "accessEyebrow": "Access",
+      "accessGuestTitle": "Preview only",
+      "accessGuestBody": "Anyone can explore this path and its lesson list. Sign in with a student account to open lessons and practice.",
+      "accessStudentTitle": "Ready to study",
+      "accessStudentBody": "Open this path in your learning dashboard to access every lesson and track your progress.",
+      "lessonList": "Lesson list",
+      "lessonListHint": "Lessons stay locked on the public catalog. Sign in to study.",
+      "noLessons": "No published lessons in this path yet."
+    },
+    "notFound": "This learning path is unavailable.",
+    "errors": {
+      "loadFailed": "Could not load learning paths. Please try again."
+    }
+  },
+  "classesPage": {
+    "meta": {
+      "title": "Classes",
+      "description": "Live and scheduled Onigiroku classes — coming soon."
+    },
+    "eyebrow": "Coming soon",
+    "title": "Classes",
+    "description": "Guided class experiences are on the way. Meanwhile, explore self-paced learning paths.",
+    "cta": "Browse learning paths"
+  },
+  "aboutPage": {
+    "meta": {
+      "title": "About Us",
+      "description": "Learn more about Onigiroku — evidence-based Japanese learning."
+    },
+    "eyebrow": "Coming soon",
+    "title": "About Us",
+    "description": "We’re preparing a fuller story about our mission and approach. Explore learning paths while we finish this page.",
+    "cta": "Browse learning paths"
   },
   "hero": {
     "eyebrow": "Evidence-based Japanese learning platform",

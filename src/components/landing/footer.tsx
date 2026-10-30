@@ -27,19 +27,29 @@ export async function SiteFooter() {
           <p className="text-sm font-semibold text-ink">{t("product")}</p>
           <ul className="mt-3 space-y-2 text-sm text-charcoal/70">
             <li>
-              <a href="#features" className="hover:text-brand">
-                {nav("features")}
-              </a>
+              <Link href="/" className="hover:text-brand">
+                {nav("home")}
+              </Link>
             </li>
             <li>
-              <a href="#pricing" className="hover:text-brand">
-                {nav("pricing")}
-              </a>
+              <Link href="/learning-path" className="hover:text-brand">
+                {nav("learningPath")}
+              </Link>
             </li>
             <li>
-              <a href="#faq" className="hover:text-brand">
-                {nav("faq")}
-              </a>
+              <Link href="/classes" className="hover:text-brand">
+                {nav("classes")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/news" className="hover:text-brand">
+                {nav("news")}
+              </Link>
+            </li>
+            <li>
+              <Link href="/about" className="hover:text-brand">
+                {nav("about")}
+              </Link>
             </li>
           </ul>
         </div>

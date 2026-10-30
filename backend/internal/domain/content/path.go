@@ -101,22 +101,23 @@ type CategoryInput struct {
 }
 
 type CategoryDTO struct {
-	ID             string   `json:"id"`
-	Slug           string   `json:"slug"`
-	NameID         string   `json:"nameId"`
-	NameEN         string   `json:"nameEn"`
-	DescriptionID  string   `json:"descriptionId"`
-	DescriptionEN  string   `json:"descriptionEn"`
-	CoverObjectKey *string  `json:"coverObjectKey"`
-	CoverURL       *string  `json:"coverUrl"`
-	Position       int      `json:"position"`
-	Status         string   `json:"status"`
-	PlanKey        string   `json:"planKey"`
-	LessonCount    int      `json:"lessonCount"`
-	CompletedCount int      `json:"completedCount,omitempty"`
-	Tags           []TagDTO `json:"tags"`
-	CreatedAt      string   `json:"createdAt"`
-	UpdatedAt      string   `json:"updatedAt"`
+	ID                string   `json:"id"`
+	Slug              string   `json:"slug"`
+	NameID            string   `json:"nameId"`
+	NameEN            string   `json:"nameEn"`
+	DescriptionID     string   `json:"descriptionId"`
+	DescriptionEN     string   `json:"descriptionEn"`
+	CoverObjectKey    *string  `json:"coverObjectKey"`
+	CoverURL          *string  `json:"coverUrl"`
+	Position          int      `json:"position"`
+	Status            string   `json:"status"`
+	PlanKey           string   `json:"planKey"`
+	LessonCount       int      `json:"lessonCount"`
+	CompletedCount    int      `json:"completedCount,omitempty"`
+	StudentViewCount  int      `json:"studentViewCount"`
+	Tags              []TagDTO `json:"tags"`
+	CreatedAt         string   `json:"createdAt"`
+	UpdatedAt         string   `json:"updatedAt"`
 }
 
 type CategoryListResult struct {
@@ -142,17 +143,35 @@ type PathLessonDTO struct {
 }
 
 type StudentCategoryCard struct {
-	ID             string   `json:"id"`
-	Slug           string   `json:"slug"`
-	NameID         string   `json:"nameId"`
-	NameEN         string   `json:"nameEn"`
-	DescriptionID  string   `json:"descriptionId"`
-	DescriptionEN  string   `json:"descriptionEn"`
-	CoverURL       *string  `json:"coverUrl"`
-	PlanKey        string   `json:"planKey"`
-	LessonCount    int      `json:"lessonCount"`
-	CompletedCount int      `json:"completedCount"`
-	Tags           []TagDTO `json:"tags"`
+	ID               string   `json:"id"`
+	Slug             string   `json:"slug"`
+	NameID           string   `json:"nameId"`
+	NameEN           string   `json:"nameEn"`
+	DescriptionID    string   `json:"descriptionId"`
+	DescriptionEN    string   `json:"descriptionEn"`
+	CoverURL         *string  `json:"coverUrl"`
+	PlanKey          string   `json:"planKey"`
+	LessonCount      int      `json:"lessonCount"`
+	CompletedCount   int      `json:"completedCount"`
+	StudentViewCount int      `json:"studentViewCount"`
+	Tags             []TagDTO `json:"tags"`
+}
+
+// PublicCourseLesson is a lesson teaser on a public course page (no lesson body).
+type PublicCourseLesson struct {
+	Slug     string  `json:"slug"`
+	Title    string  `json:"title"`
+	Excerpt  string  `json:"excerpt"`
+	Position int     `json:"position"`
+	CoverURL *string `json:"coverUrl"`
+	Locked   bool    `json:"locked"`
+}
+
+// PublicCourseDetail is the public catalog detail for one published learning path.
+type PublicCourseDetail struct {
+	StudentCategoryCard
+	Lessons      []PublicCourseLesson `json:"lessons"`
+	RequiresAuth bool                 `json:"requiresAuth"`
 }
 
 type StudentCategoryDetail struct {

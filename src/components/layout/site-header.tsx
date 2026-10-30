@@ -22,14 +22,14 @@ import {
 import { toBrowserMediaUrl } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
-const NAV_KEYS = ["features", "howItWorks", "news", "pricing", "faq"] as const;
+const NAV_KEYS = ["home", "learningPath", "classes", "news", "about"] as const;
 
 const NAV_HREFS = {
-  features: "/#features",
-  howItWorks: "/#how-it-works",
+  home: "/",
+  learningPath: "/learning-path",
+  classes: "/classes",
   news: "/news",
-  pricing: "/#pricing",
-  faq: "/#faq",
+  about: "/about",
 } as const;
 
 function userInitials(name: string) {

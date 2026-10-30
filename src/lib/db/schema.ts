@@ -277,6 +277,9 @@ export const learningCategory = pgTable(
     position: integer("position").notNull().default(0),
     status: learningCategoryStatusEnum("status").notNull().default("DRAFT"),
     planKey: text("plan_key").notNull().default("free"),
+    /** Incremented when a signed-in student opens this learning path (popularity). */
+    studentViewCount: integer("student_view_count").notNull().default(0),
+    lastStudentAccessAt: timestamp("last_student_access_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true })
       .notNull()
       .defaultNow(),

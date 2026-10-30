@@ -203,41 +203,63 @@ export function LessonPractice({
     }
   }
 
-  const nextLessonCta =
-    canGoNext && resolvedNextSlug ? (
-      <Link
-        href={`/dashboard/materials/${resolvedNextSlug}`}
-        className={cn(
-          buttonVariants(),
-          "h-11 w-full cursor-pointer gap-2 rounded-2xl px-5 font-semibold shadow-sm sm:w-auto",
-          "border-transparent bg-brand text-white hover:bg-brand/90 hover:text-white",
-        )}
-      >
-        {t("lesson.next")}
-        <ArrowRight className="size-4" aria-hidden />
-      </Link>
-    ) : pathFullyDone && completion ? (
-      <Button
-        type="button"
-        className="h-11 w-full cursor-pointer gap-2 rounded-2xl bg-brand px-5 font-semibold text-white hover:bg-brand/90 sm:w-auto"
-        onClick={() => setCompletionOpen(true)}
-      >
-        <Trophy className="size-4" aria-hidden />
-        {t("completion.openSummary")}
-      </Button>
-    ) : pathFullyDone ? (
-      <Link
-        href={`/dashboard/materials/categories/${categorySlug}`}
-        className={cn(
-          buttonVariants(),
-          "h-11 w-full cursor-pointer gap-2 rounded-2xl px-5 font-semibold shadow-sm sm:w-auto",
-          "border-transparent bg-brand text-white hover:bg-brand/90 hover:text-white",
-        )}
-      >
-        {t("completion.viewPath")}
-        <ArrowRight className="size-4" aria-hidden />
-      </Link>
-    ) : null;
+  /** Outline = sits beside Submit without competing; solid brand = main CTA after results. */
+  function nextLessonCta(tone: "primary" | "secondary") {
+    const secondary = tone === "secondary";
+    if (canGoNext && resolvedNextSlug) {
+      return (
+        <Link
+          href={`/dashboard/materials/${resolvedNextSlug}`}
+          className={cn(
+            buttonVariants({ variant: secondary ? "outline" : "default" }),
+            "h-11 w-full cursor-pointer gap-2 rounded-2xl px-5 font-semibold sm:w-auto",
+            secondary
+              ? "border-charcoal/20 bg-white text-ink hover:border-brand/30 hover:bg-white hover:text-brand"
+              : "border-transparent bg-brand text-white hover:bg-brand/90 hover:text-white shadow-sm",
+          )}
+        >
+          {t("lesson.next")}
+          <ArrowRight className="size-4" aria-hidden />
+        </Link>
+      );
+    }
+    if (pathFullyDone && completion) {
+      return (
+        <Button
+          type="button"
+          variant={secondary ? "outline" : "default"}
+          className={cn(
+            "h-11 w-full cursor-pointer gap-2 rounded-2xl px-5 font-semibold sm:w-auto",
+            secondary
+              ? "border-charcoal/20 bg-white text-ink hover:border-brand/30 hover:bg-white hover:text-brand"
+              : "border-transparent bg-brand text-white hover:bg-brand/90",
+          )}
+          onClick={() => setCompletionOpen(true)}
+        >
+          <Trophy className="size-4" aria-hidden />
+          {t("completion.openSummary")}
+        </Button>
+      );
+    }
+    if (pathFullyDone) {
+      return (
+        <Link
+          href={`/dashboard/materials/categories/${categorySlug}`}
+          className={cn(
+            buttonVariants({ variant: secondary ? "outline" : "default" }),
+            "h-11 w-full cursor-pointer gap-2 rounded-2xl px-5 font-semibold sm:w-auto",
+            secondary
+              ? "border-charcoal/20 bg-white text-ink hover:border-brand/30 hover:bg-white hover:text-brand"
+              : "border-transparent bg-brand text-white hover:bg-brand/90 hover:text-white shadow-sm",
+          )}
+        >
+          {t("completion.viewPath")}
+          <ArrowRight className="size-4" aria-hidden />
+        </Link>
+      );
+    }
+    return null;
+  }
 
   const historyButton = questions.length > 0 ? (
     <Button
@@ -285,7 +307,9 @@ export function LessonPractice({
       {questions.length === 0 ? (
         <div className="rounded-[1.25rem] border border-charcoal/10 bg-white p-5">
           <p className="font-semibold text-ink">{lessonCompleted ? t("lesson.done") : t("lesson.opened")}</p>
-          {nextLessonCta ? <div className="mt-4 flex justify-stretch sm:justify-end">{nextLessonCta}</div> : null}
+          {nextLessonCta("primary") ? (
+            <div className="mt-4 flex justify-stretch sm:justify-end">{nextLessonCta("primary")}</div>
+          ) : null}
         </div>
       ) : (
         <div className="space-y-4 rounded-[1.35rem] border border-charcoal/10 bg-[var(--workspace-card)] p-4 shadow-sm sm:p-6">
@@ -307,7 +331,13 @@ export function LessonPractice({
               void submit(answers);
             }}
             onRetry={result ? () => setRetryOpen(true) : undefined}
-            nextSlot={result || lessonCompleted || pathFullyDone ? nextLessonCta : null}
+            nextSlot={
+              result
+                ? nextLessonCta("primary")
+                : lessonCompleted || pathFullyDone
+                  ? nextLessonCta("secondary")
+                  : null
+            }
           />
         </div>
       )}

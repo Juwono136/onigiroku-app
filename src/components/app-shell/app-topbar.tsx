@@ -87,6 +87,8 @@ export function AppTopbar({ user }: Props) {
         <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2.5">
           <Link
             href="/"
+            target="_blank"
+            rel="noopener noreferrer"
             className={cn(
               buttonVariants({ variant: "outline", size: "sm" }),
               "hidden h-9 cursor-pointer gap-1.5 rounded-xl border-charcoal/15 bg-[var(--workspace-elevated)] px-3 font-semibold sm:inline-flex",
@@ -97,6 +99,8 @@ export function AppTopbar({ user }: Props) {
           </Link>
           <Link
             href="/"
+            target="_blank"
+            rel="noopener noreferrer"
             className={cn(
               buttonVariants({ variant: "outline", size: "icon" }),
               "size-9 cursor-pointer rounded-xl border-charcoal/15 bg-[var(--workspace-elevated)] sm:hidden",

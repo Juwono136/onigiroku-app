@@ -10,6 +10,7 @@ News and student lessons share `learning_material` (TipTap + SeaweedFS `cms/`). 
 | --- | --- | --- |
 | `PUBLIC` | Anyone | `/news`, landing announcements slider. No category, no position. Admin: `/admin/news`. |
 | `STUDENT` | Signed-in user, inside one category | `/dashboard/materials` category cards → path → reader. Admin: `/admin/learning`. |
+| Published learning path (category) | Guests + signed-in | Public catalog `/learning-path` + `/learning-path/[slug]` (list + detail + lesson teasers). Guests cannot open lesson content. Study requires login as student (`USER`) via `/dashboard/materials/...`. |
 
 `/admin/materials` redirects to `/admin/news` so old bookmarks keep working. A STUDENT row with no category stays admin-only and does not appear on the student dashboard.
 
@@ -46,7 +47,7 @@ Migration `drizzle/0005_learning_materials.sql`:
 
 Migration `drizzle/0008_learning_paths.sql`:
 
-- `learning_category` — unique slug (among non-deleted rows), bilingual name/description, cover, position, status, `plan_key` default `free`, soft delete
+- `learning_category` — unique slug (among non-deleted rows), bilingual name/description, cover, position, status, `plan_key` default `free`, soft delete; popularity via `student_view_count` + `last_student_access_at` (migration `0011_category_student_views.sql`, indexed for published paths)
 - `learning_material.category_id`, `position`, `pass_score` (50–100, default 80), `shuffle_questions` / `shuffle_choices` (booleans, default false). Check: `PUBLIC` must have null category and position. Unique `(category_id, position)` among non-deleted rows
 - `learning_question` + `learning_question_option` — `multiple_choice` | `short_answer` | `flashcard`; correct answers stay server-side
 - `learning_lesson_progress` — primary key `(user_id, material_id)`
@@ -89,7 +90,7 @@ Only meaningful for `PUBLIC` + `PUBLISHED`. Landing slider loads up to **5** ite
 | Admin | CRUD `/api/admin/materials*`, tag suggest + delete unused | Secret + `RequireAdminActor` |
 | Student | `/api/materials/:slug`, `POST .../progress`, `POST .../quiz`, `GET .../quiz/attempts`, `GET .../quiz/attempts/:attemptId`, `/api/learning/categories`, `/api/learning/categories/tags`, `/api/learning/categories/:slug` | Secret + `RequireActor`; published lesson must be unlocked **or already completed**; attempt detail is owner-only; category detail may include `completion` when path finished; category list accepts `?tag=` / `?tags=` (OR) |
 | Admin learning | CRUD `/api/admin/learning/categories` (incl. tags on create/update), archive, hard-delete, `PUT .../lessons/order`, `POST .../lessons/bulk-delete` | Secret + `RequireAdminActor` |
-| Public | `/api/news`, `/api/news/:slug`, `/api/news/featured` | Secret; PUBLIC+PUBLISHED only |
+| Public | `/api/news`, `/api/news/:slug`, `/api/news/featured`; `/api/learning-paths`, `/api/learning-paths/popular`, `/api/learning-paths/tags`, `/api/learning-paths/:slug` (legacy `/api/courses*` aliases kept) | Secret; news = PUBLIC+PUBLISHED materials; learning-paths = PUBLISHED learning categories with locked lesson teasers |
 
 Media: cover/content images via existing media presign with `folder: cms`, cleanup on hard delete. Max **5MB** per image; MIME jpeg/png/webp/gif. Cover upload validates type/size/decodability and rejects images under **640×360**; recommends **1600×900 (16:9)** and warns when the aspect ratio is far from 16:9 so published cards are less likely to crop oddly.
 
@@ -103,6 +104,7 @@ Media: cover/content images via existing media presign with `folder: cms`, clean
 - `/api/materials/:slug/progress` and `/quiz` — session USER/ADMIN, trusted mutation origin
 - `/api/materials/**` — session USER/ADMIN; category access is enforced in Go; lesson payload includes the ordered path lesson list for the in-lesson sidebar
 - Public news preferably loaded RSC → `goListNews` / `goGetNews` / `goFeaturedNews`
+- Public learning paths preferably loaded RSC → `goPublicListCourses` / `goPublicPopularCourses` / `goPublicListCourseTags` / `goPublicGetCourse` (call `/api/learning-paths*`)
 
 ## Admin UI
 
@@ -130,11 +132,27 @@ Media: cover/content images via existing media presign with `folder: cms`, clean
 ## Student UI
 
 - `/dashboard/materials` — wide library (`max-w-[96rem]`): debounced search (~300ms), multi-select **category tag** filters (popular chips + searchable overflow; OR match), sort (path order / name), page size + pagination, responsive cards with cover, tags, and progress
+- Opening a published path (`GET /api/learning/categories/:slug`) **atomically increments** `student_view_count` and sets `last_student_access_at` (safe under concurrent students). Used for public popularity sort and the landing “top 3” courses section
 - `/dashboard/materials/categories/[slug]` — learning-path layout (not news): outline back button to the library, wide hero + sticky lesson rail on large screens, **brand-visible category tags**, per-step timeline (connector under each badge, not a single misaligned line), progress. Stacks to one column on smaller viewports. Locked lessons are not links; the API also returns 403
 - `/dashboard/materials/[slug]` — lesson reader + practice without published date (not a news article). Collapsible **lesson-list sidebar** sticks **below** the app topbar (`top-14` / `sm:top-16`, `z-10` under the header) so breadcrumbs and chrome stay usable; collapse/expand persists in localStorage; mobile opens a sheet from a floating **Lesson list** control. Practice submit bar is full-width (count left, button right): **sticky on `sm+` / desktop only**, in-flow on small screens so it does not collide with scroll-to-top or the lesson-list FAB. Flashcards use grid-stacked faces so long prompts wrap cleanly. After submit, **Try again** is always available (confirm modal); **Attempt history** lists prior scores; **Next lesson** is a primary CTA when unlocked. Passing unlocks the next lesson in the sidebar immediately. Finishing the whole path opens a **congratulations** dialog with score breakdown + next-path recommendation
 - `/dashboard/materials/categories/[slug]` — when the path is fully completed, shows the same completion summary card (scores + next path) above the hero
 - `robots` noindex; no share UI; unauthenticated → login redirect
 - Progress (`learning_lesson_progress`) plus **full attempt history** (`learning_quiz_attempt` + answers, last 50 per lesson) are stored on submit. Unlock still uses the newest score. Idempotent on `attemptId`
+
+## Public site navigation
+
+- Marketing header: **Home**, **Learning path**, **Classes**, **News**, **About Us** (`SiteHeader` + footer product links)
+- `/classes` and `/about` are placeholder pages for now (CTA into Learning path); full features come later
+- App workspace topbar **Public site** opens `/` in a **new tab** (`target="_blank"`, `rel="noopener noreferrer"`) so the dashboard session view is not replaced
+- Legacy `/courses` URLs permanently redirect to `/learning-path`
+
+## Public Learning path catalog
+
+- `/[locale]/learning-path` + `/[locale]/learning-path/[slug]` — catalog of **published learning categories** (same naming as student dashboard “Learning paths” / “Jalur belajar”)
+- List: debounced name search (`?q=` ~350ms), multi-tag filters (`?tag=` / `?tags=`), sort (`position` | `popular` | `name`), pagination (`?page=`), responsive cards with cover, tags, lesson count, visit count
+- Detail: path description (rich text), tags, locked lesson teaser list (title + excerpt; no lesson body). Guests see **Sign in to study**; signed-in `USER`/`ADMIN` get **Start learning** → `/dashboard/materials/categories/[slug]`
+- Landing home: **Popular learning paths** section immediately after Announcements — top **3** by `student_view_count` + **Browse all learning paths**
+- Go: `GET /api/learning-paths`, `/api/learning-paths/popular?limit=`, `/api/learning-paths/tags`, `/api/learning-paths/:slug` (internal secret; published only; `/api/courses*` aliases remain)
 
 ## Public News
 

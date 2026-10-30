@@ -77,6 +77,7 @@ export type LearningCategory = {
   planKey: string;
   lessonCount: number;
   completedCount?: number;
+  studentViewCount?: number;
   tags?: LearningCategoryTag[];
   createdAt: string;
   updatedAt: string;
@@ -126,7 +127,22 @@ export type StudentCategoryCard = {
   planKey: string;
   lessonCount: number;
   completedCount: number;
+  studentViewCount?: number;
   tags?: LearningCategoryTag[];
+};
+
+export type PublicCourseLesson = {
+  slug: string;
+  title: string;
+  excerpt: string;
+  position: number;
+  coverUrl: string | null;
+  locked: boolean;
+};
+
+export type PublicCourseDetail = StudentCategoryCard & {
+  lessons: PublicCourseLesson[];
+  requiresAuth: boolean;
 };
 
 export type StudentCategoryDetail = StudentCategoryCard & {

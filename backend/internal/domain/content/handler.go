@@ -33,6 +33,15 @@ func (h *Handler) RegisterPublic(r gin.IRoutes) {
 	r.GET("/news/featured", h.FeaturedNews)
 	r.GET("/news/tags", h.ListNewsTags)
 	r.GET("/news/:slug", h.GetNews)
+	r.GET("/learning-paths", h.PublicListCourses)
+	r.GET("/learning-paths/popular", h.PublicPopularCourses)
+	r.GET("/learning-paths/tags", h.PublicListCourseTags)
+	r.GET("/learning-paths/:slug", h.PublicGetCourse)
+	// Legacy aliases (pre-rename public catalog).
+	r.GET("/courses", h.PublicListCourses)
+	r.GET("/courses/popular", h.PublicPopularCourses)
+	r.GET("/courses/tags", h.PublicListCourseTags)
+	r.GET("/courses/:slug", h.PublicGetCourse)
 }
 
 // RegisterAdmin mounts admin CMS routes (RequireAdminActor already applied).
@@ -481,4 +490,56 @@ func (h *Handler) StudentQuiz(c *gin.Context) {
 		return
 	}
 	response.OK(c, result)
+}
+
+func (h *Handler) PublicListCourses(c *gin.Context) {
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "12"))
+	result, err := h.Service.PublicListCourses(
+		c.Request.Context(),
+		page,
+		pageSize,
+		c.Query("search"),
+		c.DefaultQuery("sortBy", "position"),
+		c.DefaultQuery("sortDir", "asc"),
+		parseTagQueryParams(c),
+	)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, result)
+}
+
+func (h *Handler) PublicPopularCourses(c *gin.Context) {
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "3"))
+	items, err := h.Service.PublicPopularCourses(c.Request.Context(), limit)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, gin.H{"items": items})
+}
+
+func (h *Handler) PublicListCourseTags(c *gin.Context) {
+	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "40"))
+	tags, err := h.Service.ListStudentCategoryTags(c.Request.Context(), limit)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, gin.H{"items": tags})
+}
+
+func (h *Handler) PublicGetCourse(c *gin.Context) {
+	detail, err := h.Service.PublicGetCourse(
+		c.Request.Context(),
+		c.Param("slug"),
+		c.DefaultQuery("locale", "id"),
+	)
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, detail)
 }

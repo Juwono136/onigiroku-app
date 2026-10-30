@@ -1,8 +1,10 @@
-import { callGoApiWithActor } from "@/lib/api/go-client";
+import { callGoApi, callGoApiWithActor } from "@/lib/api/go-client";
 import type {
   CategoryInput,
   CategoryListResult,
   LearningCategory,
+  LearningCategoryTag,
+  PublicCourseDetail,
   QuizAttemptDetail,
   QuizAttemptListResult,
   QuizSubmitResult,
@@ -274,6 +276,69 @@ export async function goStudentGetQuizAttempt(
   );
   if (!result.success || !result.data) {
     throw goError(result.error?.code ?? "HISTORY_FAILED", result.error?.message ?? "HISTORY_FAILED");
+  }
+  return result.data;
+}
+
+export async function goPublicListCourses(query: {
+  page: number;
+  pageSize: number;
+  search?: string;
+  sortBy?: string;
+  sortDir?: string;
+  tags?: string[];
+}): Promise<CategoryListResult> {
+  const params = new URLSearchParams({
+    page: String(query.page),
+    pageSize: String(query.pageSize),
+    search: query.search ?? "",
+    sortBy: query.sortBy ?? "position",
+    sortDir: query.sortDir ?? "asc",
+  });
+  const tags = (query.tags ?? []).map((t) => t.trim()).filter(Boolean);
+  if (tags.length === 1) params.set("tag", tags[0]!);
+  else if (tags.length > 1) params.set("tags", tags.join(","));
+  const result = await callGoApi<CategoryListResult>(
+    `/api/learning-paths?${params.toString()}`,
+  );
+  if (!result.success || !result.data) {
+    throw goError(result.error?.code ?? "LIST_FAILED", result.error?.message ?? "LIST_FAILED");
+  }
+  return result.data;
+}
+
+export async function goPublicPopularCourses(limit = 3): Promise<LearningCategory[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  const result = await callGoApi<{ items: LearningCategory[] }>(
+    `/api/learning-paths/popular?${params.toString()}`,
+  );
+  if (!result.success || !result.data) {
+    throw goError(result.error?.code ?? "LIST_FAILED", result.error?.message ?? "LIST_FAILED");
+  }
+  return result.data.items ?? [];
+}
+
+export async function goPublicListCourseTags(limit = 40): Promise<LearningCategoryTag[]> {
+  const params = new URLSearchParams({ limit: String(limit) });
+  const result = await callGoApi<{ items: LearningCategoryTag[] }>(
+    `/api/learning-paths/tags?${params.toString()}`,
+  );
+  if (!result.success || !result.data) {
+    throw goError(result.error?.code ?? "LIST_FAILED", result.error?.message ?? "LIST_FAILED");
+  }
+  return result.data.items ?? [];
+}
+
+export async function goPublicGetCourse(
+  slug: string,
+  locale: "id" | "en",
+): Promise<PublicCourseDetail> {
+  const params = new URLSearchParams({ locale });
+  const result = await callGoApi<PublicCourseDetail>(
+    `/api/learning-paths/${encodeURIComponent(slug)}?${params.toString()}`,
+  );
+  if (!result.success || !result.data) {
+    throw goError(result.error?.code ?? "NOT_FOUND", result.error?.message ?? "NOT_FOUND");
   }
   return result.data;
 }

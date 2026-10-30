@@ -244,6 +244,12 @@ func categoryOrderSQL(sortBy, sortDir string) string {
 		return "updated_at " + dir + ", position ASC"
 	case "name":
 		return "name_id " + dir + ", position ASC"
+	case "popular", "studentViewCount":
+		// Popularity: highest student opens first; tie-break by path order.
+		if dir == "ASC" {
+			return "student_view_count ASC, position ASC"
+		}
+		return "student_view_count DESC, position ASC"
 	default:
 		return "position " + dir + ", updated_at DESC"
 	}
@@ -295,7 +301,7 @@ func (s *Service) ListCategories(ctx context.Context, page, pageSize int, search
 	args = append(args, pageSize, (page-1)*pageSize)
 	rows, err := s.Pool.Query(ctx, `
 		SELECT id, slug, name_id, name_en, description_id, description_en, cover_object_key,
-		       position, status::text, plan_key, created_at, updated_at,
+		       position, status::text, plan_key, COALESCE(student_view_count, 0), created_at, updated_at,
 		       (SELECT COUNT(*)::int FROM learning_material m
 		         WHERE m.category_id = learning_category.id AND m.deleted_at IS NULL
 		           AND m.visibility = 'STUDENT'`+lessonStatus+`)
@@ -314,7 +320,7 @@ func (s *Service) ListCategories(ctx context.Context, page, pageSize int, search
 		var created, updated time.Time
 		if err := rows.Scan(
 			&c.ID, &c.Slug, &c.NameID, &c.NameEN, &c.DescriptionID, &c.DescriptionEN, &c.CoverObjectKey,
-			&c.Position, &c.Status, &c.PlanKey, &created, &updated, &c.LessonCount,
+			&c.Position, &c.Status, &c.PlanKey, &c.StudentViewCount, &created, &updated, &c.LessonCount,
 		); err != nil {
 			return nil, apperrors.Internal(err)
 		}
@@ -342,14 +348,14 @@ func (s *Service) GetCategory(ctx context.Context, id string) (*CategoryDTO, err
 	var created, updated time.Time
 	err := s.Pool.QueryRow(ctx, `
 		SELECT id, slug, name_id, name_en, description_id, description_en, cover_object_key,
-		       position, status::text, plan_key, created_at, updated_at,
+		       position, status::text, plan_key, COALESCE(student_view_count, 0), created_at, updated_at,
 		       (SELECT COUNT(*)::int FROM learning_material m
 		         WHERE m.category_id = learning_category.id AND m.deleted_at IS NULL AND m.visibility = 'STUDENT')
 		FROM learning_category
 		WHERE id = $1 AND deleted_at IS NULL
 	`, id).Scan(
 		&c.ID, &c.Slug, &c.NameID, &c.NameEN, &c.DescriptionID, &c.DescriptionEN, &c.CoverObjectKey,
-		&c.Position, &c.Status, &c.PlanKey, &created, &updated, &c.LessonCount,
+		&c.Position, &c.Status, &c.PlanKey, &c.StudentViewCount, &created, &updated, &c.LessonCount,
 	)
 	if err == pgx.ErrNoRows {
 		return nil, apperrors.NotFound("category")
@@ -767,11 +773,13 @@ func (s *Service) StudentCategoryPath(ctx context.Context, userID, slug, locale 
 	var id, plan string
 	var card StudentCategoryCard
 	var cover *string
+	var viewCount int
 	err := s.Pool.QueryRow(ctx, `
-		SELECT id, slug, name_id, name_en, description_id, description_en, cover_object_key, plan_key
+		SELECT id, slug, name_id, name_en, description_id, description_en, cover_object_key, plan_key,
+		       COALESCE(student_view_count, 0)
 		FROM learning_category
 		WHERE slug = $1 AND deleted_at IS NULL AND status = 'PUBLISHED'
-	`, slug).Scan(&id, &card.Slug, &card.NameID, &card.NameEN, &card.DescriptionID, &card.DescriptionEN, &cover, &plan)
+	`, slug).Scan(&id, &card.Slug, &card.NameID, &card.NameEN, &card.DescriptionID, &card.DescriptionEN, &cover, &plan, &viewCount)
 	if err == pgx.ErrNoRows {
 		return nil, apperrors.NotFound("category")
 	}
@@ -781,10 +789,21 @@ func (s *Service) StudentCategoryPath(ctx context.Context, userID, slug, locale 
 	card.ID = id
 	card.PlanKey = plan
 	card.CoverURL = s.coverURL(cover)
+	card.StudentViewCount = viewCount
 	card.Tags = []TagDTO{}
 	if err := s.assertCategoryAccess(ctx, userID, plan); err != nil {
 		return nil, err
 	}
+	// Atomic popularity counter (student opens of this path). Safe under concurrency.
+	if _, err := s.Pool.Exec(ctx, `
+		UPDATE learning_category
+		SET student_view_count = COALESCE(student_view_count, 0) + 1,
+		    last_student_access_at = NOW()
+		WHERE id = $1 AND deleted_at IS NULL
+	`, id); err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	card.StudentViewCount = viewCount + 1
 	tagMap, err := s.loadCategoryTagsMap(ctx, []string{id})
 	if err != nil {
 		return nil, err

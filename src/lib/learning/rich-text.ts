@@ -14,14 +14,22 @@ export const QUESTION_EXPLANATION_MAX = 2000;
 export function docFromStored(raw: string): JSONContent {
   const trimmed = raw.trim();
   if (!trimmed) return EMPTY_DOC;
-  if (trimmed.startsWith("{")) {
+  if (trimmed.startsWith("{") || trimmed.startsWith("[")) {
     try {
-      const parsed = JSON.parse(trimmed) as JSONContent;
-      if (parsed && parsed.type === "doc") {
-        if (!Array.isArray(parsed.content) || parsed.content.length === 0) {
-          return EMPTY_DOC;
+      const parsed = JSON.parse(trimmed) as JSONContent | JSONContent[];
+      if (Array.isArray(parsed)) {
+        return {
+          type: "doc",
+          content: parsed.length > 0 ? parsed : [{ type: "paragraph" }],
+        };
+      }
+      if (parsed && typeof parsed === "object") {
+        // Canonical TipTap doc, or a content-root object without type.
+        if (parsed.type === "doc" || Array.isArray(parsed.content)) {
+          const content = Array.isArray(parsed.content) ? parsed.content : [];
+          if (content.length === 0) return EMPTY_DOC;
+          return { type: "doc", content, attrs: parsed.attrs };
         }
-        return parsed;
       }
     } catch {
       // Keep plain text below.

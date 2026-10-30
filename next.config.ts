@@ -75,6 +75,30 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: ["lucide-react", "framer-motion"],
   },
+  async redirects() {
+    return [
+      {
+        source: "/courses",
+        destination: "/learning-path",
+        permanent: true,
+      },
+      {
+        source: "/courses/:slug",
+        destination: "/learning-path/:slug",
+        permanent: true,
+      },
+      {
+        source: "/:locale(en)/courses",
+        destination: "/:locale/learning-path",
+        permanent: true,
+      },
+      {
+        source: "/:locale(en)/courses/:slug",
+        destination: "/:locale/learning-path/:slug",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

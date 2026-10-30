@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, RotateCcw, X } from "lucide-react";
+import { Check, RotateCcw, Send, X } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 
@@ -378,15 +378,27 @@ export function PracticeSession({
             {notice ||
               t("quiz.answered", { done: answered, total: questions.length })}
           </p>
-          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
+          <div className="flex w-full flex-col-reverse gap-2 sm:w-auto sm:flex-row sm:items-center">
             {nextSlot ? <div className="w-full sm:w-auto">{nextSlot}</div> : null}
             <Button
               type="button"
               disabled={submitting}
               onClick={submit}
-              className="h-11 w-full shrink-0 cursor-pointer rounded-2xl px-5 font-semibold sm:w-auto"
+              className={cn(
+                "h-11 w-full shrink-0 cursor-pointer gap-2 rounded-2xl px-5 font-semibold sm:w-auto",
+                "border-transparent bg-ink text-white shadow-[0_10px_24px_-12px_rgba(24,24,27,0.55)]",
+                "hover:bg-ink/90 hover:text-white",
+                "focus-visible:ring-ink/30",
+              )}
             >
-              {submitting ? t("quiz.sending") : submitLabel}
+              {submitting ? (
+                t("quiz.sending")
+              ) : (
+                <>
+                  {submitLabel}
+                  <Send className="size-4" aria-hidden />
+                </>
+              )}
             </Button>
           </div>
         </div>
