@@ -24,7 +24,7 @@ type Props = {
  */
 export function AppShell({ user, role, children }: Props) {
   return (
-    <SidebarProvider>
+    <SidebarProvider role={role}>
       <div className="app-workspace flex min-h-svh bg-[var(--workspace-bg)] text-ink">
         <AppSidebar role={role} />
         <div className="flex min-w-0 flex-1 flex-col">

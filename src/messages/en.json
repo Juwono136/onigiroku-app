@@ -935,7 +935,7 @@
       "dashboard": "Dashboard",
       "admin": "Overview",
       "users": "Users",
-      "materials": "Learning materials",
+      "materials": "Learning paths",
       "news": "News",
       "learning": "Learning",
       "newsNew": "New article",
@@ -944,7 +944,7 @@
       "categoryEdit": "Category",
       "lessonNew": "New lesson",
       "lessonEdit": "Edit lesson",
-      "path": "Path",
+      "path": "Learning path",
       "materialsNew": "New material",
       "materialsEdit": "Edit",
       "materialsRead": "Read",
@@ -956,7 +956,7 @@
       "dashboard": "Dashboard",
       "admin": "Overview",
       "users": "Users",
-      "materials": "Learning materials",
+      "materials": "Learning paths",
       "news": "News",
       "learning": "Learning",
       "settings": "Settings",
@@ -1196,7 +1196,7 @@
   "learningStudent": {
     "eyebrow": "Study",
     "title": "Learning paths",
-    "subtitle": "Pick a category and follow the lessons in order. Later lessons unlock after you finish the ones before them.",
+    "subtitle": "Pick a learning path and follow the lessons in order. Later lessons unlock after you finish the ones before them.",
     "searchPlaceholder": "Search paths by name…",
     "showing": "Showing {from}–{to} of {total}",
     "pageSize": "{count} / page",
@@ -1217,7 +1217,7 @@
     "progress": "{done} of {total} complete",
     "lessonsCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
     "actions": {
-      "back": "All categories",
+      "back": "All learning paths",
       "backToPath": "Back to path",
       "openPath": "Open path",
       "toggleSidebar": "Lesson list",
@@ -1233,9 +1233,23 @@
     "next": "Next",
     "empty": {
       "title": "No learning paths yet",
-      "description": "Published categories will appear here.",
+      "description": "Published learning paths will appear here.",
       "filtered": "No paths match these filters. Try clearing tags or search.",
       "lessons": "This path has no published lessons yet."
+    },
+    "reset": {
+      "cta": "Reset learning path",
+      "confirmTitle": "Reset this learning path?",
+      "confirmBody": "“{path}” will start from the first lesson again. Unlock progress is cleared so you can study the path from the beginning.",
+      "keepsHistory": "Practice attempt history stays saved for your knowledge tracking.",
+      "clearsProgress": "Lesson unlock progress on this path is cleared.",
+      "cancel": "Keep progress",
+      "confirm": "Reset path",
+      "pending": "Resetting…",
+      "success": "Learning path reset — you can start from lesson 1 again.",
+      "errors": {
+        "RESET_FAILED": "Could not reset this learning path. Please try again."
+      }
     },
     "locked": {
       "title": "This lesson is locked",
@@ -1329,6 +1343,9 @@
       "status": "Status",
       "finished": "Finished",
       "scoreBreakdown": "Lesson results",
+      "resultsCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
+      "showAllResults": "Show all {count} results",
+      "showLessResults": "Show less",
       "readingOnly": "Reading complete",
       "attempts": "{n} attempt(s)",
       "noPractice": "No practice yet",

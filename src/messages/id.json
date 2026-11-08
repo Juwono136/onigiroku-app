@@ -935,7 +935,7 @@
       "dashboard": "Dashboard",
       "admin": "Ringkasan",
       "users": "Pengguna",
-      "materials": "Materi pembelajaran",
+      "materials": "Jalur belajar",
       "news": "Berita",
       "learning": "Pembelajaran",
       "newsNew": "Artikel baru",
@@ -944,7 +944,7 @@
       "categoryEdit": "Kategori",
       "lessonNew": "Materi baru",
       "lessonEdit": "Edit materi",
-      "path": "Jalur",
+      "path": "Jalur belajar",
       "materialsNew": "Materi baru",
       "materialsEdit": "Edit",
       "materialsRead": "Baca",
@@ -956,7 +956,7 @@
       "dashboard": "Dashboard",
       "admin": "Ringkasan",
       "users": "Pengguna",
-      "materials": "Materi pembelajaran",
+      "materials": "Jalur belajar",
       "news": "Berita",
       "learning": "Pembelajaran",
       "settings": "Pengaturan",
@@ -1196,7 +1196,7 @@
   "learningStudent": {
     "eyebrow": "Belajar",
     "title": "Jalur belajar",
-    "subtitle": "Pilih kategori dan ikuti materi sesuai urutan. Materi berikutnya terbuka setelah materi sebelumnya selesai.",
+    "subtitle": "Pilih jalur belajar dan ikuti materi sesuai urutan. Materi berikutnya terbuka setelah materi sebelumnya selesai.",
     "searchPlaceholder": "Cari jalur berdasarkan nama…",
     "showing": "Menampilkan {from}–{to} dari {total}",
     "pageSize": "{count} / halaman",
@@ -1217,7 +1217,7 @@
     "progress": "{done} dari {total} selesai",
     "lessonsCount": "{count, plural, =0 {Belum ada materi} other {# materi}}",
     "actions": {
-      "back": "Semua kategori",
+      "back": "Semua jalur belajar",
       "backToPath": "Kembali ke jalur",
       "openPath": "Buka jalur",
       "toggleSidebar": "Daftar materi",
@@ -1233,9 +1233,23 @@
     "next": "Berikutnya",
     "empty": {
       "title": "Belum ada jalur belajar",
-      "description": "Kategori yang sudah terbit akan muncul di sini.",
+      "description": "Jalur belajar yang sudah terbit akan muncul di sini.",
       "filtered": "Tidak ada jalur yang cocok. Coba hapus tag atau pencarian.",
       "lessons": "Jalur ini belum punya materi yang terbit."
+    },
+    "reset": {
+      "cta": "Reset jalur belajar",
+      "confirmTitle": "Reset jalur belajar ini?",
+      "confirmBody": "“{path}” akan dimulai lagi dari materi pertama. Progress buka kunci dihapus agar Anda bisa belajar dari awal.",
+      "keepsHistory": "Riwayat percobaan latihan tetap disimpan untuk pelacakan pengetahuan Anda.",
+      "clearsProgress": "Progress buka kunci materi di jalur ini dihapus.",
+      "cancel": "Pertahankan progress",
+      "confirm": "Reset jalur",
+      "pending": "Mereset…",
+      "success": "Jalur belajar di-reset — Anda bisa mulai lagi dari materi 1.",
+      "errors": {
+        "RESET_FAILED": "Gagal mereset jalur belajar. Silakan coba lagi."
+      }
     },
     "locked": {
       "title": "Materi ini terkunci",
@@ -1329,6 +1343,9 @@
       "status": "Status",
       "finished": "Selesai",
       "scoreBreakdown": "Hasil per materi",
+      "resultsCount": "{count, plural, =0 {Tanpa materi} one {# materi} other {# materi}}",
+      "showAllResults": "Tampilkan semua {count} hasil",
+      "showLessResults": "Tampilkan lebih sedikit",
       "readingOnly": "Bacaan selesai",
       "attempts": "{n} percobaan",
       "noPractice": "Belum ada latihan",

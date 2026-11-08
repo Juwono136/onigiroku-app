@@ -205,6 +205,24 @@ export async function goStudentGetCategory(
   return result.data;
 }
 
+export async function goStudentResetCategory(
+  actorId: string,
+  role: string,
+  slug: string,
+  locale: "id" | "en",
+): Promise<StudentCategoryDetail> {
+  const params = new URLSearchParams({ locale });
+  const result = await callGoApiWithActor<StudentCategoryDetail>(
+    `/api/learning/categories/${encodeURIComponent(slug)}/reset?${params.toString()}`,
+    { userId: actorId, role },
+    { method: "POST" },
+  );
+  if (!result.success || !result.data) {
+    throw goError(result.error?.code ?? "RESET_FAILED", result.error?.message ?? "RESET_FAILED");
+  }
+  return result.data;
+}
+
 export async function goStudentTouchProgress(
   actorId: string,
   role: string,

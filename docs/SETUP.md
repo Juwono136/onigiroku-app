@@ -134,7 +134,7 @@ Locale routing memakai `src/proxy.ts` (menggantikan konvensi `middleware` yang d
 
 - Halaman: `/login`, `/register`, `/forgot-password`, `/reset-password`, `/verify-email`
 - Dashboard: `/dashboard` (Peserta/`USER`), `/admin` (Super Admin/`ADMIN`), `/settings`
-- Workspace chrome: AppShell tersendiri (sidebar sticky + collapse hover di tengah, content `max-w-[96rem]`, breadcrumb, tombol public site, avatar) — terpisah dari navbar/footer landing; palette `--workspace-*` lebih lembut untuk sesi panjang
+- Workspace chrome: AppShell tersendiri (sidebar sticky + collapse hover di tengah, content `max-w-[96rem]`, breadcrumb, tombol public site, avatar) — terpisah dari navbar/footer landing; palette `--workspace-*` lebih lembut untuk sesi panjang. Sidebar peserta default collapsed; admin default expanded (persist per role)
 - Baseline siap fitur baru: lihat [READINESS.md](./READINESS.md)
 - Settings: edit nama + avatar (SeaweedFS ≤5MB), ganti password + email notifikasi, riwayat login 7 hari (paginated) — lihat [SETTINGS.md](./SETTINGS.md)
 - Locale switcher di dashboard topbar: dropdown di mobile, pills di desktop

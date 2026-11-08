@@ -770,6 +770,63 @@ func (s *Service) ListStudentCategoryTags(ctx context.Context, limit int) ([]Tag
 }
 
 func (s *Service) StudentCategoryPath(ctx context.Context, userID, slug, locale string) (*StudentCategoryDetail, error) {
+	return s.studentCategoryPath(ctx, userID, slug, locale, true)
+}
+
+// ResetStudentCategoryPath clears unlock/progress for a path so the student can restart
+// from lesson 1. Quiz attempt history is preserved for knowledge analytics.
+func (s *Service) ResetStudentCategoryPath(ctx context.Context, userID, slug, locale string) (*StudentCategoryDetail, error) {
+	var categoryID, plan string
+	err := s.Pool.QueryRow(ctx, `
+		SELECT id, plan_key
+		FROM learning_category
+		WHERE slug = $1 AND deleted_at IS NULL AND status = 'PUBLISHED'
+	`, slug).Scan(&categoryID, &plan)
+	if err == pgx.ErrNoRows {
+		return nil, apperrors.NotFound("category")
+	}
+	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	if err := s.assertCategoryAccess(ctx, userID, plan); err != nil {
+		return nil, err
+	}
+
+	tx, err := s.Pool.Begin(ctx)
+	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	defer func() { _ = tx.Rollback(ctx) }()
+
+	// Serialize concurrent resets for the same student + path.
+	if _, err := tx.Exec(ctx, `
+		SELECT pg_advisory_xact_lock(hashtext($1), hashtext($2))
+	`, userID, categoryID); err != nil {
+		return nil, apperrors.Internal(err)
+	}
+
+	// Soft path restart: remove progress rows only. Attempts stay for monitoring.
+	tag, err := tx.Exec(ctx, `
+		DELETE FROM learning_lesson_progress
+		WHERE user_id = $1
+		  AND material_id IN (
+			SELECT id FROM learning_material
+			WHERE category_id = $2 AND deleted_at IS NULL
+		  )
+	`, userID, categoryID)
+	if err != nil {
+		return nil, apperrors.Internal(err)
+	}
+	_ = tag // idempotent: 0 rows deleted is still a successful reset
+
+	if err := tx.Commit(ctx); err != nil {
+		return nil, apperrors.Internal(err)
+	}
+
+	return s.studentCategoryPath(ctx, userID, slug, locale, false)
+}
+
+func (s *Service) studentCategoryPath(ctx context.Context, userID, slug, locale string, bumpViews bool) (*StudentCategoryDetail, error) {
 	var id, plan string
 	var card StudentCategoryCard
 	var cover *string
@@ -794,16 +851,18 @@ func (s *Service) StudentCategoryPath(ctx context.Context, userID, slug, locale 
 	if err := s.assertCategoryAccess(ctx, userID, plan); err != nil {
 		return nil, err
 	}
-	// Atomic popularity counter (student opens of this path). Safe under concurrency.
-	if _, err := s.Pool.Exec(ctx, `
-		UPDATE learning_category
-		SET student_view_count = COALESCE(student_view_count, 0) + 1,
-		    last_student_access_at = NOW()
-		WHERE id = $1 AND deleted_at IS NULL
-	`, id); err != nil {
-		return nil, apperrors.Internal(err)
+	if bumpViews {
+		// Atomic popularity counter (student opens of this path). Safe under concurrency.
+		if _, err := s.Pool.Exec(ctx, `
+			UPDATE learning_category
+			SET student_view_count = COALESCE(student_view_count, 0) + 1,
+			    last_student_access_at = NOW()
+			WHERE id = $1 AND deleted_at IS NULL
+		`, id); err != nil {
+			return nil, apperrors.Internal(err)
+		}
+		card.StudentViewCount = viewCount + 1
 	}
-	card.StudentViewCount = viewCount + 1
 	tagMap, err := s.loadCategoryTagsMap(ctx, []string{id})
 	if err != nil {
 		return nil, err

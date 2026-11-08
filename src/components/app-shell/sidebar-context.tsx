@@ -9,7 +9,11 @@ import {
   useState,
 } from "react";
 
-const STORAGE_KEY = "onigiroku.app.sidebarCollapsed";
+import type { UserRole } from "@/lib/auth/roles";
+import {
+  readSidebarCollapsed,
+  writeSidebarCollapsed,
+} from "@/lib/app-shell/sidebar-preference";
 
 type SidebarContextValue = {
   collapsed: boolean;
@@ -23,46 +27,61 @@ type SidebarContextValue = {
 
 const SidebarContext = createContext<SidebarContextValue | null>(null);
 
-export function SidebarProvider({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsedState] = useState(false);
-  const [focusMode, setFocusMode] = useState(false);
+type ProviderProps = {
+  children: React.ReactNode;
+  /** Student dashboards default collapsed for a wider workspace. */
+  role: UserRole;
+};
+
+export function SidebarProvider({ children, role }: ProviderProps) {
+  const defaultCollapsed = role === "USER";
+  const [collapsed, setCollapsedState] = useState(defaultCollapsed);
+  const [focusMode, setFocusModeState] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     const frame = requestAnimationFrame(() => {
-      try {
-        const raw = window.localStorage.getItem(STORAGE_KEY);
-        if (raw === "1") setCollapsedState(true);
-      } catch {
-        // ignore
-      }
+      // USER: session-only preference (empty → collapsed). ADMIN: localStorage.
+      const next = readSidebarCollapsed(role, defaultCollapsed);
+      setCollapsedState(next);
       setHydrated(true);
     });
     return () => cancelAnimationFrame(frame);
-  }, []);
+  }, [defaultCollapsed, role]);
 
-  const setCollapsed = useCallback((value: boolean) => {
-    setCollapsedState(value);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, value ? "1" : "0");
-    } catch {
-      // ignore
-    }
-  }, []);
+  const setCollapsed = useCallback(
+    (value: boolean) => {
+      setCollapsedState(value);
+      writeSidebarCollapsed(role, value);
+    },
+    [role],
+  );
+
+  const setFocusMode = useCallback(
+    (value: boolean) => {
+      setFocusModeState(value);
+      if (!value) {
+        // Leaving a path page: restore the student's real preference (default collapsed).
+        setCollapsedState(readSidebarCollapsed(role, defaultCollapsed));
+      }
+    },
+    [defaultCollapsed, role],
+  );
 
   const toggleCollapsed = useCallback(() => {
     if (focusMode) {
+      // Exit study focus without forcing an expanded sidebar.
       setFocusMode(false);
-      setCollapsed(false);
       return;
     }
     setCollapsed(!collapsed);
-  }, [collapsed, focusMode, setCollapsed]);
+  }, [collapsed, focusMode, setCollapsed, setFocusMode]);
 
   const value = useMemo(
     () => ({
-      collapsed: focusMode || (hydrated ? collapsed : false),
+      // Students render collapsed before hydration to avoid an expand flash.
+      collapsed: focusMode || (hydrated ? collapsed : defaultCollapsed),
       mobileOpen,
       setCollapsed,
       setFocusMode,
@@ -70,7 +89,16 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
       setMobileOpen,
       toggleMobileOpen: () => setMobileOpen((v) => !v),
     }),
-    [collapsed, focusMode, hydrated, mobileOpen, setCollapsed, toggleCollapsed],
+    [
+      collapsed,
+      defaultCollapsed,
+      focusMode,
+      hydrated,
+      mobileOpen,
+      setCollapsed,
+      setFocusMode,
+      toggleCollapsed,
+    ],
   );
 
   return (

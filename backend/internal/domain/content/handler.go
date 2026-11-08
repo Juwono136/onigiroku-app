@@ -70,6 +70,7 @@ func (h *Handler) RegisterStudent(r gin.IRoutes) {
 	r.GET("/learning/categories", h.StudentListCategories)
 	r.GET("/learning/categories/tags", h.StudentListCategoryTags)
 	r.GET("/learning/categories/:slug", h.StudentGetCategory)
+	r.POST("/learning/categories/:slug/reset", h.StudentResetCategory)
 	r.GET("/materials", h.StudentList)
 	r.POST("/materials/:slug/progress", h.StudentProgress)
 	r.GET("/materials/:slug/quiz/attempts/:attemptId", h.StudentQuizAttemptDetail)
@@ -418,6 +419,22 @@ func (h *Handler) StudentGetCategory(c *gin.Context) {
 	actorID, _ := c.Get(middleware.ContextActorUserID)
 	actor, _ := actorID.(string)
 	detail, err := h.Service.StudentCategoryPath(c.Request.Context(), actor, c.Param("slug"), c.DefaultQuery("locale", "id"))
+	if err != nil {
+		response.AbortWithError(c, err)
+		return
+	}
+	response.OK(c, detail)
+}
+
+func (h *Handler) StudentResetCategory(c *gin.Context) {
+	actorID, _ := c.Get(middleware.ContextActorUserID)
+	actor, _ := actorID.(string)
+	detail, err := h.Service.ResetStudentCategoryPath(
+		c.Request.Context(),
+		actor,
+		c.Param("slug"),
+		c.DefaultQuery("locale", "id"),
+	)
 	if err != nil {
 		response.AbortWithError(c, err)
 		return

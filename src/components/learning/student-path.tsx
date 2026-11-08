@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/shared/brand-logo";
 import { getTranslations } from "next-intl/server";
 
 import { PathCompletionPanel } from "@/components/learning/path-completion-panel";
+import { PathResetButton } from "@/components/learning/path-reset-button";
 import { RichTextView } from "@/components/learning/rich-text-view";
 import { buttonVariants } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
@@ -17,6 +18,7 @@ export async function StudentPath({ category, locale }: Props) {
   const t = await getTranslations("learningStudent");
   const name =
     locale === "en" ? category.nameEn || category.nameId : category.nameId;
+  const canReset = category.completedCount > 0 || Boolean(category.pathCompleted);
   const description =
     locale === "en"
       ? category.descriptionEn || category.descriptionId
@@ -36,7 +38,7 @@ export async function StudentPath({ category, locale }: Props) {
         aria-hidden
       />
 
-      <div className="relative mb-5 sm:mb-6">
+      <div className="relative mb-5 flex flex-wrap items-center gap-2 sm:mb-6">
         <Link
           href="/dashboard/materials"
           className={cn(
@@ -47,6 +49,14 @@ export async function StudentPath({ category, locale }: Props) {
           <ArrowLeft className="size-4 shrink-0" aria-hidden />
           {t("actions.back")}
         </Link>
+        {canReset && !pathCompleted ? (
+          <PathResetButton
+            slug={category.slug}
+            pathName={name}
+            canReset
+            className="h-10 rounded-xl px-3.5 text-sm"
+          />
+        ) : null}
       </div>
 
       {pathCompleted && category.completion ? (

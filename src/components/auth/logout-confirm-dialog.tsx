@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { useRouter } from "@/i18n/routing";
+import { clearStudentSidebarPreference } from "@/lib/app-shell/sidebar-preference";
 import { authClient } from "@/lib/auth/client";
 import { mapAuthError } from "@/lib/auth/errors";
 
@@ -34,6 +35,8 @@ export function LogoutConfirmDialog({ open, onOpenChange }: Props) {
         toast.error(t(`errors.${mapAuthError(result.error)}`));
         return;
       }
+      // Next student login should start with a collapsed sidebar again.
+      clearStudentSidebarPreference();
       onOpenChange(false);
       toast.success(t("logout.success"));
       router.push("/login");

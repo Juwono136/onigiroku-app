@@ -137,7 +137,7 @@ Mereka memakai route group `src/app/[locale]/(app)/` + komponen `src/components/
 
 | Bagian | Perilaku |
 | --- | --- |
-| Sidebar | **Sticky** `h-svh`; toggle collapse di **tengah vertikal** tepi sidebar, **muncul saat hover** (tetap ada tombol di topbar); drawer mobile dengan **Close (X)**; active item solid brand |
+| Sidebar | **Sticky** `h-svh`; toggle collapse di **tengah vertikal** tepi sidebar, **muncul saat hover** (tetap ada tombol di topbar); drawer mobile dengan **Close (X)**; active item solid brand. **Peserta (`USER`)** default **collapsed** (workspace lebih luas); expand pilihan siswa hanya di `sessionStorage` untuk sesi tab itu — **logout menghapus preferensi** sehingga login berikutnya kembali collapsed. **Admin** default expanded, persist di `localStorage`. `StudyFocus` on path/lesson pages forces collapse without overwriting the stored preference; leaving the path re-syncs storage so “All learning paths” does not unexpectedly expand the sidebar |
 | Topbar | Breadcrumb dinamis, tombol collapse/expand (desktop), tombol ke situs publik, locale switcher (`auto`: dropdown di mobile / pills di desktop), avatar/`UserMenu` |
 | Content width | Workspace content memakai `max-w-[96rem]` agar dashboard/settings lebar dan nyaman di layar besar |
 | Footer | Footer ringkas workspace (lebar sama dengan content) |
