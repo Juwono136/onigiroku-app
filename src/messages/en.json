@@ -1210,7 +1210,9 @@
     "showing": "Showing {from}–{to} of {total}",
     "pageSize": "{count} / page",
     "sort": {
-      "position": "Path order",
+      "label": "Sort",
+      "position": "Featured",
+      "popular": "Most popular",
       "name": "Name"
     },
     "filters": {

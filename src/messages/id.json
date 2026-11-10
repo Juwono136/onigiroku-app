@@ -1210,7 +1210,9 @@
     "showing": "Menampilkan {from}–{to} dari {total}",
     "pageSize": "{count} / halaman",
     "sort": {
-      "position": "Urutan jalur",
+      "label": "Urutkan",
+      "position": "Unggulan",
+      "popular": "Paling populer",
       "name": "Nama"
     },
     "filters": {

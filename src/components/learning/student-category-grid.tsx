@@ -24,9 +24,12 @@ export function StudentCategoryGrid() {
   const [searchInput, setSearchInput] = useState("");
   const [search, setSearch] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [sortBy, setSortBy] = useState<"position" | "name">("position");
+  const [sortBy, setSortBy] = useState<"position" | "popular" | "name">(
+    "position",
+  );
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(12);
+  const sortDir = sortBy === "popular" ? "desc" : "asc";
   const [data, setData] = useState<CategoryListResult | null>(null);
   const [catalogTags, setCatalogTags] = useState<LearningCategoryTag[]>([]);
   const [loading, setLoading] = useState(true);
@@ -68,7 +71,7 @@ export function StudentCategoryGrid() {
       pageSize: String(pageSize),
       search,
       sortBy,
-      sortDir: "asc",
+      sortDir,
     });
     if (selectedTags.length === 1) params.set("tag", selectedTags[0]!);
     else if (selectedTags.length > 1) params.set("tags", selectedTags.join(","));
@@ -90,7 +93,7 @@ export function StudentCategoryGrid() {
         if (!controller.signal.aborted) setLoading(false);
       });
     return () => controller.abort();
-  }, [page, pageSize, search, selectedTags, sortBy]);
+  }, [page, pageSize, search, selectedTags, sortBy, sortDir]);
 
   const items = data?.items ?? [];
   const total = data?.total ?? 0;
@@ -120,33 +123,49 @@ export function StudentCategoryGrid() {
 
         <div className="path-catalog-toolbar relative mb-5 p-3.5 sm:p-4">
           <div className="relative space-y-3">
-            <div className="flex flex-col gap-2.5 lg:flex-row lg:items-center">
-              <div className="relative min-w-0 flex-1">
-                <Search
-                  className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-charcoal/40"
-                  aria-hidden
-                />
-                <Input
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  placeholder={t("searchPlaceholder")}
-                  className="h-11 rounded-xl border-charcoal/15 bg-white/90 pl-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
-                />
-              </div>
-              <FilterSelect
-                value={sortBy}
-                onValueChange={(next) => {
-                  setSortBy(next as "position" | "name");
-                  setPage(1);
-                  setLoading(true);
-                }}
-                options={[
-                  { value: "position", label: t("sort.position") },
-                  { value: "name", label: t("sort.name") },
-                ]}
-                ariaLabel={t("filters.sort")}
-                triggerClassName="h-11 w-full rounded-xl lg:w-44"
+            <div className="relative min-w-0">
+              <Search
+                className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-charcoal/40"
+                aria-hidden
               />
+              <Input
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                placeholder={t("searchPlaceholder")}
+                className="h-11 rounded-xl border-charcoal/15 bg-white/90 pl-10 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
+              />
+            </div>
+            <div
+              className="flex flex-wrap items-center gap-1.5"
+              role="group"
+              aria-label={t("filters.sort")}
+            >
+              <p className="mr-1 text-[10px] font-bold tracking-[0.14em] text-charcoal/45 uppercase">
+                {t("sort.label")}
+              </p>
+              {(
+                [
+                  ["position", t("sort.position")],
+                  ["popular", t("sort.popular")],
+                  ["name", t("sort.name")],
+                ] as const
+              ).map(([key, label]) => (
+                <button
+                  key={key}
+                  type="button"
+                  data-active={sortBy === key}
+                  aria-pressed={sortBy === key}
+                  className="path-sort-tab"
+                  onClick={() => {
+                    if (sortBy === key) return;
+                    setSortBy(key);
+                    setPage(1);
+                    setLoading(true);
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
             </div>
             <LearningTagFilter
               locale={locale}
