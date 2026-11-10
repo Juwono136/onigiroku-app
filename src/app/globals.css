@@ -309,6 +309,153 @@
     padding-bottom: max(0px, env(safe-area-inset-bottom));
   }
 
+  /*
+   * Mobile bottom dock offset (public SiteMobileNav + AppMobileNav).
+   * Components toggle `html.has-mobile-bottom-nav`; desktop clears the offset.
+   */
+  :root {
+    --mobile-bottom-nav-offset: 0px;
+  }
+
+  @media (max-width: 767px) {
+    html.has-mobile-bottom-nav {
+      --mobile-bottom-nav-offset: calc(4.65rem + env(safe-area-inset-bottom, 0px));
+    }
+
+    html.has-mobile-bottom-nav body {
+      padding-bottom: var(--mobile-bottom-nav-offset);
+    }
+  }
+
+  /* Learning-path catalog chrome — distinct from news/materials lists */
+  .path-catalog-toolbar {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.15rem;
+    border: 1px solid color-mix(in oklab, var(--charcoal) 12%, transparent);
+    background-color: color-mix(in oklab, var(--canvas) 70%, white);
+    box-shadow:
+      inset 3px 0 0 0 var(--brand),
+      0 18px 40px -32px rgb(15 23 42 / 28%);
+  }
+
+  .path-catalog-toolbar::before {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    opacity: 0.55;
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='40' viewBox='0 0 80 40'%3E%3Cg fill='none' stroke='%23E60012' stroke-opacity='0.07' stroke-width='1.1'%3E%3Cpath d='M0 40c10-12 20-12 30 0s20 12 30 0 20-12 30 0'/%3E%3Cpath d='M0 28c10-12 20-12 30 0s20 12 30 0 20-12 30 0'/%3E%3C/g%3E%3C/svg%3E"),
+      url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    background-size: 80px 40px, 180px 180px;
+  }
+
+  .path-sort-tab {
+    position: relative;
+    height: 2.25rem;
+    cursor: pointer;
+    border-radius: 0.65rem;
+    padding-inline: 0.85rem;
+    font-size: 0.75rem;
+    font-weight: 650;
+    letter-spacing: 0.01em;
+    color: color-mix(in oklab, var(--charcoal) 70%, transparent);
+    transition: color 160ms ease, background-color 160ms ease;
+  }
+
+  .path-sort-tab:hover {
+    color: var(--ink);
+    background-color: color-mix(in oklab, white 55%, transparent);
+  }
+
+  .path-sort-tab[data-active="true"] {
+    color: var(--brand);
+    background-color: color-mix(in oklab, var(--brand) 10%, white);
+  }
+
+  .path-sort-tab[data-active="true"]::after {
+    content: "";
+    position: absolute;
+    left: 0.65rem;
+    right: 0.65rem;
+    bottom: 0.2rem;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--brand);
+  }
+
+  .path-tag-chip {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    cursor: pointer;
+    border-radius: 0.45rem;
+    border: 1.5px solid color-mix(in oklab, var(--charcoal) 16%, transparent);
+    background: color-mix(in oklab, white 80%, transparent);
+    padding-inline: 0.7rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: color-mix(in oklab, var(--charcoal) 72%, transparent);
+    transition:
+      border-color 160ms ease,
+      background-color 160ms ease,
+      color 160ms ease,
+      transform 160ms ease;
+  }
+
+  .path-tag-chip:hover {
+    border-color: color-mix(in oklab, var(--brand) 40%, transparent);
+    color: var(--brand);
+    transform: translateY(-1px);
+  }
+
+  .path-tag-chip[data-active="true"] {
+    border-color: color-mix(in oklab, var(--brand) 55%, transparent);
+    background: color-mix(in oklab, var(--brand) 12%, white);
+    color: var(--brand);
+    box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--brand) 18%, transparent);
+  }
+
+  .path-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 1.15rem;
+    border: 1px solid color-mix(in oklab, var(--charcoal) 12%, transparent);
+    background: white;
+    transition:
+      transform 280ms ease,
+      border-color 280ms ease,
+      box-shadow 280ms ease;
+  }
+
+  .path-card::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 2;
+    width: 3px;
+    height: 100%;
+    background: linear-gradient(
+      180deg,
+      var(--brand) 0%,
+      color-mix(in oklab, var(--brand) 35%, transparent) 100%
+    );
+    opacity: 0.85;
+  }
+
+  .path-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in oklab, var(--brand) 28%, transparent);
+    box-shadow: 0 22px 48px -28px rgb(185 28 28 / 28%);
+  }
+
+  .app-workspace .path-card {
+    background: var(--workspace-card);
+  }
+
   /* TipTap / learning material prose */
   .material-prose,
   .tiptap-content {

@@ -1,5 +1,6 @@
 "use client";
 
+import { Tags, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useTransition } from "react";
 
@@ -60,12 +61,12 @@ export function CoursesFilters({
     });
   }
 
-  const popular = catalog.slice(0, 8);
+  const popular = catalog.slice(0, 10);
 
   return (
-    <div className={cn("space-y-4", pending && "opacity-80")}>
-      <div className="flex flex-wrap items-center gap-2">
-        <p className="text-[11px] font-bold tracking-wide text-charcoal/45 uppercase">
+    <div className={cn("relative space-y-3.5", pending && "opacity-80")}>
+      <div className="flex flex-wrap items-center gap-1.5">
+        <p className="mr-1 text-[10px] font-bold tracking-[0.14em] text-charcoal/45 uppercase">
           {t("sort.label")}
         </p>
         {(
@@ -79,12 +80,8 @@ export function CoursesFilters({
             key={key}
             type="button"
             onClick={() => setSort(key)}
-            className={cn(
-              "h-9 cursor-pointer rounded-full px-3.5 text-xs font-semibold transition",
-              sortBy === key
-                ? "bg-brand text-white shadow-sm"
-                : "border border-charcoal/12 bg-white text-charcoal/70 hover:border-brand/30 hover:text-brand",
-            )}
+            data-active={sortBy === key}
+            className="path-sort-tab"
           >
             {label}
           </button>
@@ -93,35 +90,36 @@ export function CoursesFilters({
 
       {popular.length > 0 ? (
         <div className="space-y-2">
-          <div className="flex items-center justify-between gap-2">
-            <p className="text-[11px] font-bold tracking-wide text-charcoal/45 uppercase">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="inline-flex items-center gap-1.5 text-[10px] font-bold tracking-[0.14em] text-charcoal/45 uppercase">
+              <Tags className="size-3.5" aria-hidden />
               {t("filters.tags")}
             </p>
             {selectedTags.length > 0 ? (
               <Link
                 href={coursesListHref({ search, sortBy, sortDir, page: 1 })}
-                className="text-xs font-semibold text-brand hover:underline"
+                className="inline-flex items-center gap-1 text-xs font-semibold text-brand hover:underline"
               >
+                <X className="size-3.5" aria-hidden />
                 {t("actions.clearFilters")}
               </Link>
             ) : null}
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-1.5">
             {popular.map((tag) => {
               const active = selectedTags.includes(tag.slug);
               const label =
-                locale === "en" ? tag.nameEn || tag.nameId : tag.nameId || tag.nameEn;
+                locale === "en"
+                  ? tag.nameEn || tag.nameId
+                  : tag.nameId || tag.nameEn;
               return (
                 <button
                   key={tag.id}
                   type="button"
                   onClick={() => toggleTag(tag.slug)}
-                  className={cn(
-                    "h-9 cursor-pointer rounded-full px-3.5 text-xs font-semibold transition",
-                    active
-                      ? "bg-brand/12 text-brand ring-1 ring-brand/30"
-                      : "border border-charcoal/12 bg-white text-charcoal/70 hover:border-brand/25 hover:text-brand",
-                  )}
+                  data-active={active}
+                  aria-pressed={active}
+                  className="path-tag-chip"
                 >
                   {label}
                 </button>

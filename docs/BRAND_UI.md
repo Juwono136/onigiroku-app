@@ -216,7 +216,32 @@ Komponen: `BrandLogo`, `BrandWordmark`.
 
 
 
-Menu turun dari atas (`site-header.tsx`), bukan sheet samping.
+- Public header: menu turun dari atas (`site-header.tsx`) untuk aksi ekstra / account.
+- **Mobile bottom dock** (`md` ke bawah):
+  - Public: `SiteMobileNav` (dipasang dari `SiteFooter`) — Home, Learning path, Classes, News, About.
+  - Workspace: `AppMobileNav` di `AppShell` — mirror item sidebar (student: Dashboard / Learning paths / Settings; admin: Overview / Users / News / Learning / Settings).
+  - Shared primitive: `src/components/navigation/mobile-bottom-nav.tsx` (toggle class `html.has-mobile-bottom-nav`, safe-area, active brand pill).
+  - Dock surface **opaque** (bukan glass/`backdrop-blur`) supaya cover image / card content tidak tembus dan label tetap terbaca.
+  - Token CSS `--mobile-bottom-nav-offset` memberi ruang konten + mengangkat `ScrollToTopButton` agar tidak menimpa dock.
+
+
+
+## Learning path catalog UI
+
+
+
+Public `/learning-path` dan student `/dashboard/materials` memakai chrome khusus (bukan template list generik):
+
+| Elemen | Pola |
+| --- | --- |
+| Masthead | `PathCatalogHeader` — mark JP (`学` / `道`), judul kompak, subtitle satu baris redup |
+| Toolbar | `.path-catalog-toolbar` — washi + seigaiha + `jp-rail` brand |
+| Sort | `.path-sort-tab` — tab underline brand |
+| Tags | `.path-tag-chip` — chip “hanko” (sudut lebih kotak, bukan pill generik) |
+| Cards | `.path-card` — rail brand kiri, cover hero, badge lesson gelap, deskripsi `line-clamp-2` |
+| Pagination | Indikator halaman brand di tengah |
+
+Atmosfer: seigaiha / asanoha / brand red terkendali sesuai §13 — fokus explore path, bukan hero teks besar.
 
 
 
@@ -225,5 +250,7 @@ Menu turun dari atas (`site-header.tsx`), bukan sheet samping.
 
 
 `ScrollToTopButton` di `src/app/[locale]/layout.tsx`.
+
+Di layar `< md` posisi `bottom` memakai `calc(... + var(--mobile-bottom-nav-offset))` supaya tidak bentrok dengan bottom dock. Dari `md` ke atas kembali ke pojok kanan bawah standar.
 
 

@@ -268,9 +268,24 @@ func (s *Service) ListCategories(ctx context.Context, page, pageSize int, search
 		args = append(args, st)
 	}
 	if q := strings.TrimSpace(search); q != "" {
-		args = append(args, "%"+q+"%")
-		n := itoa(len(args))
-		where = append(where, "(name_id ILIKE $"+n+" OR name_en ILIKE $"+n+" OR slug ILIKE $"+n+")")
+		// Multi-token AND match so "partikel ni" still hits "Partikel に NI …".
+		tokens := strings.Fields(q)
+		if len(tokens) > 8 {
+			tokens = tokens[:8]
+		}
+		parts := make([]string, 0, len(tokens))
+		for _, tok := range tokens {
+			tok = strings.TrimSpace(tok)
+			if tok == "" {
+				continue
+			}
+			args = append(args, "%"+escapeLike(tok)+"%")
+			n := itoa(len(args))
+			parts = append(parts, "(name_id ILIKE $"+n+" ESCAPE '\\' OR name_en ILIKE $"+n+" ESCAPE '\\' OR slug ILIKE $"+n+" ESCAPE '\\' OR description_id ILIKE $"+n+" ESCAPE '\\' OR description_en ILIKE $"+n+" ESCAPE '\\')")
+		}
+		if len(parts) > 0 {
+			where = append(where, "("+strings.Join(parts, " AND ")+")")
+		}
 	}
 	if len(tagSlugs) == 1 {
 		args = append(args, tagSlugs[0])

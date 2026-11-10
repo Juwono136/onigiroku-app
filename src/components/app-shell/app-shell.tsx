@@ -1,6 +1,7 @@
 "use client";
 
 import { AppFooter } from "@/components/app-shell/app-footer";
+import { AppMobileNav } from "@/components/app-shell/app-mobile-nav";
 import { AppSidebar } from "@/components/app-shell/app-sidebar";
 import { AppTopbar } from "@/components/app-shell/app-topbar";
 import { SidebarProvider } from "@/components/app-shell/sidebar-context";
@@ -21,6 +22,7 @@ type Props = {
 
 /**
  * Dedicated authenticated workspace chrome — separate from marketing SiteHeader/Footer.
+ * Mobile uses a bottom dock (`AppMobileNav`) instead of relying only on the drawer.
  */
 export function AppShell({ user, role, children }: Props) {
   return (
@@ -34,6 +36,7 @@ export function AppShell({ user, role, children }: Props) {
           </div>
           <AppFooter role={role} />
         </div>
+        <AppMobileNav role={role} />
       </div>
     </SidebarProvider>
   );

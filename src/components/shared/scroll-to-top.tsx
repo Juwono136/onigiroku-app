@@ -12,6 +12,8 @@ const SCROLL_THRESHOLD = 420;
 /**
  * Global scroll-to-top control. Mount once in the root locale layout
  * so it is available on every authenticated and public surface.
+ * On small screens it lifts above the mobile bottom nav via
+ * `--mobile-bottom-nav-offset`.
  */
 export function ScrollToTopButton() {
   const [visible, setVisible] = useState(false);
@@ -42,7 +44,10 @@ export function ScrollToTopButton() {
       className={cn(
         buttonVariants({ size: "icon" }),
         "fixed z-40 size-11 rounded-2xl bg-brand text-white shadow-[0_12px_30px_-10px_rgba(230,0,18,0.55)] transition-all duration-300 hover:bg-[var(--brand-hover)]",
-        "right-[max(1rem,env(safe-area-inset-right))] bottom-[max(1.25rem,env(safe-area-inset-bottom))] sm:right-6 sm:bottom-6",
+        "right-[max(1rem,env(safe-area-inset-right))]",
+        // Sit above mobile bottom nav (< md). From md up, dock is hidden.
+        "bottom-[calc(max(1.25rem,env(safe-area-inset-bottom))+var(--mobile-bottom-nav-offset,0px))]",
+        "md:right-6 md:bottom-6",
         visible
           ? "pointer-events-auto translate-y-0 opacity-100"
           : "pointer-events-none translate-y-3 opacity-0",

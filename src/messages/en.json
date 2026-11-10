@@ -18,6 +18,7 @@
     "register": "Start free",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
+    "mobileNavLabel": "Primary navigation",
     "dashboard": "Dashboard",
     "settings": "My settings",
     "logout": "Sign out",
@@ -39,11 +40,13 @@
     },
     "eyebrow": "Learning catalog",
     "title": "Learning paths",
-    "subtitle": "Published learning paths with structured lesson lists. Preview every path; unlock study when you sign in as a student.",
+    "subtitle": "Browse published paths, preview lessons, then sign in to study.",
     "searchPlaceholder": "Search learning paths by name…",
     "resultCount": "{count, plural, =0 {No learning paths} one {# learning path} other {# learning paths}}",
     "lessonsCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
     "views": "{count, plural, one {# visit} other {# visits}}",
+    "viewsCompact": "{count} visits",
+    "viewsFull": "{count} visits",
     "sort": {
       "label": "Sort",
       "position": "Featured",
@@ -75,6 +78,8 @@
     "detail": {
       "eyebrow": "Learning path",
       "noDescription": "Details for this path will appear here soon.",
+      "showMoreDescription": "Show full description",
+      "showLessDescription": "Show less",
       "accessEyebrow": "Access",
       "accessGuestTitle": "Preview only",
       "accessGuestBody": "Anyone can explore this path and its lesson list. Sign in with a student account to open lessons and practice.",
@@ -82,6 +87,9 @@
       "accessStudentBody": "Open this path in your learning dashboard to access every lesson and track your progress.",
       "lessonList": "Lesson list",
       "lessonListHint": "Lessons stay locked on the public catalog. Sign in to study.",
+      "lessonListCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
+      "showAllLessons": "Show all {count} lessons",
+      "showLessLessons": "Show less",
       "noLessons": "No published lessons in this path yet."
     },
     "notFound": "This learning path is unavailable.",
@@ -965,7 +973,8 @@
       "collapse": "Collapse sidebar",
       "expand": "Expand sidebar",
       "openMenu": "Open navigation",
-      "closeMenu": "Close navigation"
+      "closeMenu": "Close navigation",
+      "mobileLabel": "Workspace navigation"
     },
     "sidebar": {
       "copyright": "© {year} Onigiroku"
@@ -1196,7 +1205,7 @@
   "learningStudent": {
     "eyebrow": "Study",
     "title": "Learning paths",
-    "subtitle": "Pick a learning path and follow the lessons in order. Later lessons unlock after you finish the ones before them.",
+    "subtitle": "Choose a path and study lessons in order — later ones unlock as you go.",
     "searchPlaceholder": "Search paths by name…",
     "showing": "Showing {from}–{to} of {total}",
     "pageSize": "{count} / page",
