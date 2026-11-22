@@ -2,13 +2,12 @@ import type { AuthSession } from "@/lib/auth/session";
 import { getSessionRole } from "@/lib/auth/session";
 
 /**
- * Extension point for paid access to a learning category.
+ * Thin gate for student materials BFF routes.
  *
- * Access is decided in the Go API (`assertCategoryAccess`). While
- * LEARNING_PAYWALL_ENABLED is off, any signed-in USER or ADMIN may open
- * published paths. When the flag is on, a category is open if its plan_key
- * is `free` or the user has an active `user_learning_access` grant. A payment
- * gateway writes that grant; this app does not talk to a gateway.
+ * Path-level access is decided in the Go API (`assertCategoryAccess` using
+ * `access_mode` + `user_feature_grant`). While LEARNING_PAYWALL_ENABLED is
+ * off, any signed-in USER or ADMIN may open published paths. DOKU package
+ * purchases write grants via commerce webhooks — see docs/PAYMENTS.md.
  */
 export async function assertCanAccessStudentMaterials(
   session: AuthSession,

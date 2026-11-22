@@ -279,6 +279,7 @@ Validasi client: Zod di `src/lib/validations/auth.ts`. Server: Better Auth `minP
 - **Pertama kali** daftar/masuk Google: `mapProfileToUser` mengisi nama + foto Google.
 - **Login Google berikutnya:** `overrideUserInfoOnSignIn: false` dan `updateUserInfoOnLink: false` — **tidak** menimpa nama/foto yang sudah diubah atau dihapus di Settings.
 - Hapus foto di Settings → `user.image = null` + object SeaweedFS dihapus → login Google tidak mengembalikan foto Google.
+- Setelah upload/hapus foto di Settings, client memanggil `refreshAuthSession()` agar atom `useSession` refetch (bypass cookie cache) — navbar + form Settings update tanpa hard reload.
 - Avatar Googleusercontent memakai `referrerPolicy="no-referrer"` bila masih dipakai.
 
 - Bahasa email mengikuti **locale website** (`NEXT_LOCALE` cookie) dan/atau `user.locale` yang disimpan saat register.

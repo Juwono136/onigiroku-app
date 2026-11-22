@@ -137,6 +137,17 @@ func normalizeCategory(in CategoryInput, _ bool) (CategoryInput, error) {
 	if len(in.PlanKey) > 64 || !planKeyOK(in.PlanKey) {
 		return in, apperrors.Validation("Invalid plan key", "Kunci paket tidak valid")
 	}
+	in.AccessMode = strings.ToLower(strings.TrimSpace(in.AccessMode))
+	if in.AccessMode == "" {
+		if in.PlanKey == "free" {
+			in.AccessMode = "free"
+		} else {
+			in.AccessMode = "paid"
+		}
+	}
+	if in.AccessMode != "free" && in.AccessMode != "paid" {
+		return in, apperrors.Validation("Invalid access mode", "Mode akses tidak valid")
+	}
 	tags, err := normalizeCategoryTags(in.Tags)
 	if err != nil {
 		return in, err
@@ -316,7 +327,7 @@ func (s *Service) ListCategories(ctx context.Context, page, pageSize int, search
 	args = append(args, pageSize, (page-1)*pageSize)
 	rows, err := s.Pool.Query(ctx, `
 		SELECT id, slug, name_id, name_en, description_id, description_en, cover_object_key,
-		       position, status::text, plan_key, COALESCE(student_view_count, 0), created_at, updated_at,
+		       position, status::text, plan_key, access_mode::text, COALESCE(student_view_count, 0), created_at, updated_at,
 		       (SELECT COUNT(*)::int FROM learning_material m
 		         WHERE m.category_id = learning_category.id AND m.deleted_at IS NULL
 		           AND m.visibility = 'STUDENT'`+lessonStatus+`)
@@ -335,7 +346,7 @@ func (s *Service) ListCategories(ctx context.Context, page, pageSize int, search
 		var created, updated time.Time
 		if err := rows.Scan(
 			&c.ID, &c.Slug, &c.NameID, &c.NameEN, &c.DescriptionID, &c.DescriptionEN, &c.CoverObjectKey,
-			&c.Position, &c.Status, &c.PlanKey, &c.StudentViewCount, &created, &updated, &c.LessonCount,
+			&c.Position, &c.Status, &c.PlanKey, &c.AccessMode, &c.StudentViewCount, &created, &updated, &c.LessonCount,
 		); err != nil {
 			return nil, apperrors.Internal(err)
 		}
@@ -363,14 +374,14 @@ func (s *Service) GetCategory(ctx context.Context, id string) (*CategoryDTO, err
 	var created, updated time.Time
 	err := s.Pool.QueryRow(ctx, `
 		SELECT id, slug, name_id, name_en, description_id, description_en, cover_object_key,
-		       position, status::text, plan_key, COALESCE(student_view_count, 0), created_at, updated_at,
+		       position, status::text, plan_key, access_mode::text, COALESCE(student_view_count, 0), created_at, updated_at,
 		       (SELECT COUNT(*)::int FROM learning_material m
 		         WHERE m.category_id = learning_category.id AND m.deleted_at IS NULL AND m.visibility = 'STUDENT')
 		FROM learning_category
 		WHERE id = $1 AND deleted_at IS NULL
 	`, id).Scan(
 		&c.ID, &c.Slug, &c.NameID, &c.NameEN, &c.DescriptionID, &c.DescriptionEN, &c.CoverObjectKey,
-		&c.Position, &c.Status, &c.PlanKey, &c.StudentViewCount, &created, &updated, &c.LessonCount,
+		&c.Position, &c.Status, &c.PlanKey, &c.AccessMode, &c.StudentViewCount, &created, &updated, &c.LessonCount,
 	)
 	if err == pgx.ErrNoRows {
 		return nil, apperrors.NotFound("category")
@@ -414,10 +425,10 @@ func (s *Service) CreateCategory(ctx context.Context, in CategoryInput) (*Catego
 	_, err = tx.Exec(ctx, `
 		INSERT INTO learning_category (
 		  id, slug, name_id, name_en, description_id, description_en, cover_object_key,
-		  position, status, plan_key, created_at, updated_at
-		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::learning_category_status,$10,NOW(),NOW())
+		  position, status, plan_key, access_mode, created_at, updated_at
+		) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9::learning_category_status,$10,$11::learning_access_mode,NOW(),NOW())
 	`, id, slug, normalized.NameID, normalized.NameEN, normalized.DescriptionID, normalized.DescriptionEN,
-		nullIfEmptyPtr(normalized.CoverObjectKey), next, normalized.Status, normalized.PlanKey)
+		nullIfEmptyPtr(normalized.CoverObjectKey), next, normalized.Status, normalized.PlanKey, normalized.AccessMode)
 	if err != nil {
 		return nil, apperrors.Internal(err)
 	}
@@ -459,10 +470,11 @@ func (s *Service) UpdateCategory(ctx context.Context, id string, in CategoryInpu
 	_, err = tx.Exec(ctx, `
 		UPDATE learning_category
 		SET slug=$2, name_id=$3, name_en=$4, description_id=$5, description_en=$6,
-		    cover_object_key=$7, status=$8::learning_category_status, plan_key=$9, updated_at=NOW()
+		    cover_object_key=$7, status=$8::learning_category_status, plan_key=$9,
+		    access_mode=$10::learning_access_mode, updated_at=NOW()
 		WHERE id=$1 AND deleted_at IS NULL
 	`, id, slug, normalized.NameID, normalized.NameEN, normalized.DescriptionID, normalized.DescriptionEN,
-		cover, normalized.Status, normalized.PlanKey)
+		cover, normalized.Status, normalized.PlanKey, normalized.AccessMode)
 	if err != nil {
 		return nil, apperrors.Internal(err)
 	}
@@ -710,7 +722,7 @@ func (s *Service) StudentCategories(ctx context.Context, userID string, page, pa
 	filtered := make([]CategoryDTO, 0, len(result.Items))
 	ids := make([]string, 0, len(result.Items))
 	for _, c := range result.Items {
-		ok, err := s.userHasPlan(ctx, userID, c.PlanKey)
+		ok, err := s.userCanAccessCategory(ctx, userID, c.ID, c.AccessMode)
 		if err != nil {
 			return nil, err
 		}
@@ -791,19 +803,19 @@ func (s *Service) StudentCategoryPath(ctx context.Context, userID, slug, locale 
 // ResetStudentCategoryPath clears unlock/progress for a path so the student can restart
 // from lesson 1. Quiz attempt history is preserved for knowledge analytics.
 func (s *Service) ResetStudentCategoryPath(ctx context.Context, userID, slug, locale string) (*StudentCategoryDetail, error) {
-	var categoryID, plan string
+	var categoryID, plan, accessMode string
 	err := s.Pool.QueryRow(ctx, `
-		SELECT id, plan_key
+		SELECT id, plan_key, access_mode::text
 		FROM learning_category
 		WHERE slug = $1 AND deleted_at IS NULL AND status = 'PUBLISHED'
-	`, slug).Scan(&categoryID, &plan)
+	`, slug).Scan(&categoryID, &plan, &accessMode)
 	if err == pgx.ErrNoRows {
 		return nil, apperrors.NotFound("category")
 	}
 	if err != nil {
 		return nil, apperrors.Internal(err)
 	}
-	if err := s.assertCategoryAccess(ctx, userID, plan); err != nil {
+	if err := s.assertCategoryAccess(ctx, userID, categoryID, accessMode); err != nil {
 		return nil, err
 	}
 
@@ -842,16 +854,16 @@ func (s *Service) ResetStudentCategoryPath(ctx context.Context, userID, slug, lo
 }
 
 func (s *Service) studentCategoryPath(ctx context.Context, userID, slug, locale string, bumpViews bool) (*StudentCategoryDetail, error) {
-	var id, plan string
+	var id, plan, accessMode string
 	var card StudentCategoryCard
 	var cover *string
 	var viewCount int
 	err := s.Pool.QueryRow(ctx, `
 		SELECT id, slug, name_id, name_en, description_id, description_en, cover_object_key, plan_key,
-		       COALESCE(student_view_count, 0)
+		       access_mode::text, COALESCE(student_view_count, 0)
 		FROM learning_category
 		WHERE slug = $1 AND deleted_at IS NULL AND status = 'PUBLISHED'
-	`, slug).Scan(&id, &card.Slug, &card.NameID, &card.NameEN, &card.DescriptionID, &card.DescriptionEN, &cover, &plan, &viewCount)
+	`, slug).Scan(&id, &card.Slug, &card.NameID, &card.NameEN, &card.DescriptionID, &card.DescriptionEN, &cover, &plan, &accessMode, &viewCount)
 	if err == pgx.ErrNoRows {
 		return nil, apperrors.NotFound("category")
 	}
@@ -860,10 +872,11 @@ func (s *Service) studentCategoryPath(ctx context.Context, userID, slug, locale 
 	}
 	card.ID = id
 	card.PlanKey = plan
+	card.AccessMode = accessMode
 	card.CoverURL = s.coverURL(cover)
 	card.StudentViewCount = viewCount
 	card.Tags = []TagDTO{}
-	if err := s.assertCategoryAccess(ctx, userID, plan); err != nil {
+	if err := s.assertCategoryAccess(ctx, userID, id, accessMode); err != nil {
 		return nil, err
 	}
 	if bumpViews {
@@ -936,11 +949,11 @@ func (s *Service) OpenStudentLesson(ctx context.Context, userID, slug, locale st
 	if detail.CategoryID == nil || *detail.CategoryID == "" {
 		return nil, apperrors.NotFound("material")
 	}
-	var catSlug, nameID, nameEN, plan, catStatus string
+	var catSlug, nameID, nameEN, plan, accessMode, catStatus string
 	err = s.Pool.QueryRow(ctx, `
-		SELECT slug, name_id, name_en, plan_key, status::text
+		SELECT slug, name_id, name_en, plan_key, access_mode::text, status::text
 		FROM learning_category WHERE id=$1 AND deleted_at IS NULL
-	`, *detail.CategoryID).Scan(&catSlug, &nameID, &nameEN, &plan, &catStatus)
+	`, *detail.CategoryID).Scan(&catSlug, &nameID, &nameEN, &plan, &accessMode, &catStatus)
 	if err == pgx.ErrNoRows || catStatus != "PUBLISHED" {
 		return nil, apperrors.NotFound("material")
 	}
@@ -948,7 +961,7 @@ func (s *Service) OpenStudentLesson(ctx context.Context, userID, slug, locale st
 		return nil, apperrors.Internal(err)
 	}
 	if !bypassLock {
-		if err := s.assertCategoryAccess(ctx, userID, plan); err != nil {
+		if err := s.assertCategoryAccess(ctx, userID, *detail.CategoryID, accessMode); err != nil {
 			return nil, err
 		}
 	}
@@ -1581,7 +1594,7 @@ func (s *Service) buildPathCompletion(ctx context.Context, userID, categoryID, l
 
 func (s *Service) findNextLearningPath(ctx context.Context, userID, currentCategoryID string, currentPosition int) (*NextPathCardDTO, error) {
 	rows, err := s.Pool.Query(ctx, `
-		SELECT c.id, c.slug, c.name_id, c.name_en, c.cover_object_key, c.plan_key, c.position,
+		SELECT c.id, c.slug, c.name_id, c.name_en, c.cover_object_key, c.plan_key, c.access_mode::text, c.position,
 		       (SELECT COUNT(*)::int FROM learning_material m
 		        WHERE m.category_id = c.id AND m.deleted_at IS NULL
 		          AND m.status = 'PUBLISHED' AND m.visibility = 'STUDENT') AS lesson_count
@@ -1597,7 +1610,7 @@ func (s *Service) findNextLearningPath(ctx context.Context, userID, currentCateg
 	}
 	defer rows.Close()
 	type cand struct {
-		id, slug, nameID, nameEN, plan string
+		id, slug, nameID, nameEN, plan, accessMode string
 		cover *string
 		lessons int
 	}
@@ -1605,13 +1618,13 @@ func (s *Service) findNextLearningPath(ctx context.Context, userID, currentCateg
 	for rows.Next() {
 		var c cand
 		var pos int
-		if err := rows.Scan(&c.id, &c.slug, &c.nameID, &c.nameEN, &c.cover, &c.plan, &pos, &c.lessons); err != nil {
+		if err := rows.Scan(&c.id, &c.slug, &c.nameID, &c.nameEN, &c.cover, &c.plan, &c.accessMode, &pos, &c.lessons); err != nil {
 			return nil, apperrors.Internal(err)
 		}
 		if c.lessons == 0 {
 			continue
 		}
-		ok, err := s.userHasPlan(ctx, userID, c.plan)
+		ok, err := s.userCanAccessCategory(ctx, userID, c.id, c.accessMode)
 		if err != nil {
 			return nil, err
 		}

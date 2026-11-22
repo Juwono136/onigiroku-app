@@ -101,6 +101,7 @@ func TestCreatePresignAndDeleteIdempotent(t *testing.T) {
 		Filename:     "cover.webp",
 		ContentType:  "image/webp",
 		SizeBytes:    2048,
+		Folder:       "cms",
 		PreviousKey:  "onigiroku/old-cover.webp",
 		ReplaceAfter: true,
 	})
@@ -110,8 +111,24 @@ func TestCreatePresignAndDeleteIdempotent(t *testing.T) {
 	if out.ObjectKey == "" || out.UploadURL == "" || !out.DeleteAfterConfirm {
 		t.Fatalf("unexpected presign payload: %+v", out)
 	}
+	if !strings.HasPrefix(out.ObjectKey, "onigiroku/cms/") {
+		t.Fatalf("expected onigiroku/cms/ prefix, got %q", out.ObjectKey)
+	}
 	if out.PreviousObjectKey != "onigiroku/old-cover.webp" {
 		t.Fatalf("previous key not preserved: %+v", out)
+	}
+
+	avatar, err := svc.CreatePresign(PresignRequest{
+		Filename:    "me.png",
+		ContentType: "image/png",
+		SizeBytes:   1024,
+		Folder:      "avatars",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.HasPrefix(avatar.ObjectKey, "onigiroku/avatars/") {
+		t.Fatalf("expected onigiroku/avatars/ prefix, got %q", avatar.ObjectKey)
 	}
 
 	if err := svc.DeleteObject("onigiroku/old-cover.webp"); err != nil {

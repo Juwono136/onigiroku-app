@@ -2,7 +2,7 @@
 
 import { Check, ChevronLeft, ChevronRight, Lock, Menu, X } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useEffect, useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Link } from "@/i18n/routing";
@@ -19,10 +19,41 @@ type Props = {
 };
 
 const STORAGE_KEY = "onigiroku.lesson-sidebar.open";
+const STORAGE_EVENT = "onigiroku-lesson-sidebar-open";
 
 /** Matches AppTopbar: h-14 / sm:h-16 so the rail sits under the sticky header. */
 const TOPBAR_OFFSET =
   "top-14 h-[calc(100dvh-3.5rem)] sm:top-16 sm:h-[calc(100dvh-4rem)]";
+
+function readSidebarOpen(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw === "0") return false;
+    if (raw === "1") return true;
+  } catch {
+    /* ignore */
+  }
+  return true;
+}
+
+function subscribeSidebarOpen(onStoreChange: () => void) {
+  window.addEventListener(STORAGE_EVENT, onStoreChange);
+  window.addEventListener("storage", onStoreChange);
+  return () => {
+    window.removeEventListener(STORAGE_EVENT, onStoreChange);
+    window.removeEventListener("storage", onStoreChange);
+  };
+}
+
+function writeSidebarOpen(next: boolean) {
+  try {
+    window.localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
+  } catch {
+    /* ignore */
+  }
+  window.dispatchEvent(new Event(STORAGE_EVENT));
+}
 
 export function LessonPathSidebar({
   categorySlug,
@@ -33,29 +64,18 @@ export function LessonPathSidebar({
   lessonCount,
 }: Props) {
   const t = useTranslations("learningStudent");
-  const [open, setOpen] = useState(true);
+  const open = useSyncExternalStore(
+    subscribeSidebarOpen,
+    readSidebarOpen,
+    () => true,
+  );
   const [mobileOpen, setMobileOpen] = useState(false);
   const pct = lessonCount
     ? Math.round((completedCount / lessonCount) * 100)
     : 0;
 
-  useEffect(() => {
-    try {
-      const raw = window.localStorage.getItem(STORAGE_KEY);
-      if (raw === "0") setOpen(false);
-      if (raw === "1") setOpen(true);
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
   function persist(next: boolean) {
-    setOpen(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next ? "1" : "0");
-    } catch {
-      /* ignore */
-    }
+    writeSidebarOpen(next);
   }
 
   const list = (

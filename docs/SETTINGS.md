@@ -54,8 +54,9 @@ URL lama yang masih menunjuk gateway di-rewrite oleh `toBrowserMediaUrl`. Google
 
 | Perilaku | Implementasi |
 | --- | --- |
-| Navbar avatar update tanpa hard refresh | API profil meneruskan Set-Cookie session; client memanggil `refreshAuthSession()`; `AppTopbar` memakai `useSession` live |
-| Hapus foto lalu login Google | Tidak restore foto Google (`overrideUserInfoOnSignIn: false`) — Settings tetap sumber kebenaran |
+| Navbar / Settings avatar update tanpa hard refresh | API profil meneruskan Set-Cookie session; client `refreshAuthSession()` **refetch** atom Better Auth (`disableCookieCache: true` + `$sessionSignal` fallback). `AppTopbar` / `UserMenu` / `ProfileSettingsForm` membaca `useSession` live |
+| Signup / login Google pertama kali | `mapProfileToUser` mengisi `image` dari Google picture |
+| Login Google berikutnya / link akun | Tidak overwrite foto Settings (`overrideUserInfoOnSignIn: false`, `updateUserInfoOnLink: false`) |
 | Ganti/hapus foto | Object baru di `avatars/`; object lama dihapus dari SeaweedFS (idempotent) |
 
 ## Password

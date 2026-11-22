@@ -7,13 +7,17 @@ import {
   isSelfRegistrationEnabled,
 } from "@/lib/auth/flags";
 import { redirectIfAuthenticated } from "@/lib/auth/session";
+import { safeCallbackPath } from "@/lib/packages/buy-intent";
 
 export default async function RegisterPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ locale: string }>;
+  searchParams: Promise<{ callbackUrl?: string }>;
 }) {
   const { locale } = await params;
+  const { callbackUrl } = await searchParams;
   setRequestLocale(locale);
   await redirectIfAuthenticated(locale);
 
@@ -22,6 +26,7 @@ export default async function RegisterPage({
       <RegisterForm
         googleEnabled={isGoogleAuthConfigured()}
         registrationEnabled={isSelfRegistrationEnabled()}
+        callbackUrl={safeCallbackPath(callbackUrl)}
       />
     </AuthShell>
   );

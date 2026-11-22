@@ -30,48 +30,46 @@ export function CoursesSearchBar({
   const t = useTranslations("courses");
   const router = useRouter();
   const [value, setValue] = useState(initialSearch);
+  const [focused, setFocused] = useState(false);
   const [pending, startTransition] = useTransition();
   const inputRef = useRef<HTMLInputElement>(null);
   const tagsKey = tags.join(",");
-  const filtersRef = useRef({ tags, sortBy, sortDir });
-  filtersRef.current = { tags, sortBy, sortDir };
-
   const filtersKey = `${tagsKey}::${sortBy}::${sortDir}`;
-  const prevFiltersKey = useRef(filtersKey);
+  const [prevFiltersKey, setPrevFiltersKey] = useState(filtersKey);
+  const [prevInitialSearch, setPrevInitialSearch] = useState(initialSearch);
 
-  // Tag / sort link navigation: adopt URL search. Do not remount this input.
-  useEffect(() => {
-    if (prevFiltersKey.current === filtersKey) return;
-    prevFiltersKey.current = filtersKey;
+  // Adopt URL search when tags/sort change (link navigation) without remounting.
+  if (filtersKey !== prevFiltersKey) {
+    setPrevFiltersKey(filtersKey);
+    setPrevInitialSearch(initialSearch);
     setValue(initialSearch);
-  }, [filtersKey, initialSearch]);
-
-  // Browser back/forward (and external URL edits) while the field is not focused.
-  useEffect(() => {
-    if (document.activeElement === inputRef.current) return;
+  } else if (initialSearch !== prevInitialSearch && !focused) {
+    // Browser back/forward while the field is not focused.
+    setPrevInitialSearch(initialSearch);
     setValue(initialSearch);
-  }, [initialSearch]);
+  } else if (initialSearch !== prevInitialSearch && focused) {
+    // Keep typing; only advance the tracked URL value so debounce still compares correctly.
+    setPrevInitialSearch(initialSearch);
+  }
 
   useEffect(() => {
     const handle = window.setTimeout(() => {
       const next = value.trim();
       if (next === initialSearch.trim()) return;
-      const { tags: nextTags, sortBy: nextSortBy, sortDir: nextSortDir } =
-        filtersRef.current;
       startTransition(() => {
         router.replace(
           coursesListHref({
             search: next,
-            tags: nextTags,
-            sortBy: nextSortBy,
-            sortDir: nextSortDir,
+            tags,
+            sortBy,
+            sortDir,
             page: 1,
           }),
         );
       });
     }, DEBOUNCE_MS);
     return () => window.clearTimeout(handle);
-  }, [value, initialSearch, router]);
+  }, [value, initialSearch, router, tags, sortBy, sortDir]);
 
   return (
     <div className={cn("relative min-w-0 flex-1", className)}>
@@ -83,6 +81,8 @@ export function CoursesSearchBar({
         ref={inputRef}
         value={value}
         onChange={(e) => setValue(e.target.value)}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         placeholder={t("searchPlaceholder")}
         aria-label={t("searchPlaceholder")}
         autoComplete="off"

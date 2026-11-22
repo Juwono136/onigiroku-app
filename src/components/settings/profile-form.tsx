@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "@/i18n/routing";
+import { useSession } from "@/lib/auth/client";
 import type { UserRole } from "@/lib/auth/roles";
 import { refreshAuthSession } from "@/lib/auth/refresh-session";
 import { toBrowserMediaUrl } from "@/lib/storage";
@@ -55,6 +56,7 @@ export function ProfileSettingsForm({
   const tAuth = useTranslations("auth");
   const locale = useLocale();
   const router = useRouter();
+  const { data: liveSession } = useSession();
   const fileRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(initialName);
   const [image, setImage] = useState(
@@ -68,6 +70,14 @@ export function ProfileSettingsForm({
   const [removeConfirmOpen, setRemoveConfirmOpen] = useState(false);
   const [photoConfirmOpen, setPhotoConfirmOpen] = useState(false);
   const [pendingPhoto, setPendingPhoto] = useState<PendingPhoto | null>(null);
+
+  // Keep the settings avatar aligned with the live client session (same store as navbar).
+  // Skip while an upload/remove is in flight so a stale session cannot overwrite the optimistic preview.
+  useEffect(() => {
+    if (!liveSession?.user || avatarPending) return;
+    const nextImage = toBrowserMediaUrl(liveSession.user.image) ?? null;
+    setImage((prev) => (prev === nextImage ? prev : nextImage));
+  }, [liveSession?.user?.image, avatarPending]);
 
   useEffect(() => {
     return () => {

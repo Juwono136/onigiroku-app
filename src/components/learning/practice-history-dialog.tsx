@@ -101,7 +101,14 @@ export function PracticeHistoryDialog({ open, onOpenChange, slug }: Props) {
 
   useEffect(() => {
     if (!open) return;
-    void load();
+    let cancelled = false;
+    const timer = window.setTimeout(() => {
+      if (!cancelled) void load();
+    }, 0);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
   }, [open, load]);
 
   function handleOpenChange(next: boolean) {

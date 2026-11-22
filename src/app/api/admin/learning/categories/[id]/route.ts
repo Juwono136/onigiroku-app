@@ -54,6 +54,7 @@ export async function PUT(request: Request, ctx: Ctx) {
       descriptionId: parsed.data.descriptionId ?? "",
       descriptionEn: parsed.data.descriptionEn ?? "",
       planKey: parsed.data.planKey ?? "free",
+      accessMode: parsed.data.accessMode ?? "free",
       tags: parsed.data.tags ?? [],
     });
     return NextResponse.json({ success: true, data });

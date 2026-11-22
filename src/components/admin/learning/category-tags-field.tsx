@@ -406,6 +406,7 @@ export function CategoryTagsField({ tags, locale, onChange }: Props) {
                         <button
                           type="button"
                           role="option"
+                          aria-selected={false}
                           className="flex min-w-0 flex-1 cursor-pointer items-center gap-2.5 rounded-xl px-2.5 py-2.5 text-left"
                           onClick={() =>
                             addTag({
@@ -467,6 +468,7 @@ export function CategoryTagsField({ tags, locale, onChange }: Props) {
                     <button
                       type="button"
                       role="option"
+                      aria-selected={false}
                       className="mt-0.5 flex w-full cursor-pointer items-center gap-2.5 rounded-xl border border-dashed border-brand/30 bg-brand/[0.03] px-2.5 py-2.5 text-left transition hover:bg-brand/5"
                       onClick={() =>
                         addTag(createTagFromQuery(tagQuery, locale))

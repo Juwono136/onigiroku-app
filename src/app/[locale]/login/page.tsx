@@ -4,6 +4,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
 import { isGoogleAuthConfigured } from "@/lib/auth/flags";
 import { redirectIfAuthenticated } from "@/lib/auth/session";
+import { safeCallbackPath } from "@/lib/packages/buy-intent";
 
 export default async function LoginPage({
   params,
@@ -21,7 +22,7 @@ export default async function LoginPage({
     <AuthShell>
       <LoginForm
         googleEnabled={isGoogleAuthConfigured()}
-        callbackUrl={callbackUrl}
+        callbackUrl={safeCallbackPath(callbackUrl)}
         oauthError={error}
       />
     </AuthShell>

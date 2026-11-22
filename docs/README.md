@@ -16,7 +16,8 @@
 | [I18N.md](./I18N.md) | Skema bahasa Indonesia & Inggris |
 | [BRAND_UI.md](./BRAND_UI.md) | Brand colors (PRD §13), Japanese UI cues, logo, motion, 404 |
 | [CMS.md](./CMS.md) | Kontrak konten landing + announcement slider (≤5) CMS-ready |
-| [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md) | Learning materials + News CMS (admin TipTap, student, public `/news` + `/learning-path`, popularity counters, Xendit prep) |
+| [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md) | Learning materials + News CMS (admin TipTap, student, public `/news` + `/learning-path`, popularity counters, Free/Paid-only access) |
+| [PAYMENTS.md](./PAYMENTS.md) | DOKU Checkout, class packages, webhooks, paywall rollout |
 | [Onigiroku_PRD_SRS_v1.0.pdf](./Onigiroku_PRD_SRS_v1.0.pdf) | Product Requirements & SRS |
 
-**Implementasi note:** Payment gateway di kode & setup memakai **Xendit** (instruksi terkini), sementara PRD v1.0 masih menyebut Midtrans sebagai baseline dokumen.
+**Implementasi note:** Payment gateway di kode memakai **DOKU Checkout** (IDR class packages). PRD v1.0 may still mention Midtrans/Xendit as historical baselines.

@@ -91,6 +91,18 @@ export async function CourseDetail({ course, locale, isStudent }: Props) {
                     {t("lessonsCount", { count: course.lessonCount })}
                   </span>
                 </span>
+                <span
+                  className={cn(
+                    "rounded-full px-3 py-1.5 text-[10px] font-bold tracking-wide uppercase",
+                    course.accessMode === "paid"
+                      ? "bg-ink text-white"
+                      : "border border-charcoal/15 bg-white text-charcoal/65",
+                  )}
+                >
+                  {course.accessMode === "paid"
+                    ? t("detail.accessPaid")
+                    : t("detail.accessFree")}
+                </span>
                 <VisitBadge count={views} locale={locale} tone="soft" />
               </div>
 

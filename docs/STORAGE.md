@@ -18,7 +18,8 @@ Legacy URL di DB yang masih `http://localhost:8333/...` di-rewrite otomatis lewa
 ```text
 1) CREATE
    App (Next BFF) → createPresignedUpload → Go `POST /api/media/presign`
-   → objectKey unik: {folder}/{uuid}-{safeFilename}
+   → objectKey unik: {STORAGE_BUCKET}/{folder}/{uuid}-{safeFilename}
+     contoh: onigiroku/cms/…, onigiroku/avatars/…
    → server PUT ke STORAGE_ENDPOINT (basic auth server-side)
    → simpan publicUrl browser-safe: /api/media/{objectKey} (atau CDN bila auth=none)
 
@@ -57,7 +58,7 @@ Legacy URL di DB yang masih `http://localhost:8333/...` di-rewrite otomatis lewa
 - Credential storage **tidak** dikirim ke browser / tidak ada di `NEXT_PUBLIC_*`
 - MIME allowlist + max 25 MiB (upload)
 - Filename disanitasi; tolak `..`, `/`, `\`
-- `objectKey` harus di namespace `uploads|media|cms|avatars` (atau bucket)
+- `objectKey` harus di bawah `STORAGE_BUCKET/` (default `onigiroku/`) atau legacy root `uploads|media|cms|avatars` (dibaca tetap didukung)
 - Proxy media: nosniff, no directory listing, 404 untuk key di luar namespace
 - Production: `STORAGE_ALLOW_LOCALHOST=false`
 - Object key memakai UUID → sulit dienumerasi
@@ -73,6 +74,21 @@ Lihat [ENVIRONMENT.md](./ENVIRONMENT.md).
 | `USERNAME_STORAGE` / `PASSWORD_STORAGE` | Hanya server |
 | `NEXT_PUBLIC_STORAGE_URL` | Opsional: CDN publik **tanpa** basic auth. Jika sama dengan gateway basic-auth, abaikan untuk browser — pakai proxy |
 | `APP_URL` / `NEXT_PUBLIC_APP_URL` | Dipakai Go untuk membentuk `publicUrl` proxy |
+| `STORAGE_BUCKET` | Namespace filer (default `onigiroku`). Semua upload baru: `onigiroku/{folder}/…` |
+
+## Layout folder di SeaweedFS
+
+Dengan `STORAGE_BUCKET=onigiroku`, filer root harus terlihat seperti:
+
+```text
+/onigiroku
+  /avatars
+  /cms
+  /uploads
+  /media
+```
+
+Upload lama yang masih di `/avatars` atau `/cms` (root) **tetap dilayani** lewat `/api/media/…` (legacy allowlist). File baru tidak lagi ditulis di root project lain (`inkcuba`, `attentive`, dll. tidak tersentuh).
 
 ## Catatan implementasi fitur
 
@@ -84,6 +100,6 @@ Saat menambah UI upload (CMS, avatar, soal):
 4. Update = objectKey baru + hapus key lama setelah sukses
 5. Delete record = hapus object storage (idempotent)
 
-Avatar akun: folder `avatars/` lewat `/api/settings/profile` — lihat [SETTINGS.md](./SETTINGS.md).
+Avatar akun: folder logis `avatars` → object key `onigiroku/avatars/…` lewat `/api/settings/profile` — lihat [SETTINGS.md](./SETTINGS.md).
 
-Cover / gambar konten CMS: folder `cms/` lewat `/api/admin/materials/cover` (dan inline TipTap image upload yang memakai endpoint yang sama). Batas **5MB** per berkas; MIME jpeg/png/webp/gif; sampul disarankan ~1600×900. Admin UI kategori dan lesson/news punya **Upload / Replace / Remove** dengan konfirmasi. Replace unggahan yang belum disimpan menghapus object sebelumnya segera; cover yang sudah tersimpan diganti/dihapus di SeaweedFS saat save (Go). `DELETE /api/admin/materials/cover` membersihkan object `cms/` yang dibuang sebelum save. Hard-delete materi/kategori/bulk lesson membersihkan cover di storage. Lihat [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md).
+Cover / gambar konten CMS: folder logis `cms` → `onigiroku/cms/…` lewat `/api/admin/materials/cover` (dan inline TipTap image upload yang memakai endpoint yang sama). Batas **5MB** per berkas; MIME jpeg/png/webp/gif; sampul disarankan ~1600×900. Admin UI kategori dan lesson/news punya **Upload / Replace / Remove** dengan konfirmasi. Replace unggahan yang belum disimpan menghapus object sebelumnya segera; cover yang sudah tersimpan diganti/dihapus di SeaweedFS saat save (Go). `DELETE /api/admin/materials/cover` membersihkan object `cms/` yang dibuang sebelum save. Hard-delete materi/kategori/bulk lesson membersihkan cover di storage. Lihat [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md).

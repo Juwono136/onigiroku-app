@@ -4,6 +4,7 @@ import {
   index,
   integer,
   jsonb,
+  numeric,
   pgEnum,
   pgTable,
   primaryKey,
@@ -38,6 +39,24 @@ export const learningCategoryStatusEnum = pgEnum("learning_category_status", [
   "DRAFT",
   "PUBLISHED",
   "ARCHIVED",
+]);
+
+export const learningAccessModeEnum = pgEnum("learning_access_mode", [
+  "free",
+  "paid",
+]);
+
+export const classPackageStatusEnum = pgEnum("class_package_status", [
+  "DRAFT",
+  "PUBLISHED",
+  "ARCHIVED",
+]);
+
+export const commerceOrderStatusEnum = pgEnum("commerce_order_status", [
+  "pending",
+  "paid",
+  "expired",
+  "failed",
 ]);
 
 export const learningQuestionTypeEnum = pgEnum("learning_question_type", [
@@ -277,6 +296,8 @@ export const learningCategory = pgTable(
     position: integer("position").notNull().default(0),
     status: learningCategoryStatusEnum("status").notNull().default("DRAFT"),
     planKey: text("plan_key").notNull().default("free"),
+    /** Free paths stay open; paid paths need an active user_feature_grant. */
+    accessMode: learningAccessModeEnum("access_mode").notNull().default("free"),
     /** Incremented when a signed-in student opens this learning path (popularity). */
     studentViewCount: integer("student_view_count").notNull().default(0),
     lastStudentAccessAt: timestamp("last_student_access_at", { withTimezone: true }),
@@ -446,6 +467,128 @@ export const userLearningAccess = pgTable(
   ],
 );
 
+export const classPackage = pgTable(
+  "class_package",
+  {
+    id: text("id").primaryKey(),
+    slug: text("slug").notNull(),
+    nameId: text("name_id").notNull(),
+    nameEn: text("name_en").notNull().default(""),
+    descriptionId: text("description_id").notNull().default(""),
+    descriptionEn: text("description_en").notNull().default(""),
+    /** SaaS-style benefit bullets: [{ textId, textEn }] */
+    benefits: jsonb("benefits").$type<Array<{ textId: string; textEn: string }>>().notNull().default([]),
+    priceIdr: integer("price_idr").notNull(),
+    /** 0–100 with up to 2 decimal places (e.g. 0.25 for a quarter-percent off). */
+    discountPercent: numeric("discount_percent", { precision: 5, scale: 2 })
+      .notNull()
+      .default("0"),
+    discountStartsAt: timestamp("discount_starts_at", { withTimezone: true }),
+    discountEndsAt: timestamp("discount_ends_at", { withTimezone: true }),
+    accessDurationDays: integer("access_duration_days"),
+    coverObjectKey: text("cover_object_key"),
+    position: integer("position").notNull().default(0),
+    status: classPackageStatusEnum("status").notNull().default("DRAFT"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    deletedAt: timestamp("deleted_at", { withTimezone: true }),
+  },
+  (t) => [
+    uniqueIndex("class_package_slug_uid")
+      .on(t.slug)
+      .where(sql`${t.deletedAt} IS NULL`),
+    index("class_package_status_pos_idx").on(t.status, t.position),
+  ],
+);
+
+export const classPackageEntitlement = pgTable(
+  "class_package_entitlement",
+  {
+    id: text("id").primaryKey(),
+    packageId: text("package_id")
+      .notNull()
+      .references(() => classPackage.id, { onDelete: "cascade" }),
+    featureType: text("feature_type").notNull(),
+    targetId: text("target_id"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("class_package_entitlement_package_idx").on(t.packageId),
+    index("class_package_entitlement_feature_idx").on(t.featureType, t.targetId),
+  ],
+);
+
+export const commerceOrder = pgTable(
+  "commerce_order",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    packageId: text("package_id")
+      .notNull()
+      .references(() => classPackage.id),
+    invoiceNumber: text("invoice_number").notNull(),
+    amountIdr: integer("amount_idr").notNull(),
+    currency: text("currency").notNull().default("IDR"),
+    status: commerceOrderStatusEnum("status").notNull().default("pending"),
+    dokuSessionId: text("doku_session_id").notNull().default(""),
+    dokuPaymentUrl: text("doku_payment_url").notNull().default(""),
+    dokuRequestId: text("doku_request_id").notNull().default(""),
+    externalRef: text("external_ref").notNull().default(""),
+    paidAt: timestamp("paid_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("commerce_order_invoice_uid").on(t.invoiceNumber),
+    index("commerce_order_user_idx").on(t.userId, t.createdAt),
+    index("commerce_order_status_idx").on(t.status, t.createdAt),
+  ],
+);
+
+export const userFeatureGrant = pgTable(
+  "user_feature_grant",
+  {
+    id: text("id").primaryKey(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    featureType: text("feature_type").notNull(),
+    targetId: text("target_id"),
+    source: text("source").notNull().default("doku"),
+    orderId: text("order_id").references(() => commerceOrder.id, {
+      onDelete: "set null",
+    }),
+    status: text("status").notNull().default("active"),
+    startsAt: timestamp("starts_at", { withTimezone: true }),
+    endsAt: timestamp("ends_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (t) => [
+    index("user_feature_grant_user_feature_idx").on(
+      t.userId,
+      t.featureType,
+      t.status,
+    ),
+  ],
+);
+
 export const schema = {
   user,
   session,
@@ -464,4 +607,8 @@ export const schema = {
   learningQuizAttempt,
   learningQuizAnswer,
   userLearningAccess,
+  classPackage,
+  classPackageEntitlement,
+  commerceOrder,
+  userFeatureGrant,
 };

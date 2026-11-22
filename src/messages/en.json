@@ -81,6 +81,8 @@
       "showMoreDescription": "Show full description",
       "showLessDescription": "Show less",
       "accessEyebrow": "Access",
+      "accessFree": "Free",
+      "accessPaid": "Paid",
       "accessGuestTitle": "Preview only",
       "accessGuestBody": "Anyone can explore this path and its lesson list. Sign in with a student account to open lessons and practice.",
       "accessStudentTitle": "Ready to study",
@@ -100,12 +102,137 @@
   "classesPage": {
     "meta": {
       "title": "Classes",
-      "description": "Live and scheduled Onigiroku classes — coming soon."
+      "description": "Browse Onigiroku class packages, compare prices and discounts, and unlock learning paths, quizzes and exams with one secure payment.",
+      "checkoutTitle": "Checkout",
+      "resultTitle": "Payment status"
     },
-    "eyebrow": "Coming soon",
+    "eyebrow": "Class catalog",
     "title": "Classes",
-    "description": "Guided class experiences are on the way. Meanwhile, explore self-paced learning paths.",
-    "cta": "Browse learning paths"
+    "subtitle": "Pick a package, pay once with DOKU, and unlock the learning content bundled inside.",
+    "searchPlaceholder": "Search classes by name…",
+    "resultCount": "{count, plural, =0 {No classes} one {# class} other {# classes}}",
+    "trust": {
+      "securePay": "Secure DOKU checkout",
+      "oneTime": "One-time purchase"
+    },
+    "actions": {
+      "buy": "Buy now",
+      "registerToBuy": "Sign up to buy",
+      "loginAlt": "Already have an account? Sign in",
+      "viewDetail": "View details",
+      "backToList": "Back to classes",
+      "clearSearch": "Clear search",
+      "goDashboard": "Go to dashboard",
+      "goMaterials": "Open my materials",
+      "browseClasses": "Browse classes",
+      "continueCheckout": "Continue to checkout"
+    },
+    "pagination": {
+      "label": "Classes pagination",
+      "prev": "Previous",
+      "next": "Next",
+      "page": "{page} / {total}",
+      "showing": "Showing {from}–{to} of {total}"
+    },
+    "empty": {
+      "title": "No classes found",
+      "description": "Try a different search, or check back soon for new packages."
+    },
+    "errors": {
+      "loadFailed": "Could not load classes. Please try again."
+    },
+    "card": {
+      "discountBadge": "{percent}% off",
+      "accessDays": "{days, plural, one {# day of access} other {# days of access}}",
+      "accessLifetime": "Lifetime access",
+      "includes": "{count, plural, =0 {No items yet} one {# item included} other {# items included}}",
+      "listPriceLabel": "List price",
+      "benefitsMore": "+{count} more benefits"
+    },
+    "entitlements": {
+      "all": "All",
+      "types": {
+        "learning_path": "Learning path",
+        "quiz": "Quiz",
+        "exam": "Exam",
+        "private_class": "Private class",
+        "practice": "Practice",
+        "unknown": "Access"
+      }
+    },
+    "detail": {
+      "eyebrow": "Class package",
+      "about": "About this class",
+      "noDescription": "Details for this class will appear here soon.",
+      "includesTitle": "What you get",
+      "noEntitlements": "Access items will be listed here soon.",
+      "priceEyebrow": "Price",
+      "notFound": "This class is unavailable.",
+      "benefitsTitle": "Benefits"
+    },
+    "checkout": {
+      "eyebrow": "Secure checkout",
+      "title": "Complete your purchase",
+      "subtitle": "Review your package, then continue to DOKU to pay.",
+      "summaryTitle": "Package summary",
+      "includesTitle": "Included access",
+      "noEntitlements": "No access items are listed for this package.",
+      "access": "Access",
+      "accessLifetime": "Lifetime access",
+      "accessDays": "{days, plural, one {# day from payment} other {# days from payment}}",
+      "breakdown": {
+        "title": "Price breakdown",
+        "base": "List price",
+        "discount": "Discount ({percent}%)",
+        "total": "Total",
+        "currency": "Amounts in Indonesian Rupiah (IDR)."
+      },
+      "pay": "Pay with DOKU",
+      "paying": "Redirecting to DOKU…",
+      "secureNote": "You will be redirected to DOKU's secure payment page. Access is granted automatically after payment is confirmed.",
+      "signedInAs": "Signed in as {email}",
+      "errors": {
+        "generic": "We could not start the payment. Please try again.",
+        "unauthorized": "Your session expired. Please sign in again to continue.",
+        "unavailable": "The payment service is temporarily unavailable. Please try again shortly.",
+        "noUrl": "DOKU did not return a payment link. Please try again.",
+        "notFound": "This class is no longer available."
+      },
+      "signInAgain": "Sign in again",
+      "retry": "Try again",
+      "loading": "Loading checkout…",
+      "unavailableTitle": "Checkout unavailable",
+      "unavailableBody": "Something went wrong while loading this page. Please try again.",
+      "benefitsTitle": "Benefits"
+    },
+    "result": {
+      "eyebrow": "Payment status",
+      "title": "Thank you — we're confirming your payment",
+      "body": "If you completed the payment on DOKU, your access is granted automatically as soon as DOKU confirms it. This usually takes a few minutes.",
+      "packageLabel": "Class",
+      "stepsTitle": "What happens next",
+      "step1": "DOKU confirms your payment with Onigiroku.",
+      "step2": "Your class access is unlocked automatically.",
+      "step3": "Open your materials and start learning.",
+      "notPaid": "Did not finish paying? You can return to checkout at any time.",
+      "retryCheckout": "Back to checkout"
+    },
+    "modal": {
+      "eyebrow": "Ready to enroll",
+      "title": "Continue your purchase",
+      "description": "You're signed in. Review the class you picked, then continue to checkout.",
+      "includesTitle": "Included access",
+      "moreItems": "+{count} more included",
+      "continue": "Continue to checkout",
+      "later": "Not now",
+      "loading": "Loading class details…",
+      "errorTitle": "Class unavailable",
+      "errorBody": "We couldn't find the class you wanted to buy. It may have been removed or unpublished.",
+      "errorGeneric": "We couldn't load the class details. You can still browse the catalog.",
+      "browse": "Browse classes",
+      "benefitsTitle": "Benefits",
+      "moreBenefits": "+{count} more benefits"
+    }
   },
   "aboutPage": {
     "meta": {
@@ -950,6 +1077,9 @@
       "newsEdit": "Edit article",
       "categoryNew": "New category",
       "categoryEdit": "Category",
+      "packages": "Class packages",
+      "packageNew": "New package",
+      "packageEdit": "Edit package",
       "lessonNew": "New lesson",
       "lessonEdit": "Edit lesson",
       "path": "Learning path",
@@ -967,6 +1097,7 @@
       "materials": "Learning paths",
       "news": "News",
       "learning": "Learning",
+      "packages": "Class packages",
       "settings": "Settings",
       "sectionLearn": "Learning",
       "sectionAdmin": "Administration",
@@ -990,14 +1121,250 @@
       "copyright": "© {year} Onigiroku. All rights reserved."
     }
   },
+  "packagesAdmin": {
+    "eyebrow": "Admin · Class packages",
+    "title": "Class packages",
+    "subtitle": "Create sellable packages, set IDR pricing and discounts, and choose which learning content each package unlocks.",
+    "totalLabel": "{count, plural, =0 {No packages} one {# package} other {# packages}}",
+    "loadingPackages": "Loading packages…",
+    "loadingPackage": "Loading package…",
+    "searchPlaceholder": "Search packages…",
+    "editTitle": "Edit package",
+    "createTitle": "New package",
+    "editorSubtitle": "Write the package in both languages, set the price and access period, then choose what it unlocks.",
+    "discountBadge": "-{percent}%",
+    "entitlementCount": "{count, plural, =0 {No access rules} one {# access rule} other {# access rules}}",
+    "unsaved": "Unsaved changes",
+    "prev": "Previous",
+    "next": "Next",
+    "showing": "Showing {from}–{to} of {total}",
+    "pageSize": "{count} / page",
+    "sort": {
+      "label": "Sort",
+      "position": "Featured",
+      "updated": "Recently updated",
+      "name": "Name"
+    },
+    "filters": {
+      "all": "All statuses",
+      "allHint": "Draft is unfinished work. Published is live for purchase. Archived is retired from the catalog but keeps order history.",
+      "draftHint": "Draft packages are never shown on the public class catalog. Use Draft while you are still writing copy or pricing.",
+      "publishedHint": "Published packages appear on /classes and can be purchased through DOKU Checkout (price must be at least Rp 1).",
+      "archivedHint": "Archived packages are hidden from students. Existing purchases and access grants stay valid. Republish when you want them back in the catalog."
+    },
+    "tabs": {
+      "id": "Indonesia",
+      "en": "English"
+    },
+    "actions": {
+      "new": "New package",
+      "back": "All packages",
+      "save": "Save package",
+      "archive": "Archive",
+      "delete": "Delete permanently",
+      "cancel": "Cancel",
+      "uploadCover": "Upload cover",
+      "replaceCover": "Replace cover",
+      "removeCover": "Remove cover"
+    },
+    "fields": {
+      "nameId": "Name (Indonesian)",
+      "nameEn": "Name (English)",
+      "descriptionId": "Description (Indonesian)",
+      "descriptionEn": "Description (English)",
+      "status": "Status",
+      "cover": "Cover",
+      "coverOptional": "Optional. JPEG, PNG, WebP, or GIF, up to 5MB. Recommended 1600×900 (16:9). Minimum 640×360. The Onigiroku logo is shown when this is empty.",
+      "slug": "Package address",
+      "slugNote": "Created from the package name when you first save.",
+      "slugPending": "Created when you save the package",
+      "descriptionHint": "Shown on the class page. Use short paragraphs or a list; keep it under 800 characters."
+    },
+    "placeholders": {
+      "nameId": "Misalnya Paket JLPT N5 Lengkap",
+      "nameEn": "For example Complete JLPT N5 Package",
+      "description": "What students get with this package"
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published",
+      "ARCHIVED": "Archived"
+    },
+    "statusHelp": {
+      "DRAFT": "Work in progress — never public.",
+      "PUBLISHED": "Live on the class catalog.",
+      "ARCHIVED": "Retired — purchases kept.",
+      "active": {
+        "DRAFT": "Students cannot see or buy this package. Switch to Published when pricing and unlocks are ready.",
+        "PUBLISHED": "Students can discover and purchase this package. Set Draft to hide it temporarily without archiving purchase history semantics.",
+        "ARCHIVED": "Hidden from the catalog. Prefer Archive over Delete when the package already has orders. Set Published again to restore it."
+      }
+    },
+    "empty": {
+      "title": "No packages found",
+      "description": "Adjust the search or filters, or create a new package.",
+      "draftTitle": "No draft packages",
+      "draftDescription": "Drafts are unfinished packages that never appear on the public catalog. Create a package and set status to Draft to park work in progress.",
+      "publishedTitle": "No published packages",
+      "publishedDescription": "Published packages are the ones students can buy. Create a package or change a draft’s status to Published.",
+      "archivedTitle": "No archived packages",
+      "archivedDescription": "Archive retires a package from the catalog while keeping order history. Use Archive from the editor when a package should stop selling."
+    },
+    "pricing": {
+      "title": "Pricing",
+      "hint": "Prices are in Indonesian rupiah (IDR). Fractional discounts (for example 0.5%) are supported. DOKU charges the rounded “Price students pay” amount.",
+      "price": "Price",
+      "priceHint": "Published packages need at least Rp 1. Enter 0 only while drafting.",
+      "discountPercent": "Discount",
+      "discountFractionHint": "Use decimals under 1% when needed (0.25 or 0,5). Max 2 decimal places.",
+      "effective": "Price students pay",
+      "effectiveHint": "This is the amount sent to DOKU Checkout while the schedule is active.",
+      "discountStarts": "Discount starts",
+      "discountEnds": "Discount ends",
+      "discountHint": "Outside this window students pay the full list price. Times use your current timezone.",
+      "discountScheduleRequired": "A start and end time are required whenever a discount is set, including values under 1%.",
+      "free": "Free",
+      "rpPrefix": "Rp",
+      "discountStartsHelp": "When the discounted price begins.",
+      "discountEndsHelp": "When the discounted price stops.",
+      "discountOffHint": "Enter a discount above 0% (including 0.25%) to unlock the schedule.",
+      "discountRangeInvalid": "The end time must be after the start time.",
+      "clearDates": "Clear dates",
+      "scheduleStartNow": "Start now",
+      "scheduleDays": "{days} days",
+      "discountSuffixLabel": "percent",
+      "priceFormatted": "Listed as {price}",
+      "discountScheduleTitle": "Discount schedule"
+    },
+    "duration": {
+      "title": "Access duration",
+      "hint": "How long students keep access after a successful purchase.",
+      "lifetime": "Lifetime access",
+      "lifetimeHelp": "Access never expires after a successful payment.",
+      "days": "Limited access",
+      "daysHelp": "Access ends after the number of days you set, counted from payment.",
+      "daysLabel": "Number of days",
+      "daysSuffix": "days",
+      "decrease": "Decrease days",
+      "increase": "Increase days",
+      "preset": "{days}d"
+    },
+    "entitlements": {
+      "title": "What this package unlocks",
+      "hint": "Choose the learning content included with the package.",
+      "allPaths": "All learning paths",
+      "allPathsHint": "Includes every published learning path, including paths added later.",
+      "pathsLabel": "Specific learning paths",
+      "pathsPickerHint": "Browse and search when the catalog grows. Selected paths stay as chips here.",
+      "pathsNoneSelected": "No specific paths selected yet.",
+      "pathsDisabledByAll": "Specific paths are ignored while “All learning paths” is on.",
+      "selectedCount": "{count} selected",
+      "moreSelected": "+{count} more",
+      "browsePaths": "Browse paths",
+      "clearPaths": "Clear selection",
+      "donePaths": "Done",
+      "pickerTitle": "Select learning paths",
+      "pickerBody": "Search the catalog and toggle paths. Closing this dialog keeps your current selection.",
+      "removePath": "Remove {name}",
+      "filterPlaceholder": "Filter learning paths…",
+      "pathsLoading": "Loading learning paths…",
+      "pathsError": "Learning paths could not be loaded. Refresh the page and try again.",
+      "pathsEmpty": "No published learning paths found.",
+      "pathsNoMatch": "No learning paths match that search.",
+      "unlisted": "Not published",
+      "comingSoon": "Coming soon",
+      "comingSoonSection": "Later unlock types",
+      "quiz": "Quizzes",
+      "quizHint": "Standalone quiz access will be available in a later release.",
+      "exam": "Exams",
+      "examHint": "Exam access will be available in a later release.",
+      "privateClass": "Private classes",
+      "privateClassHint": "Private class sessions will be available in a later release."
+    },
+    "danger": {
+      "blockedTitle": "This package cannot be deleted",
+      "blockedHint": "Archive it instead to hide it from students while keeping purchase history."
+    },
+    "confirm": {
+      "saveTitle": "Save this package?",
+      "saveBody": "Changes to price, discount, and access apply to new purchases right away.",
+      "archiveTitle": "Archive this package?",
+      "archiveBody": "Archiving retires the package from the public catalog. This is different from Draft: Draft is unfinished work that was never meant to sell; Archive keeps order history and existing student access while stopping new purchases.",
+      "deleteTitle": "Delete this package permanently?",
+      "deleteBody": "This removes the package and cannot be undone. Packages with orders cannot be deleted; archive them instead.",
+      "removeCoverTitle": "Remove the cover?",
+      "removeCoverBody": "The cover is removed from this package once you save. The Onigiroku logo is shown instead.",
+      "removeBenefitTitle": "Remove this benefit?",
+      "removeBenefitBody": "“{label}” will be removed from the list. Save the package to keep the change.",
+      "unsavedTitle": "Leave without saving?",
+      "unsavedBody": "You have unsaved changes. If you leave now, they will be lost.",
+      "unsavedConfirm": "Leave page"
+    },
+    "toast": {
+      "saved": "Package saved",
+      "coverUploaded": "Cover uploaded",
+      "coverRemoved": "Cover removed"
+    },
+    "errors": {
+      "load": "Packages could not be loaded.",
+      "save": "The package could not be saved. Please try again.",
+      "name": "Enter a package name in at least one language.",
+      "description": "Descriptions can be up to 800 visible characters.",
+      "price": "Enter a valid price.",
+      "discountDates": "Set both a start and an end time for the discount.",
+      "discountRange": "The discount must end after it starts.",
+      "duration": "Enter a number of days between 1 and {max}.",
+      "deleteBlocked": "This package has related orders and cannot be deleted.",
+      "cover": "The cover could not be uploaded.",
+      "coverTooSmall": "The cover is too small. Use at least 640×360 pixels.",
+      "coverDecode": "The image could not be read. Try a different file.",
+      "coverAspect": "This cover is not 16:9, so it may be cropped when shown.",
+      "benefitTooLong": "Each benefit can be up to 200 characters.",
+      "benefitsMax": "A package can have up to 20 benefits."
+    },
+    "sections": {
+      "basics": "Package details",
+      "basicsHint": "Name and describe the package in both languages.",
+      "media": "Cover and publishing",
+      "mediaHint": "Choose the cover image and whether students can see this package."
+    },
+    "benefits": {
+      "title": "Benefits",
+      "hint": "Short bullet points that sell the package on cards, the class page, and checkout. Separate from the description. Edit one language at a time with the tab above.",
+      "count": "{count}/{max}",
+      "add": "Add benefit",
+      "empty": "No benefits yet",
+      "emptyHint": "Add 3–6 clear selling points, for example “Unlimited JLPT N5 practice”.",
+      "editingId": "Editing Indonesian",
+      "editingEn": "Editing English",
+      "otherLangMissing": "The other language is still empty — it will fall back on the public site.",
+      "labelId": "Indonesian",
+      "labelEn": "English",
+      "placeholderId": "Misalnya Latihan soal JLPT N5 tanpa batas",
+      "placeholderEn": "For example Unlimited JLPT N5 practice",
+      "itemLabel": "Benefit {number}",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "remove": "Remove benefit",
+      "limitReached": "You have reached the limit of {max} benefits.",
+      "previewTitle": "Live preview",
+      "previewHint": "How students see the list in {language}. Empty languages fall back to the other one.",
+      "previewEmpty": "Benefits you add appear here.",
+      "previewShowMore": "Show {count} more",
+      "previewShowLess": "Show less",
+      "previewLangId": "Indonesian",
+      "previewLangEn": "English",
+      "charCount": "{count}/{max}"
+    }
+  },
   "learningAdmin": {
-    "eyebrow": "Learning paths",
-    "title": "Categories",
-    "subtitle": "Group student lessons into ordered paths. A lesson stays locked until every earlier lesson in the same category is complete.",
+    "eyebrow": "Admin · Learning paths",
+    "title": "Learning paths",
+    "subtitle": "Manage ordered paths, publish status, and lesson structure for students.",
     "loadingCategories": "Loading categories…",
     "loadingCategory": "Loading category…",
     "loadingLesson": "Loading lesson…",
-    "searchPlaceholder": "Search categories…",
+    "searchPlaceholder": "Search learning paths…",
     "editTitle": "Edit category",
     "createTitle": "New category",
     "lessonCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
@@ -1006,12 +1373,18 @@
     "showing": "Showing {from}–{to} of {total}",
     "pageSize": "{count} / page",
     "sort": {
-      "position": "Path order",
+      "label": "Sort",
+      "position": "Featured",
       "updated": "Recently updated",
+      "popular": "Most popular",
       "name": "Name"
     },
     "filters": {
-      "all": "All statuses"
+      "all": "All statuses",
+      "allHint": "Draft is unfinished work. Published is live for students. Archived is retired from the catalog but can be republished.",
+      "draftHint": "Draft paths never appear on the public or student learning catalog. Use Draft while structure and lessons are still changing.",
+      "publishedHint": "Published paths are visible to eligible students (subject to free/paid access rules).",
+      "archivedHint": "Archived paths are hidden from students. Prefer Archive over Delete when you may bring the path back later."
     },
     "lessonForm": {
       "createTitle": "New lesson",
@@ -1050,9 +1423,15 @@
       "descriptionEn": "Description (English)",
       "status": "Status",
       "planKey": "Plan key",
-      "planHint": "Access package label, for example free. A payment gateway is not connected yet.",
+      "planHint": "Legacy label kept for compatibility. Prefer Access mode below.",
       "accessTitle": "Student access",
-      "accessNote": "Published paths are open to signed-in students. A payment package can be connected later without changing this form.",
+      "accessMode": "Access mode",
+      "accessFree": "Free",
+      "accessPaid": "Paid-only",
+      "accessNote": "Free paths open to every signed-in student. Paid-only paths unlock when LEARNING_PAYWALL_ENABLED is on and the student has an active package grant.",
+      "packagesTitle": "Included in packages",
+      "packagesHint": "Published class packages that grant this learning path (or all paths).",
+      "packagesEmpty": "No published packages include this path yet.",
       "cover": "Cover",
       "tags": "Tags",
       "slug": "Student path",
@@ -1086,6 +1465,16 @@
       "DRAFT": "Draft",
       "PUBLISHED": "Published",
       "ARCHIVED": "Archived"
+    },
+    "statusHelp": {
+      "DRAFT": "Work in progress — never shown to students.",
+      "PUBLISHED": "Live on the learning catalog for eligible students.",
+      "ARCHIVED": "Retired from the catalog; use Archive instead of delete when you may republish.",
+      "active": {
+        "DRAFT": "Draft paths stay invisible on the public and student catalogs. Switch to Published when lessons are ready.",
+        "PUBLISHED": "Published paths appear for students (subject to access mode / paywall). Set Draft to hide temporarily; Archive to retire while keeping structure.",
+        "ARCHIVED": "Archived paths are hidden from students. This is different from Draft: Archive means “was live, now retired”; Draft means “not ready yet”. Republish anytime."
+      }
     },
     "lessons": {
       "title": "Lessons",
@@ -1163,7 +1552,7 @@
       "saveTitle": "Save this category?",
       "saveBody": "The name, description, cover, and status will be saved.",
       "archiveTitle": "Archive this category?",
-      "archiveBody": "Students will no longer see this path. You can publish it again later.",
+      "archiveBody": "Archiving retires the path from student and public catalogs. This is different from Draft: Draft means “not ready yet”; Archive means “was available, now retired”. Lessons stay intact so you can publish again later.",
       "deleteTitle": "Delete this category?",
       "deleteBody": "The category and its cover are removed. This is blocked while lessons still belong to it.",
       "unsavedTitle": "Leave without saving?",
@@ -1185,7 +1574,13 @@
     },
     "empty": {
       "title": "No categories yet",
-      "description": "Create a category, add ordered lessons, then publish it for students."
+      "description": "Create a category, add ordered lessons, then publish it for students.",
+      "draftTitle": "No draft paths",
+      "draftDescription": "Drafts are unfinished learning paths that never appear for students. Create a path and keep status Draft while you build lessons.",
+      "publishedTitle": "No published paths",
+      "publishedDescription": "Published paths are visible to eligible students. Publish a draft when the path is ready.",
+      "archivedTitle": "No archived paths",
+      "archivedDescription": "Archive retires a path from catalogs while keeping its lessons. Use Archive from the editor when a path should stop appearing."
     },
     "errors": {
       "load": "Could not load categories.",
@@ -1227,6 +1622,7 @@
     "pathProgress": "Path progress",
     "progress": "{done} of {total} complete",
     "lessonsCount": "{count, plural, =0 {No lessons} one {# lesson} other {# lessons}}",
+    "accessPaid": "Paid",
     "actions": {
       "back": "All learning paths",
       "backToPath": "Back to path",

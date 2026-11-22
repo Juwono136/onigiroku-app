@@ -7,6 +7,7 @@ import {
   GraduationCap,
   LayoutDashboard,
   Newspaper,
+  Package,
   Settings,
   Users,
   X,
@@ -31,12 +32,13 @@ type NavHref =
   | "/admin/users"
   | "/admin/news"
   | "/admin/learning"
+  | "/admin/packages"
   | "/settings";
 
 type NavItem = {
   href: NavHref;
   icon: typeof LayoutDashboard;
-  labelKey: "dashboard" | "admin" | "users" | "materials" | "news" | "learning" | "settings";
+  labelKey: "dashboard" | "admin" | "users" | "materials" | "news" | "learning" | "packages" | "settings";
 };
 
 export function AppSidebar({ role }: Props) {
@@ -54,6 +56,7 @@ export function AppSidebar({ role }: Props) {
           { href: "/admin/users", icon: Users, labelKey: "users" },
           { href: "/admin/news", icon: Newspaper, labelKey: "news" },
           { href: "/admin/learning", icon: GraduationCap, labelKey: "learning" },
+          { href: "/admin/packages", icon: Package, labelKey: "packages" },
           { href: "/settings", icon: Settings, labelKey: "settings" },
         ]
       : [

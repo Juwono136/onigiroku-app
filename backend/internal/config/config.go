@@ -36,10 +36,9 @@ type Config struct {
 	StorageAccessKey string
 	StorageSecretKey string
 
-	XenditSecretKey    string
-	XenditWebhookToken string
-	XenditCallbackURL  string
-	XenditPublicKey    string
+	DokuClientID  string
+	DokuSecretKey string
+	DokuAPIBaseURL string
 
 	InternalAPISecret string
 
@@ -75,13 +74,12 @@ func Load() (*Config, error) {
 			os.Getenv("STORAGE_SECRET_KEY"),
 			os.Getenv("PASSWORD_STORAGE"),
 		)),
-		XenditSecretKey: strings.TrimSpace(os.Getenv("XENDIT_SECRET_KEY")),
-		XenditWebhookToken: strings.TrimSpace(firstNonEmpty(
-			os.Getenv("XENDIT_CALLBACK_TOKEN"),
-			os.Getenv("XENDIT_WEBHOOK_TOKEN"),
+		DokuClientID:  strings.TrimSpace(os.Getenv("DOKU_CLIENT_ID")),
+		DokuSecretKey: strings.TrimSpace(os.Getenv("DOKU_SECRET_KEY")),
+		DokuAPIBaseURL: strings.TrimSpace(firstNonEmpty(
+			os.Getenv("DOKU_API_BASE_URL"),
+			"https://api-sandbox.doku.com",
 		)),
-		XenditCallbackURL: strings.TrimSpace(os.Getenv("XENDIT_CALLBACK_URL")),
-		XenditPublicKey:   strings.TrimSpace(os.Getenv("XENDIT_PUBLIC_KEY")),
 		InternalAPISecret: strings.TrimSpace(os.Getenv("INTERNAL_API_SECRET")),
 		AppURL: firstNonEmpty(
 			os.Getenv("APP_URL"),

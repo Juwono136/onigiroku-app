@@ -8,7 +8,7 @@ Kontrak sinkronisasi **end-to-end** antara frontend (Next.js) dan domain API (Go
 | --- | --- | --- |
 | Identity & session | **Next.js + Better Auth** | login/register, verify email, reset/change password, Google OAuth, cookie session |
 | Email transactional | **Next.js + Nodemailer** | verification, reset, password-changed, existing-account notice |
-| Domain data & orchestration | **Go Gin** | admin users CRUD, login-history query, media presign/delete, (nanti) catalog/assessment/analytics/billing |
+| Domain data & orchestration | **Go Gin** | admin users CRUD, login-history query, media, learning, commerce/DOKU, (nanti) assessment/analytics product surfaces |
 | Object storage credentials | **Server only** (Go media + Next BFF PUT/proxy) | SeaweedFS via nginx basic-auth — **tidak** pernah di browser |
 | Shared DB / Redis | Keduanya | PostgreSQL source of truth; Redis rate-limit / locks |
 
@@ -32,7 +32,8 @@ Path API **unversioned**: `/api/*` (bukan `/api/v1`). Evolusi: route baru + depr
 | Learning materials (admin) | `/admin/materials` | `/api/admin/materials*` | `/api/admin/materials*` | Actor ADMIN + CSRF; TipTap JSON |
 | Student materials | `/dashboard/materials` | `/api/materials*` | `/api/materials*` | Actor USER/ADMIN; STUDENT+PUBLISHED |
 | Public news | `/news` | RSC → Go | `/api/news*` | Secret only; PUBLIC+PUBLISHED |
-| Catalog / assessment / analytics / billing | — | *(stub)* | Stub routes di Go | Billing Xendit belum wired ke materials |
+| Catalog / assessment / analytics | — | *(stub / partial)* | Stub or domain routes di Go | — |
+| Class packages / DOKU checkout | `/api/admin/packages`, `/api/classes`, `/api/billing/checkout`, `/api/billing/webhooks/doku` | `commerce` domain | Admin CRUD + public catalog + checkout + webhook | See [PAYMENTS.md](./PAYMENTS.md); order history UI deferred |
 
 ## Header kontrak Next → Go
 
@@ -133,7 +134,7 @@ Production tipikal:
 
 - Go hanya di **private network** / reverse proxy internal
 - Web public → Next; Next memanggil Go lewat URL internal
-- Webhook Xendit (nanti): butuh ingress publik ke Go **atau** Next BFF proxy + verifikasi token — jangan mengandalkan `X-Internal-Secret` untuk webhook provider
+- Webhook DOKU: ingress publik ke Go **atau** Next raw-body proxy (`/api/billing/webhooks/doku`) — signature verify on Go; jangan mengandalkan `X-Internal-Secret` untuk auth provider
 
 ## Stub domain (belum diintegrasikan ke UI)
 
@@ -142,7 +143,7 @@ Go sudah mendaftarkan placeholder:
 - `/api/catalog`, `/api/materials`, …
 - `/api/assessments`, `/api/attempts`, …
 - `/api/analytics/...`
-- `/api/billing/...` (webhook path dikecualikan dari internal secret)
+- `/api/billing/webhooks/doku` (public; signature verified). Checkout create is actor-scoped under trusted BFF.
 
 **Belum ada** Next BFF/UI. Saat fitur diaktifkan:
 

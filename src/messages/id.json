@@ -81,6 +81,8 @@
       "showMoreDescription": "Tampilkan deskripsi lengkap",
       "showLessDescription": "Tampilkan lebih sedikit",
       "accessEyebrow": "Akses",
+      "accessFree": "Gratis",
+      "accessPaid": "Berbayar",
       "accessGuestTitle": "Hanya pratinjau",
       "accessGuestBody": "Siapa pun bisa melihat path ini dan daftar lesson-nya. Masuk dengan akun peserta untuk membuka lesson dan latihan.",
       "accessStudentTitle": "Siap belajar",
@@ -100,12 +102,137 @@
   "classesPage": {
     "meta": {
       "title": "Kelas",
-      "description": "Kelas Onigiroku terjadwal — segera hadir."
+      "description": "Jelajahi paket kelas Onigiroku, bandingkan harga dan diskon, lalu buka jalur belajar, kuis, dan ujian dengan satu pembayaran aman.",
+      "checkoutTitle": "Checkout",
+      "resultTitle": "Status pembayaran"
     },
-    "eyebrow": "Segera hadir",
+    "eyebrow": "Katalog kelas",
     "title": "Kelas",
-    "description": "Pengalaman kelas terbimbing sedang disiapkan. Sementara itu, jelajahi jalur belajar mandiri.",
-    "cta": "Jelajahi jalur belajar"
+    "subtitle": "Pilih paket, bayar sekali lewat DOKU, dan buka materi belajar yang termasuk di dalamnya.",
+    "searchPlaceholder": "Cari kelas berdasarkan nama…",
+    "resultCount": "{count, plural, =0 {Tidak ada kelas} one {# kelas} other {# kelas}}",
+    "trust": {
+      "securePay": "Checkout DOKU aman",
+      "oneTime": "Pembelian sekali bayar"
+    },
+    "actions": {
+      "buy": "Beli sekarang",
+      "registerToBuy": "Daftar untuk membeli",
+      "loginAlt": "Sudah punya akun? Masuk",
+      "viewDetail": "Lihat detail",
+      "backToList": "Kembali ke kelas",
+      "clearSearch": "Hapus pencarian",
+      "goDashboard": "Ke dashboard",
+      "goMaterials": "Buka materi saya",
+      "browseClasses": "Jelajahi kelas",
+      "continueCheckout": "Lanjut ke checkout"
+    },
+    "pagination": {
+      "label": "Paginasi kelas",
+      "prev": "Sebelumnya",
+      "next": "Berikutnya",
+      "page": "{page} / {total}",
+      "showing": "Menampilkan {from}–{to} dari {total}"
+    },
+    "empty": {
+      "title": "Kelas tidak ditemukan",
+      "description": "Coba kata kunci lain, atau kembali lagi nanti untuk paket baru."
+    },
+    "errors": {
+      "loadFailed": "Gagal memuat kelas. Silakan coba lagi."
+    },
+    "card": {
+      "discountBadge": "Diskon {percent}%",
+      "accessDays": "Akses {days} hari",
+      "accessLifetime": "Akses selamanya",
+      "includes": "{count, plural, =0 {Belum ada item} other {# item termasuk}}",
+      "listPriceLabel": "Harga normal",
+      "benefitsMore": "+{count} keunggulan lainnya"
+    },
+    "entitlements": {
+      "all": "Semua",
+      "types": {
+        "learning_path": "Jalur belajar",
+        "quiz": "Kuis",
+        "exam": "Ujian",
+        "private_class": "Kelas privat",
+        "practice": "Latihan",
+        "unknown": "Akses"
+      }
+    },
+    "detail": {
+      "eyebrow": "Paket kelas",
+      "about": "Tentang kelas ini",
+      "noDescription": "Detail kelas ini akan segera tersedia.",
+      "includesTitle": "Yang Anda dapatkan",
+      "noEntitlements": "Item akses akan segera ditampilkan di sini.",
+      "priceEyebrow": "Harga",
+      "notFound": "Kelas ini tidak tersedia.",
+      "benefitsTitle": "Keunggulan"
+    },
+    "checkout": {
+      "eyebrow": "Checkout aman",
+      "title": "Selesaikan pembelian Anda",
+      "subtitle": "Periksa paket Anda, lalu lanjut ke DOKU untuk membayar.",
+      "summaryTitle": "Ringkasan paket",
+      "includesTitle": "Akses yang termasuk",
+      "noEntitlements": "Tidak ada item akses yang tercantum untuk paket ini.",
+      "access": "Akses",
+      "accessLifetime": "Akses selamanya",
+      "accessDays": "{days} hari sejak pembayaran",
+      "breakdown": {
+        "title": "Rincian harga",
+        "base": "Harga normal",
+        "discount": "Diskon ({percent}%)",
+        "total": "Total",
+        "currency": "Jumlah dalam Rupiah Indonesia (IDR)."
+      },
+      "pay": "Bayar dengan DOKU",
+      "paying": "Mengalihkan ke DOKU…",
+      "secureNote": "Anda akan diarahkan ke halaman pembayaran aman DOKU. Akses diberikan otomatis setelah pembayaran terkonfirmasi.",
+      "signedInAs": "Masuk sebagai {email}",
+      "errors": {
+        "generic": "Pembayaran belum bisa dimulai. Silakan coba lagi.",
+        "unauthorized": "Sesi Anda berakhir. Silakan masuk lagi untuk melanjutkan.",
+        "unavailable": "Layanan pembayaran sementara tidak tersedia. Silakan coba beberapa saat lagi.",
+        "noUrl": "DOKU tidak mengembalikan tautan pembayaran. Silakan coba lagi.",
+        "notFound": "Kelas ini sudah tidak tersedia."
+      },
+      "signInAgain": "Masuk lagi",
+      "retry": "Coba lagi",
+      "loading": "Memuat checkout…",
+      "unavailableTitle": "Checkout tidak tersedia",
+      "unavailableBody": "Terjadi kesalahan saat memuat halaman ini. Silakan coba lagi.",
+      "benefitsTitle": "Keunggulan"
+    },
+    "result": {
+      "eyebrow": "Status pembayaran",
+      "title": "Terima kasih — kami sedang mengonfirmasi pembayaran Anda",
+      "body": "Jika Anda sudah menyelesaikan pembayaran di DOKU, akses Anda diberikan otomatis begitu DOKU mengonfirmasinya. Biasanya hanya butuh beberapa menit.",
+      "packageLabel": "Kelas",
+      "stepsTitle": "Langkah selanjutnya",
+      "step1": "DOKU mengonfirmasi pembayaran Anda ke Onigiroku.",
+      "step2": "Akses kelas Anda terbuka secara otomatis.",
+      "step3": "Buka materi Anda dan mulai belajar.",
+      "notPaid": "Belum selesai membayar? Anda bisa kembali ke checkout kapan saja.",
+      "retryCheckout": "Kembali ke checkout"
+    },
+    "modal": {
+      "eyebrow": "Siap mendaftar",
+      "title": "Lanjutkan pembelian Anda",
+      "description": "Anda sudah masuk. Periksa kelas yang Anda pilih, lalu lanjut ke checkout.",
+      "includesTitle": "Akses yang termasuk",
+      "moreItems": "+{count} item lainnya termasuk",
+      "continue": "Lanjut ke checkout",
+      "later": "Nanti saja",
+      "loading": "Memuat detail kelas…",
+      "errorTitle": "Kelas tidak tersedia",
+      "errorBody": "Kami tidak menemukan kelas yang ingin Anda beli. Kelas mungkin sudah dihapus atau tidak dipublikasikan.",
+      "errorGeneric": "Detail kelas belum bisa dimuat. Anda tetap bisa menjelajahi katalog.",
+      "browse": "Jelajahi kelas",
+      "benefitsTitle": "Keunggulan",
+      "moreBenefits": "+{count} keunggulan lainnya"
+    }
   },
   "aboutPage": {
     "meta": {
@@ -950,6 +1077,9 @@
       "newsEdit": "Edit artikel",
       "categoryNew": "Kategori baru",
       "categoryEdit": "Kategori",
+      "packages": "Paket kelas",
+      "packageNew": "Paket baru",
+      "packageEdit": "Edit paket",
       "lessonNew": "Materi baru",
       "lessonEdit": "Edit materi",
       "path": "Jalur belajar",
@@ -967,6 +1097,7 @@
       "materials": "Jalur belajar",
       "news": "Berita",
       "learning": "Pembelajaran",
+      "packages": "Paket kelas",
       "settings": "Pengaturan",
       "sectionLearn": "Belajar",
       "sectionAdmin": "Administrasi",
@@ -990,14 +1121,250 @@
       "copyright": "© {year} Onigiroku. Hak cipta dilindungi."
     }
   },
+  "packagesAdmin": {
+    "eyebrow": "Admin · Paket kelas",
+    "title": "Paket kelas",
+    "subtitle": "Buat paket yang dapat dijual, atur harga dan diskon dalam rupiah, serta pilih konten belajar yang dibuka oleh setiap paket.",
+    "totalLabel": "{count, plural, =0 {Belum ada paket} other {# paket}}",
+    "loadingPackages": "Memuat paket…",
+    "loadingPackage": "Memuat paket…",
+    "searchPlaceholder": "Cari paket…",
+    "editTitle": "Edit paket",
+    "createTitle": "Paket baru",
+    "editorSubtitle": "Tulis paket dalam dua bahasa, atur harga dan masa akses, lalu pilih konten yang dibuka.",
+    "discountBadge": "-{percent}%",
+    "entitlementCount": "{count, plural, =0 {Belum ada aturan akses} other {# aturan akses}}",
+    "unsaved": "Perubahan belum disimpan",
+    "prev": "Sebelumnya",
+    "next": "Berikutnya",
+    "showing": "Menampilkan {from}–{to} dari {total}",
+    "pageSize": "{count} / halaman",
+    "sort": {
+      "label": "Urutkan",
+      "position": "Unggulan",
+      "updated": "Baru diperbarui",
+      "name": "Nama"
+    },
+    "filters": {
+      "all": "Semua status",
+      "allHint": "Draf adalah pekerjaan belum selesai. Terbit tampil untuk dibeli. Diarsipkan disembunyikan dari katalog tetapi riwayat pesanan tetap ada.",
+      "draftHint": "Paket draf tidak pernah tampil di katalog kelas publik. Gunakan Draf saat Anda masih menyusun teks atau harga.",
+      "publishedHint": "Paket terbit muncul di /classes dan dapat dibeli lewat DOKU Checkout (harga minimal Rp 1).",
+      "archivedHint": "Paket diarsipkan disembunyikan dari siswa. Pembelian dan grant akses yang sudah ada tetap berlaku. Terbitkan lagi jika ingin mengembalikannya ke katalog."
+    },
+    "tabs": {
+      "id": "Indonesia",
+      "en": "Inggris"
+    },
+    "actions": {
+      "new": "Paket baru",
+      "back": "Semua paket",
+      "save": "Simpan paket",
+      "archive": "Arsipkan",
+      "delete": "Hapus permanen",
+      "cancel": "Batal",
+      "uploadCover": "Unggah sampul",
+      "replaceCover": "Ganti sampul",
+      "removeCover": "Hapus sampul"
+    },
+    "fields": {
+      "nameId": "Nama (Indonesia)",
+      "nameEn": "Nama (Inggris)",
+      "descriptionId": "Deskripsi (Indonesia)",
+      "descriptionEn": "Deskripsi (Inggris)",
+      "status": "Status",
+      "cover": "Sampul",
+      "coverOptional": "Opsional. JPEG, PNG, WebP, atau GIF, maksimal 5MB. Disarankan 1600×900 (16:9). Minimal 640×360. Logo Onigiroku ditampilkan jika kosong.",
+      "slug": "Alamat paket",
+      "slugNote": "Dibuat dari nama paket saat pertama kali disimpan.",
+      "slugPending": "Dibuat saat paket disimpan",
+      "descriptionHint": "Tampil di halaman kelas. Gunakan paragraf pendek atau daftar; jaga di bawah 800 karakter."
+    },
+    "placeholders": {
+      "nameId": "Misalnya Paket JLPT N5 Lengkap",
+      "nameEn": "For example Complete JLPT N5 Package",
+      "description": "Apa yang didapat siswa dengan paket ini"
+    },
+    "status": {
+      "DRAFT": "Draf",
+      "PUBLISHED": "Terbit",
+      "ARCHIVED": "Diarsipkan"
+    },
+    "statusHelp": {
+      "DRAFT": "Masih dikerjakan — tidak pernah publik.",
+      "PUBLISHED": "Tampil di katalog kelas.",
+      "ARCHIVED": "Diistirahatkan — pembelian tetap aman.",
+      "active": {
+        "DRAFT": "Siswa tidak dapat melihat atau membeli paket ini. Ubah ke Terbit saat harga dan konten yang dibuka sudah siap.",
+        "PUBLISHED": "Siswa dapat menemukan dan membeli paket ini. Gunakan Draf untuk menyembunyikan sementara tanpa makna arsip riwayat pembelian.",
+        "ARCHIVED": "Disembunyikan dari katalog. Lebih baik Arsipkan daripada Hapus jika paket sudah punya pesanan. Setel Terbit lagi untuk mengembalikannya."
+      }
+    },
+    "empty": {
+      "title": "Paket tidak ditemukan",
+      "description": "Ubah pencarian atau filter, atau buat paket baru.",
+      "draftTitle": "Belum ada paket draf",
+      "draftDescription": "Draf adalah paket yang belum selesai dan tidak pernah tampil di katalog publik. Buat paket lalu setel status Draf untuk menyimpan pekerjaan sementara.",
+      "publishedTitle": "Belum ada paket terbit",
+      "publishedDescription": "Paket terbit adalah yang dapat dibeli siswa. Buat paket baru atau ubah status draf menjadi Terbit.",
+      "archivedTitle": "Belum ada paket diarsipkan",
+      "archivedDescription": "Arsip menyembunyikan paket dari katalog sambil menjaga riwayat pesanan. Gunakan Arsipkan di editor saat paket harus berhenti dijual."
+    },
+    "pricing": {
+      "title": "Harga",
+      "hint": "Harga dalam rupiah (IDR). Diskon pecahan (misalnya 0,5%) didukung. DOKU menagih jumlah “Harga yang dibayar siswa” yang sudah dibulatkan.",
+      "price": "Harga",
+      "priceHint": "Paket terbit minimal Rp 1. Isi 0 hanya saat masih draf.",
+      "discountPercent": "Diskon",
+      "discountFractionHint": "Gunakan desimal di bawah 1% bila perlu (0,25 atau 0.5). Maksimal 2 angka di belakang koma.",
+      "effective": "Harga yang dibayar siswa",
+      "effectiveHint": "Jumlah inilah yang dikirim ke DOKU Checkout selama jadwal aktif.",
+      "discountStarts": "Diskon mulai",
+      "discountEnds": "Diskon berakhir",
+      "discountHint": "Di luar jendela ini siswa membayar harga penuh. Waktu mengikuti zona waktu Anda saat ini.",
+      "discountScheduleRequired": "Waktu mulai dan berakhir wajib diisi setiap kali diskon diaktifkan, termasuk nilai di bawah 1%.",
+      "free": "Gratis",
+      "rpPrefix": "Rp",
+      "discountStartsHelp": "Kapan harga diskon mulai berlaku.",
+      "discountEndsHelp": "Kapan harga diskon berhenti berlaku.",
+      "discountOffHint": "Isi diskon di atas 0% (termasuk 0,25%) untuk membuka jadwal.",
+      "discountRangeInvalid": "Waktu berakhir harus setelah waktu mulai.",
+      "clearDates": "Hapus tanggal",
+      "scheduleStartNow": "Mulai sekarang",
+      "scheduleDays": "{days} hari",
+      "discountSuffixLabel": "persen",
+      "priceFormatted": "Tercantum {price}",
+      "discountScheduleTitle": "Jadwal diskon"
+    },
+    "duration": {
+      "title": "Masa akses",
+      "hint": "Berapa lama siswa mempertahankan akses setelah pembelian berhasil.",
+      "lifetime": "Akses seumur hidup",
+      "lifetimeHelp": "Akses tidak pernah kedaluwarsa setelah pembayaran berhasil.",
+      "days": "Akses terbatas",
+      "daysHelp": "Akses berakhir setelah jumlah hari yang Anda atur, dihitung sejak pembayaran.",
+      "daysLabel": "Jumlah hari",
+      "daysSuffix": "hari",
+      "decrease": "Kurangi hari",
+      "increase": "Tambah hari",
+      "preset": "{days}h"
+    },
+    "entitlements": {
+      "title": "Yang dibuka paket ini",
+      "hint": "Pilih konten belajar yang termasuk dalam paket.",
+      "allPaths": "Semua jalur belajar",
+      "allPathsHint": "Mencakup setiap jalur belajar yang terbit, termasuk jalur yang ditambahkan nanti.",
+      "pathsLabel": "Jalur belajar tertentu",
+      "pathsPickerHint": "Jelajahi dan cari saat katalog membesar. Jalur terpilih tetap tampil sebagai chip di sini.",
+      "pathsNoneSelected": "Belum ada jalur tertentu yang dipilih.",
+      "pathsDisabledByAll": "Jalur tertentu diabaikan saat “Semua jalur belajar” aktif.",
+      "selectedCount": "{count} dipilih",
+      "moreSelected": "+{count} lagi",
+      "browsePaths": "Jelajahi jalur",
+      "clearPaths": "Kosongkan pilihan",
+      "donePaths": "Selesai",
+      "pickerTitle": "Pilih jalur belajar",
+      "pickerBody": "Cari katalog dan centang jalur. Menutup dialog tetap menyimpan pilihan saat ini.",
+      "removePath": "Hapus {name}",
+      "filterPlaceholder": "Filter jalur belajar…",
+      "pathsLoading": "Memuat jalur belajar…",
+      "pathsError": "Jalur belajar tidak dapat dimuat. Muat ulang halaman lalu coba lagi.",
+      "pathsEmpty": "Belum ada jalur belajar yang terbit.",
+      "pathsNoMatch": "Tidak ada jalur yang cocok dengan pencarian itu.",
+      "unlisted": "Belum terbit",
+      "comingSoon": "Segera hadir",
+      "comingSoonSection": "Jenis akses nanti",
+      "quiz": "Kuis",
+      "quizHint": "Akses kuis tersendiri akan tersedia pada rilis berikutnya.",
+      "exam": "Ujian",
+      "examHint": "Akses ujian akan tersedia pada rilis berikutnya.",
+      "privateClass": "Kelas privat",
+      "privateClassHint": "Sesi kelas privat akan tersedia pada rilis berikutnya."
+    },
+    "danger": {
+      "blockedTitle": "Paket ini tidak dapat dihapus",
+      "blockedHint": "Arsipkan paket agar tidak terlihat oleh siswa, sementara riwayat pembelian tetap tersimpan."
+    },
+    "confirm": {
+      "saveTitle": "Simpan paket ini?",
+      "saveBody": "Perubahan harga, diskon, dan akses langsung berlaku untuk pembelian baru.",
+      "archiveTitle": "Arsipkan paket ini?",
+      "archiveBody": "Mengarsipkan menghentikan paket dari katalog publik. Ini berbeda dari Draf: Draf adalah pekerjaan belum selesai yang belum dimaksudkan untuk dijual; Arsip menjaga riwayat pesanan dan akses siswa yang sudah ada sambil menghentikan pembelian baru.",
+      "deleteTitle": "Hapus paket ini secara permanen?",
+      "deleteBody": "Paket akan dihapus dan tindakan ini tidak dapat dibatalkan. Paket yang sudah memiliki pesanan tidak dapat dihapus; arsipkan saja.",
+      "removeCoverTitle": "Hapus sampul?",
+      "removeCoverBody": "Sampul dihapus dari paket ini setelah Anda menyimpan. Logo Onigiroku ditampilkan sebagai gantinya.",
+      "removeBenefitTitle": "Hapus keunggulan ini?",
+      "removeBenefitBody": "“{label}” akan dihapus dari daftar. Simpan paket untuk mempertahankan perubahan.",
+      "unsavedTitle": "Tinggalkan tanpa menyimpan?",
+      "unsavedBody": "Ada perubahan yang belum disimpan. Jika Anda keluar sekarang, perubahan akan hilang.",
+      "unsavedConfirm": "Tinggalkan halaman"
+    },
+    "toast": {
+      "saved": "Paket disimpan",
+      "coverUploaded": "Sampul diunggah",
+      "coverRemoved": "Sampul dihapus"
+    },
+    "errors": {
+      "load": "Paket tidak dapat dimuat.",
+      "save": "Paket tidak dapat disimpan. Silakan coba lagi.",
+      "name": "Isi nama paket minimal dalam satu bahasa.",
+      "description": "Deskripsi maksimal 800 karakter yang terlihat.",
+      "price": "Masukkan harga yang valid.",
+      "discountDates": "Atur waktu mulai dan waktu berakhir diskon.",
+      "discountRange": "Diskon harus berakhir setelah dimulai.",
+      "duration": "Masukkan jumlah hari antara 1 dan {max}.",
+      "deleteBlocked": "Paket ini memiliki pesanan terkait sehingga tidak dapat dihapus.",
+      "cover": "Sampul tidak dapat diunggah.",
+      "coverTooSmall": "Sampul terlalu kecil. Gunakan minimal 640×360 piksel.",
+      "coverDecode": "Gambar tidak dapat dibaca. Coba file lain.",
+      "coverAspect": "Sampul ini bukan 16:9, sehingga dapat terpotong saat ditampilkan.",
+      "benefitTooLong": "Setiap keunggulan maksimal 200 karakter.",
+      "benefitsMax": "Satu paket dapat memiliki maksimal 20 keunggulan."
+    },
+    "sections": {
+      "basics": "Detail paket",
+      "basicsHint": "Beri nama dan jelaskan paket dalam dua bahasa.",
+      "media": "Sampul dan publikasi",
+      "mediaHint": "Pilih gambar sampul dan apakah siswa dapat melihat paket ini."
+    },
+    "benefits": {
+      "title": "Keunggulan",
+      "hint": "Poin singkat yang menjual paket di kartu, halaman kelas, dan checkout. Terpisah dari deskripsi. Edit satu bahasa dalam satu waktu lewat tab di atas.",
+      "count": "{count}/{max}",
+      "add": "Tambah keunggulan",
+      "empty": "Belum ada keunggulan",
+      "emptyHint": "Tambahkan 3–6 poin jual yang jelas, misalnya “Latihan soal JLPT N5 tanpa batas”.",
+      "editingId": "Mengedit Indonesia",
+      "editingEn": "Mengedit Inggris",
+      "otherLangMissing": "Bahasa lain masih kosong — di situs publik akan memakai bahasa yang tersedia.",
+      "labelId": "Indonesia",
+      "labelEn": "Inggris",
+      "placeholderId": "Misalnya Latihan soal JLPT N5 tanpa batas",
+      "placeholderEn": "For example Unlimited JLPT N5 practice",
+      "itemLabel": "Keunggulan {number}",
+      "moveUp": "Naikkan",
+      "moveDown": "Turunkan",
+      "remove": "Hapus keunggulan",
+      "limitReached": "Batas {max} keunggulan sudah tercapai.",
+      "previewTitle": "Pratinjau langsung",
+      "previewHint": "Tampilan daftar bagi siswa dalam bahasa {language}. Bahasa yang kosong memakai bahasa lainnya.",
+      "previewEmpty": "Keunggulan yang Anda tambahkan tampil di sini.",
+      "previewShowMore": "Tampilkan {count} lagi",
+      "previewShowLess": "Tampilkan lebih sedikit",
+      "previewLangId": "Indonesia",
+      "previewLangEn": "Inggris",
+      "charCount": "{count}/{max}"
+    }
+  },
   "learningAdmin": {
-    "eyebrow": "Jalur belajar",
-    "title": "Kategori",
-    "subtitle": "Kelompokkan materi siswa menjadi jalur berurutan. Materi tetap terkunci sampai setiap materi sebelumnya di kategori yang sama selesai.",
+    "eyebrow": "Admin · Jalur belajar",
+    "title": "Jalur belajar",
+    "subtitle": "Kelola path berurutan, status publikasi, dan struktur lesson untuk peserta.",
     "loadingCategories": "Memuat kategori…",
     "loadingCategory": "Memuat kategori…",
     "loadingLesson": "Memuat materi…",
-    "searchPlaceholder": "Cari kategori…",
+    "searchPlaceholder": "Cari jalur belajar…",
     "editTitle": "Edit kategori",
     "createTitle": "Kategori baru",
     "lessonCount": "{count, plural, =0 {Belum ada materi} other {# materi}}",
@@ -1006,12 +1373,18 @@
     "showing": "Menampilkan {from}–{to} dari {total}",
     "pageSize": "{count} / halaman",
     "sort": {
-      "position": "Urutan jalur",
+      "label": "Urutkan",
+      "position": "Unggulan",
       "updated": "Baru diperbarui",
+      "popular": "Paling populer",
       "name": "Nama"
     },
     "filters": {
-      "all": "Semua status"
+      "all": "Semua status",
+      "allHint": "Draf adalah pekerjaan belum selesai. Terbit tampil untuk siswa. Diarsipkan disembunyikan dari katalog tetapi bisa diterbitkan lagi.",
+      "draftHint": "Jalur draf tidak pernah tampil di katalog belajar publik atau siswa. Gunakan Draf saat struktur dan materi masih berubah.",
+      "publishedHint": "Jalur terbit terlihat oleh siswa yang memenuhi syarat (tergantung aturan akses gratis/berbayar).",
+      "archivedHint": "Jalur diarsipkan disembunyikan dari siswa. Lebih baik Arsipkan daripada Hapus jika jalur mungkin dibuka lagi nanti."
     },
     "lessonForm": {
       "createTitle": "Materi baru",
@@ -1050,9 +1423,15 @@
       "descriptionEn": "Deskripsi (Inggris)",
       "status": "Status",
       "planKey": "Kunci paket",
-      "planHint": "Label paket akses, misalnya free. Gateway pembayaran belum dihubungkan.",
+      "planHint": "Label lama untuk kompatibilitas. Gunakan Mode akses di bawah.",
       "accessTitle": "Akses siswa",
-      "accessNote": "Jalur yang terbit terbuka untuk siswa yang sudah masuk. Paket pembayaran bisa dihubungkan nanti tanpa mengubah formulir ini.",
+      "accessMode": "Mode akses",
+      "accessFree": "Gratis",
+      "accessPaid": "Berbayar saja",
+      "accessNote": "Jalur gratis terbuka untuk setiap siswa yang masuk. Jalur berbayar terbuka saat LEARNING_PAYWALL_ENABLED aktif dan siswa punya grant paket yang berlaku.",
+      "packagesTitle": "Termasuk dalam paket",
+      "packagesHint": "Paket kelas terbit yang membuka jalur ini (atau semua jalur).",
+      "packagesEmpty": "Belum ada paket terbit yang mencakup jalur ini.",
       "cover": "Sampul",
       "tags": "Tag",
       "slug": "Jalur siswa",
@@ -1086,6 +1465,16 @@
       "DRAFT": "Draf",
       "PUBLISHED": "Terbit",
       "ARCHIVED": "Diarsipkan"
+    },
+    "statusHelp": {
+      "DRAFT": "Masih dikerjakan — tidak pernah tampil untuk siswa.",
+      "PUBLISHED": "Tampil di katalog belajar bagi siswa yang memenuhi syarat.",
+      "ARCHIVED": "Diistirahatkan dari katalog; gunakan Arsip daripada hapus jika mungkin diterbitkan lagi.",
+      "active": {
+        "DRAFT": "Jalur draf tetap tidak terlihat di katalog publik dan siswa. Ubah ke Terbit saat materi siap.",
+        "PUBLISHED": "Jalur terbit tampil untuk siswa (tergantung mode akses / paywall). Setel Draf untuk menyembunyikan sementara; Arsipkan untuk menghentikan tampilan sambil menjaga struktur.",
+        "ARCHIVED": "Jalur diarsipkan disembunyikan dari siswa. Ini berbeda dari Draf: Arsip berarti “pernah live, sekarang diistirahatkan”; Draf berarti “belum siap”. Terbitkan lagi kapan saja."
+      }
     },
     "lessons": {
       "title": "Materi",
@@ -1163,7 +1552,7 @@
       "saveTitle": "Simpan kategori ini?",
       "saveBody": "Nama, deskripsi, sampul, dan status akan disimpan.",
       "archiveTitle": "Arsipkan kategori ini?",
-      "archiveBody": "Siswa tidak lagi melihat jalur ini. Anda bisa menerbitkannya lagi nanti.",
+      "archiveBody": "Mengarsipkan menghentikan jalur dari katalog siswa dan publik. Ini berbeda dari Draf: Draf berarti “belum siap”; Arsip berarti “pernah tersedia, sekarang diistirahatkan”. Materi tetap utuh sehingga Anda bisa menerbitkannya lagi nanti.",
       "deleteTitle": "Hapus kategori ini?",
       "deleteBody": "Kategori dan sampulnya dihapus. Penghapusan ditolak selama masih ada materi di dalamnya.",
       "unsavedTitle": "Keluar tanpa menyimpan?",
@@ -1185,7 +1574,13 @@
     },
     "empty": {
       "title": "Belum ada kategori",
-      "description": "Buat kategori, tambahkan materi berurutan, lalu terbitkan untuk siswa."
+      "description": "Buat kategori, tambahkan materi berurutan, lalu terbitkan untuk siswa.",
+      "draftTitle": "Belum ada jalur draf",
+      "draftDescription": "Draf adalah jalur belajar yang belum selesai dan tidak pernah tampil untuk siswa. Buat jalur dan biarkan status Draf sambil menyusun materi.",
+      "publishedTitle": "Belum ada jalur terbit",
+      "publishedDescription": "Jalur terbit terlihat oleh siswa yang memenuhi syarat. Terbitkan draf saat jalur siap.",
+      "archivedTitle": "Belum ada jalur diarsipkan",
+      "archivedDescription": "Arsip menghentikan jalur dari katalog sambil menjaga materinya. Gunakan Arsipkan di editor saat jalur harus berhenti tampil."
     },
     "errors": {
       "load": "Gagal memuat kategori.",
@@ -1227,6 +1622,7 @@
     "pathProgress": "Kemajuan jalur",
     "progress": "{done} dari {total} selesai",
     "lessonsCount": "{count, plural, =0 {Belum ada materi} other {# materi}}",
+    "accessPaid": "Berbayar",
     "actions": {
       "back": "Semua jalur belajar",
       "backToPath": "Kembali ke jalur",

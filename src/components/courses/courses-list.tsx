@@ -178,8 +178,15 @@ export async function CoursesList({
                             <BrandLogo size={64} alt="" />
                           </div>
                         )}
-                        <span className="absolute top-3 left-4 max-w-[46%] truncate rounded-md bg-ink/80 px-2 py-1 text-[10px] font-bold tracking-wide text-white uppercase backdrop-blur-sm">
-                          {t("lessonsCount", { count: item.lessonCount })}
+                        <span className="absolute top-3 left-4 z-[1] flex max-w-[52%] flex-col gap-1">
+                          <span className="truncate rounded-md bg-ink/80 px-2 py-1 text-[10px] font-bold tracking-wide text-white uppercase backdrop-blur-sm">
+                            {t("lessonsCount", { count: item.lessonCount })}
+                          </span>
+                          {item.accessMode === "paid" ? (
+                            <span className="w-fit rounded-md bg-white/95 px-2 py-0.5 text-[10px] font-bold tracking-wide text-ink uppercase shadow-sm">
+                              {t("detail.accessPaid")}
+                            </span>
+                          ) : null}
                         </span>
                         <VisitBadge
                           count={views}

@@ -148,7 +148,8 @@ export function SiteHeader() {
                 <div className="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-border/70 px-4 sm:h-16 sm:px-6">
                   <div onClick={() => setOpen(false)} className="min-w-0">
                     <BrandWordmark
-                      href={user ? dashboardHref : "/"}
+                      href="/"
+                      scrollHomeToTop
                       size={36}
                       className="min-w-0 gap-2"
                       logoClassName="h-8 w-8 shrink-0 sm:h-9 sm:w-9"
@@ -288,7 +289,8 @@ export function SiteHeader() {
       <header className="sticky top-0 z-50 border-b border-border/70 bg-white/85 backdrop-blur-xl">
         <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between gap-2 px-4 sm:h-16 sm:px-6 lg:px-8">
           <BrandWordmark
-            href={user ? dashboardHref : "/"}
+            href="/"
+            scrollHomeToTop
             size={36}
             priority
             className="min-w-0 gap-2 sm:gap-2.5"

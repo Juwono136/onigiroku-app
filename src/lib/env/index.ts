@@ -9,7 +9,7 @@ const PLACEHOLDER_FRAGMENTS = [
   "<redis_password>",
   "<storage_password>",
   "<health_token>",
-  "<xendit",
+  "<doku",
   "xxxxx",
   "example.com",
   "dev_only",
@@ -150,9 +150,13 @@ const baseServerEnvSchema = z.object({
     .default(120),
   INTERNAL_API_SECRET: z.string().min(16),
 
-  XENDIT_SECRET_KEY: z.string().optional().default(""),
-  XENDIT_CALLBACK_TOKEN: z.string().optional().default(""),
-  XENDIT_PUBLIC_KEY: z.string().optional().default(""),
+  DOKU_CLIENT_ID: z.string().optional().default(""),
+  DOKU_SECRET_KEY: z.string().optional().default(""),
+  DOKU_API_BASE_URL: z
+    .string()
+    .optional()
+    .default("https://api-sandbox.doku.com"),
+  LEARNING_PAYWALL_ENABLED: booleanFromString.optional().default(false),
 
   LOG_LEVEL: z.enum(["debug", "info", "warn", "error"]).default("info"),
   HEALTH_CHECK_TOKEN: z.string().optional().default(""),
@@ -221,9 +225,10 @@ function readProcessEnv() {
     API_RATE_LIMIT_MAX: process.env.API_RATE_LIMIT_MAX,
     API_AUTH_RATE_LIMIT_MAX: process.env.API_AUTH_RATE_LIMIT_MAX,
     INTERNAL_API_SECRET: process.env.INTERNAL_API_SECRET,
-    XENDIT_SECRET_KEY: process.env.XENDIT_SECRET_KEY,
-    XENDIT_CALLBACK_TOKEN: process.env.XENDIT_CALLBACK_TOKEN,
-    XENDIT_PUBLIC_KEY: process.env.XENDIT_PUBLIC_KEY,
+    DOKU_CLIENT_ID: process.env.DOKU_CLIENT_ID,
+    DOKU_SECRET_KEY: process.env.DOKU_SECRET_KEY,
+    DOKU_API_BASE_URL: process.env.DOKU_API_BASE_URL,
+    LEARNING_PAYWALL_ENABLED: process.env.LEARNING_PAYWALL_ENABLED,
     LOG_LEVEL: process.env.LOG_LEVEL,
     HEALTH_CHECK_TOKEN: process.env.HEALTH_CHECK_TOKEN,
   };

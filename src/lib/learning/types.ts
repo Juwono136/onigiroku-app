@@ -75,6 +75,7 @@ export type LearningCategory = {
   position: number;
   status: LearningStatus;
   planKey: string;
+  accessMode: "free" | "paid";
   lessonCount: number;
   completedCount?: number;
   studentViewCount?: number;
@@ -99,6 +100,7 @@ export type CategoryInput = {
   coverObjectKey?: string | null;
   status: LearningStatus;
   planKey: string;
+  accessMode: "free" | "paid";
   tags?: LearningCategoryTagInput[];
 };
 
@@ -125,6 +127,7 @@ export type StudentCategoryCard = {
   descriptionEn: string;
   coverUrl: string | null;
   planKey: string;
+  accessMode: "free" | "paid";
   lessonCount: number;
   completedCount: number;
   studentViewCount?: number;

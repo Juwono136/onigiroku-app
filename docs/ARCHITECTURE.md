@@ -13,11 +13,11 @@ Next.js (UI + BFF + Better Auth + email)
   │ Drizzle (auth)  │ INTERNAL_API_SECRET (+ X-Actor-* bila perlu)
   ▼                 ▼
 PostgreSQL ◄──── Golang Gin API
-  ▲              (media, admin users, login-history, content/materials;
-Redis            stub: assessment, analytics, billing)
+  ▲              (media, admin users, login-history, content/materials,
+Redis             commerce/DOKU checkout + grants; stub: assessment/analytics)
   │
 SeaweedFS ◄── nginx gateway (basic auth server-side only)
-Xendit (nanti: webhook → Go publik atau Next proxy; entitlement belum wired)
+DOKU Checkout (webhook → Go publik atau Next raw proxy → user_feature_grant)
 Nodemailer → SMTP (dari Next saja)
 ```
 
@@ -34,14 +34,14 @@ Kontrak detail Next ↔ Go: **[INTEGRATION.md](./INTEGRATION.md)**.
 - Drizzle schema/migrations untuk auth (+ domain tables bertahap)
 - Validasi Zod di trust boundary web + CSRF Origin/Referer pada mutasi BFF
 - Email transactional modular (`src/lib/email/templates/`) — verifikasi, reset, notifikasi password
-- BFF domain: `/api/admin/users*`, `/api/admin/materials*`, `/api/admin/learning/*`, `/api/learning/*`, `/api/materials*`, `/api/settings/*`, `/api/media/*`, `/api/health` → `callGoApi` / `callGoApiWithActor`
+- BFF domain: `/api/admin/users*`, `/api/admin/materials*`, `/api/admin/learning/*`, `/api/admin/packages*`, `/api/classes*`, `/api/billing/*`, `/api/learning/*`, `/api/materials*`, `/api/settings/*`, `/api/media/*`, `/api/health` → `callGoApi` / `callGoApiWithActor`
 - i18n ID/EN (`next-intl`)
 
 ### Go Gin (`backend/`)
 
 - Domain API berperforma tinggi di path **unversioned** `/api/*` (bukan `/api/v1`)
-- **Live:** media (presign/delete), admin users, settings/login-history, news + learning paths (`content`: categories, ordered lessons, progress, quiz grading, `plan_key` grants)
-- **Stub (belum BFF):** catalog, assessment/attempts, analytics, billing/webhooks (Xendit prep only)
+- **Live:** media (presign/delete), admin users, settings/login-history, news + learning paths (`content`: categories, ordered lessons, progress, quiz grading, `access_mode` + grants), commerce (class packages, DOKU checkout, webhooks → `user_feature_grant`)
+- **Stub / later:** assessment/attempts product surface, analytics, order-history UI (orders already persisted)
 - Dipanggil dari Next BFF via `callGoApi` + `X-Internal-Secret` (+ `X-Actor-*` untuk trusted routes)
 - Identity (Better Auth session/password/email) tetap di Next — domain data & storage orchestration di Go
 - Middleware: request ID, CORS, recovery, security headers, Redis rate limit, actor verify
@@ -60,9 +60,9 @@ Learning materials + News CMS: [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md).
 | PostgreSQL | Source of truth |
 | Redis | Rate limit, cache, distributed lock, job queue |
 | SeaweedFS | Object storage (media soal, audio, aset CMS) |
-| Xendit | Payment IDR (menggantikan Midtrans di baseline implementasi) |
+| DOKU | Payment Checkout IDR for class packages ([PAYMENTS.md](./PAYMENTS.md)) |
 
-> **Catatan PRD:** dokumen PRD menyebut Midtrans. Instruksi produk terkini memakai **Xendit**. Dokumentasi dan kode mengikuti Xendit.
+> **Catatan PRD:** dokumen PRD menyebut Midtrans. Implementasi terkini memakai **DOKU Checkout**.
 
 ## Struktur repo
 

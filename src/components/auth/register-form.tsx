@@ -13,14 +13,29 @@ import { Label } from "@/components/ui/label";
 import { Link, useRouter } from "@/i18n/routing";
 import { authClient } from "@/lib/auth/client";
 import { mapAuthError } from "@/lib/auth/errors";
+import {
+  buySlugFromCallback,
+  safeCallbackPath,
+  writeBuyIntentCookie,
+} from "@/lib/packages/buy-intent";
 import { registerSchema } from "@/lib/validations/auth";
 
 type Props = {
   googleEnabled: boolean;
   registrationEnabled: boolean;
+  /** App-relative post-auth destination (e.g. `/dashboard?buy=slug`). */
+  callbackUrl?: string;
 };
 
-export function RegisterForm({ googleEnabled, registrationEnabled }: Props) {
+export function RegisterForm({
+  googleEnabled,
+  registrationEnabled,
+  callbackUrl,
+}: Props) {
+  const afterAuthPath = safeCallbackPath(callbackUrl) ?? "/dashboard";
+  const loginHref = callbackUrl
+    ? `/login?callbackUrl=${encodeURIComponent(afterAuthPath)}`
+    : "/login";
   const t = useTranslations("auth");
   const locale = useLocale();
   const router = useRouter();
@@ -66,7 +81,7 @@ export function RegisterForm({ googleEnabled, registrationEnabled }: Props) {
         name: parsed.data.name,
         email: parsed.data.email,
         password: parsed.data.password,
-        callbackURL: "/dashboard",
+        callbackURL: afterAuthPath,
         locale,
       } as {
         name: string;
@@ -82,6 +97,9 @@ export function RegisterForm({ googleEnabled, registrationEnabled }: Props) {
       }
 
       toast.success(t("register.success"));
+      // Email verification interrupts the flow; remember the purchase briefly.
+      const buySlug = buySlugFromCallback(afterAuthPath);
+      if (buySlug) writeBuyIntentCookie(buySlug);
       router.push(
         `/verify-email?email=${encodeURIComponent(parsed.data.email)}`,
       );
@@ -119,7 +137,7 @@ export function RegisterForm({ googleEnabled, registrationEnabled }: Props) {
         <>
           <GoogleAuthButton
             mode="register"
-            callbackURL="/dashboard"
+            callbackURL={afterAuthPath}
             errorCallbackURL={`/${locale}/login`}
             disabled={pending}
           />
@@ -224,7 +242,7 @@ export function RegisterForm({ googleEnabled, registrationEnabled }: Props) {
 
       <p className="text-center text-sm text-charcoal/70">
         {t("register.hasAccount")}{" "}
-        <Link href="/login" className="font-semibold text-brand hover:underline">
+        <Link href={loginHref} className="font-semibold text-brand hover:underline">
           {t("register.toLogin")}
         </Link>
       </p>

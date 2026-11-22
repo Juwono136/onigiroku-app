@@ -35,17 +35,17 @@ func (s *Service) PublicGetCourse(ctx context.Context, slug, locale string) (*Pu
 	if locale != "en" {
 		locale = "id"
 	}
-	var id, plan string
+	var id, plan, accessMode string
 	var card StudentCategoryCard
 	var cover *string
 	err := s.Pool.QueryRow(ctx, `
 		SELECT id, slug, name_id, name_en, description_id, description_en, cover_object_key, plan_key,
-		       COALESCE(student_view_count, 0)
+		       access_mode::text, COALESCE(student_view_count, 0)
 		FROM learning_category
 		WHERE slug = $1 AND deleted_at IS NULL AND status = 'PUBLISHED'
 	`, slug).Scan(
 		&id, &card.Slug, &card.NameID, &card.NameEN, &card.DescriptionID, &card.DescriptionEN,
-		&cover, &plan, &card.StudentViewCount,
+		&cover, &plan, &accessMode, &card.StudentViewCount,
 	)
 	if err == pgx.ErrNoRows {
 		return nil, apperrors.NotFound("category")
@@ -55,6 +55,7 @@ func (s *Service) PublicGetCourse(ctx context.Context, slug, locale string) (*Pu
 	}
 	card.ID = id
 	card.PlanKey = plan
+	card.AccessMode = accessMode
 	card.CoverURL = s.coverURL(cover)
 	card.Tags = []TagDTO{}
 	tagMap, err := s.loadCategoryTagsMap(ctx, []string{id})

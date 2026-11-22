@@ -66,18 +66,23 @@ export function LessonPractice({
   const [completionOpen, setCompletionOpen] = useState(false);
   const [completion, setCompletion] = useState<PathCompletion | null>(initialCompletion);
   const sent = useRef(0);
+  const [syncKey, setSyncKey] = useState(
+    () =>
+      `${completedCount}|${completed}|${nextSlug ?? ""}|${nextLocked}|${initialCompletion?.averageScore ?? ""}`,
+  );
+  const nextSyncKey = `${completedCount}|${completed}|${nextSlug ?? ""}|${nextLocked}|${initialCompletion?.averageScore ?? ""}`;
+  if (nextSyncKey !== syncKey) {
+    setSyncKey(nextSyncKey);
+    setPathDone(completedCount);
+    setLessonCompleted(completed);
+    setNextOpen(Boolean(nextSlug) && !nextLocked);
+    if (initialCompletion) setCompletion(initialCompletion);
+  }
 
   const pct = lessonCount ? Math.round((pathDone / lessonCount) * 100) : 0;
   const resolvedNextSlug = result?.nextSlug ?? nextSlug;
   const canGoNext = Boolean(resolvedNextSlug) && (nextOpen || (result ? !result.nextLocked : !nextLocked));
   const pathFullyDone = lessonCount > 0 && pathDone >= lessonCount;
-
-  useEffect(() => {
-    setPathDone(completedCount);
-    setLessonCompleted(completed);
-    setNextOpen(Boolean(nextSlug) && !nextLocked);
-    if (initialCompletion) setCompletion(initialCompletion);
-  }, [completedCount, completed, nextSlug, nextLocked, initialCompletion]);
 
   useEffect(() => {
     const onScroll = () => {

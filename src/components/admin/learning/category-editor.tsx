@@ -52,8 +52,17 @@ type CategorySnapshot = {
   descriptionEn: string;
   status: LearningStatus;
   planKey: string;
+  accessMode: "free" | "paid";
   coverObjectKey: string | null;
   tags: LearningCategoryTagInput[];
+};
+
+type PackageMembership = {
+  id: string;
+  slug: string;
+  nameId: string;
+  nameEn: string;
+  status: string;
 };
 
 function snapshotKey(s: CategorySnapshot): string {
@@ -73,6 +82,8 @@ export function CategoryEditor({ categoryId }: Props) {
   const [descriptionEn, setDescriptionEn] = useState("");
   const [status, setStatus] = useState<LearningStatus>("DRAFT");
   const [planKey, setPlanKey] = useState("free");
+  const [accessMode, setAccessMode] = useState<"free" | "paid">("free");
+  const [memberPackages, setMemberPackages] = useState<PackageMembership[]>([]);
   const [coverObjectKey, setCoverObjectKey] = useState<string | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [slug, setSlug] = useState("");
@@ -101,6 +112,7 @@ export function CategoryEditor({ categoryId }: Props) {
           descriptionEn: "",
           status: "DRAFT",
           planKey: "free",
+          accessMode: "free",
           coverObjectKey: null,
           tags: [],
         }),
@@ -119,10 +131,11 @@ export function CategoryEditor({ categoryId }: Props) {
       descriptionEn,
       status,
       planKey,
+      accessMode,
       coverObjectKey,
       tags: normalizeCategoryTags(tags),
     }),
-    [nameId, nameEn, descriptionId, descriptionEn, status, planKey, coverObjectKey, tags],
+    [nameId, nameEn, descriptionId, descriptionEn, status, planKey, accessMode, coverObjectKey, tags],
   );
 
   useEffect(() => {
@@ -216,6 +229,7 @@ export function CategoryEditor({ categoryId }: Props) {
           descriptionEn: c.descriptionEn,
           status: c.status,
           planKey: c.planKey || "free",
+          accessMode: c.accessMode === "paid" ? "paid" : "free",
           coverObjectKey: c.coverObjectKey,
           tags: nextTags,
         };
@@ -225,6 +239,7 @@ export function CategoryEditor({ categoryId }: Props) {
         setDescriptionEn(next.descriptionEn);
         setStatus(next.status);
         setPlanKey(next.planKey);
+        setAccessMode(next.accessMode);
         setCoverObjectKey(next.coverObjectKey);
         setTags(nextTags);
         setCoverUrl(c.coverUrl);
@@ -243,6 +258,14 @@ export function CategoryEditor({ categoryId }: Props) {
         const listPayload = (await list.json()) as { data?: MaterialListResult };
         setLessons(listPayload.data?.items ?? []);
         setSelectedLessonIds([]);
+        const pkgRes = await fetch(
+          `/api/admin/learning/categories/${encodeURIComponent(categoryId)}/packages`,
+          { credentials: "same-origin", signal: controller.signal },
+        );
+        const pkgPayload = (await pkgRes.json()) as {
+          data?: { items?: PackageMembership[] };
+        };
+        setMemberPackages(pkgPayload.data?.items ?? []);
       } catch (err) {
         if (err instanceof DOMException && err.name === "AbortError") return;
         toast.error(t("errors.load"));
@@ -351,6 +374,7 @@ export function CategoryEditor({ categoryId }: Props) {
         descriptionEn: nextDescriptionEn,
         status,
         planKey: planKey || "free",
+        accessMode,
         coverObjectKey,
         tags: nextTags,
       };
@@ -382,6 +406,7 @@ export function CategoryEditor({ categoryId }: Props) {
       setDescriptionEn(payload.data.descriptionEn ?? "");
       setStatus(payload.data.status);
       setPlanKey(payload.data.planKey || "free");
+      setAccessMode(payload.data.accessMode === "paid" ? "paid" : "free");
       setCoverObjectKey(payload.data.coverObjectKey);
       setCoverUrl(payload.data.coverUrl);
       savedCoverKeyRef.current = payload.data.coverObjectKey;
@@ -632,12 +657,60 @@ export function CategoryEditor({ categoryId }: Props) {
               ariaLabel={t("fields.status")}
               triggerClassName="h-12 rounded-2xl"
             />
+            <p className="text-xs leading-relaxed text-charcoal/60">
+              {t(`statusHelp.active.${status}`)}
+            </p>
           </div>
-          <div className="rounded-2xl border border-charcoal/10 bg-[var(--workspace-surface)] px-4 py-3">
-            <p className="text-sm font-semibold text-ink">{t("fields.accessTitle")}</p>
-            <p className="mt-1 text-xs leading-relaxed text-charcoal/60">{t("fields.accessNote")}</p>
+          <div className="space-y-1.5">
+            <Label>{t("fields.accessMode")}</Label>
+            <FilterSelect
+              value={accessMode}
+              onValueChange={(next) => {
+                const mode = next === "paid" ? "paid" : "free";
+                setAccessMode(mode);
+                setPlanKey(mode === "free" ? "free" : "paid");
+              }}
+              options={[
+                { value: "free", label: t("fields.accessFree") },
+                { value: "paid", label: t("fields.accessPaid") },
+              ]}
+              ariaLabel={t("fields.accessMode")}
+              triggerClassName="h-12 rounded-2xl"
+            />
+            <p className="text-xs leading-relaxed text-charcoal/55">{t("fields.accessNote")}</p>
           </div>
         </div>
+
+        {categoryId ? (
+          <div className="rounded-2xl border border-charcoal/10 bg-[var(--workspace-surface)] px-4 py-3">
+            <p className="text-sm font-semibold text-ink">{t("fields.packagesTitle")}</p>
+            <p className="mt-1 text-xs leading-relaxed text-charcoal/60">{t("fields.packagesHint")}</p>
+            {memberPackages.length === 0 ? (
+              <p className="mt-2 text-sm text-charcoal/55">{t("fields.packagesEmpty")}</p>
+            ) : (
+              <ul className="mt-2 space-y-1.5">
+                {memberPackages.map((pkg) => {
+                  const label = locale === "en"
+                    ? pkg.nameEn || pkg.nameId
+                    : pkg.nameId || pkg.nameEn;
+                  return (
+                    <li key={pkg.id}>
+                      <Link
+                        href={`/admin/packages/${pkg.id}`}
+                        className="text-sm font-semibold text-brand hover:underline"
+                      >
+                        {label}
+                        <span className="ml-2 text-[10px] font-bold tracking-wide text-charcoal/45 uppercase">
+                          {pkg.status}
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        ) : null}
 
         <div className="rounded-2xl border border-charcoal/10 bg-[var(--workspace-surface)] px-4 py-3">
           <p className="text-xs font-semibold tracking-wide text-charcoal/55 uppercase">{t("fields.slug")}</p>

@@ -26,6 +26,8 @@ export type ApiEnvelope<T> = {
 export type GoActorContext = {
   userId: string;
   role?: string;
+  name?: string | null;
+  email?: string | null;
   /** Used by login-history to mark the current session row. */
   currentSessionToken?: string | null;
 };
@@ -133,6 +135,8 @@ export async function callGoApiWithActor<T>(
     "X-Actor-User-Id": actor.userId,
   };
   if (actor.role) actorHeaders["X-Actor-Role"] = actor.role;
+  if (actor.name) actorHeaders["X-Actor-Name"] = actor.name;
+  if (actor.email) actorHeaders["X-Actor-Email"] = actor.email;
   if (actor.currentSessionToken) {
     actorHeaders["X-Current-Session-Token"] = actor.currentSessionToken;
   }

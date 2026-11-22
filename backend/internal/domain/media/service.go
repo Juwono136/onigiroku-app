@@ -196,11 +196,22 @@ func (s *Service) CreatePresign(req PresignRequest) (*PresignResponse, error) {
 		return nil, err
 	}
 
-	folder := req.Folder
+	folder := strings.Trim(strings.TrimSpace(req.Folder), "/")
 	if folder == "" {
-		folder = s.Bucket
+		folder = "uploads"
 	}
-	objectKey, err := BuildObjectKey(req.Filename, folder)
+	// Always nest under STORAGE_BUCKET so SeaweedFS shows /onigiroku/{folder}/…
+	// instead of scattering cms/, avatars/ at the filer root.
+	bucket := strings.Trim(s.Bucket, "/")
+	fullFolder := folder
+	if bucket != "" {
+		if folder == bucket || strings.HasPrefix(folder, bucket+"/") {
+			fullFolder = folder
+		} else {
+			fullFolder = bucket + "/" + folder
+		}
+	}
+	objectKey, err := BuildObjectKey(req.Filename, fullFolder)
 	if err != nil {
 		return nil, err
 	}

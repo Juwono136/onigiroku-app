@@ -97,6 +97,7 @@ type CategoryInput struct {
 	CoverObjectKey *string    `json:"coverObjectKey"`
 	Status         string     `json:"status"`
 	PlanKey        string     `json:"planKey"`
+	AccessMode     string     `json:"accessMode"`
 	Tags           []TagInput `json:"tags"`
 }
 
@@ -112,6 +113,7 @@ type CategoryDTO struct {
 	Position          int      `json:"position"`
 	Status            string   `json:"status"`
 	PlanKey           string   `json:"planKey"`
+	AccessMode        string   `json:"accessMode"`
 	LessonCount       int      `json:"lessonCount"`
 	CompletedCount    int      `json:"completedCount,omitempty"`
 	StudentViewCount  int      `json:"studentViewCount"`
@@ -151,6 +153,7 @@ type StudentCategoryCard struct {
 	DescriptionEN    string   `json:"descriptionEn"`
 	CoverURL         *string  `json:"coverUrl"`
 	PlanKey          string   `json:"planKey"`
+	AccessMode       string   `json:"accessMode"`
 	LessonCount      int      `json:"lessonCount"`
 	CompletedCount   int      `json:"completedCount"`
 	StudentViewCount int      `json:"studentViewCount"`
@@ -816,25 +819,45 @@ func lessonUnlocked(lessons []pathLessonRow, done map[string]bool, materialID st
 	return false
 }
 
-func (s *Service) userHasPlan(ctx context.Context, userID, planKey string) (bool, error) {
-	if !paywallEnabled() || planKey == "" || planKey == "free" {
+func (s *Service) userCanAccessCategory(ctx context.Context, userID, categoryID, accessMode string) (bool, error) {
+	if !paywallEnabled() {
+		return true, nil
+	}
+	mode := strings.ToLower(strings.TrimSpace(accessMode))
+	if mode == "" || mode == "free" {
 		return true, nil
 	}
 	var n int
 	err := s.Pool.QueryRow(ctx, `
-		SELECT COUNT(*)::int FROM user_learning_access
-		WHERE user_id = $1 AND plan_key = $2 AND status = 'active'
+		SELECT COUNT(*)::int FROM user_feature_grant
+		WHERE user_id = $1
+		  AND feature_type = 'learning_path'
+		  AND status = 'active'
 		  AND (starts_at IS NULL OR starts_at <= NOW())
 		  AND (ends_at IS NULL OR ends_at > NOW())
-	`, userID, planKey).Scan(&n)
+		  AND (target_id IS NULL OR target_id = $2)
+	`, userID, categoryID).Scan(&n)
+	if err != nil {
+		return false, apperrors.Internal(err)
+	}
+	if n > 0 {
+		return true, nil
+	}
+	// Legacy plan_key grants (pre-commerce) still honored when access_mode is paid.
+	err = s.Pool.QueryRow(ctx, `
+		SELECT COUNT(*)::int FROM user_learning_access
+		WHERE user_id = $1 AND status = 'active'
+		  AND (starts_at IS NULL OR starts_at <= NOW())
+		  AND (ends_at IS NULL OR ends_at > NOW())
+	`, userID).Scan(&n)
 	if err != nil {
 		return false, apperrors.Internal(err)
 	}
 	return n > 0, nil
 }
 
-func (s *Service) assertCategoryAccess(ctx context.Context, userID, planKey string) error {
-	ok, err := s.userHasPlan(ctx, userID, planKey)
+func (s *Service) assertCategoryAccess(ctx context.Context, userID, categoryID, accessMode string) error {
+	ok, err := s.userCanAccessCategory(ctx, userID, categoryID, accessMode)
 	if err != nil {
 		return err
 	}

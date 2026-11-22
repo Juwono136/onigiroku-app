@@ -70,11 +70,15 @@ export function StudentLessonShell({
 }: Props) {
   const [lessons, setLessons] = useState(initialLessons);
   const [completedCount, setCompletedCount] = useState(initialCompletedCount);
-
-  useEffect(() => {
+  const [syncKey, setSyncKey] = useState(
+    () => `${currentSlug}:${initialCompletedCount}:${initialLessons.map((l) => `${l.slug}:${l.completed}:${l.locked}`).join(",")}`,
+  );
+  const nextSyncKey = `${currentSlug}:${initialCompletedCount}:${initialLessons.map((l) => `${l.slug}:${l.completed}:${l.locked}`).join(",")}`;
+  if (nextSyncKey !== syncKey) {
+    setSyncKey(nextSyncKey);
     setLessons(initialLessons);
     setCompletedCount(initialCompletedCount);
-  }, [initialLessons, initialCompletedCount, currentSlug]);
+  }
 
   const onPracticePassed = useCallback(() => {
     setLessons((prev) => {

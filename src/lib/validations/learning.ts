@@ -34,6 +34,7 @@ export const categoryUpsertSchema = z
     coverObjectKey: z.string().trim().max(512).nullable().optional(),
     status: z.enum(["DRAFT", "PUBLISHED", "ARCHIVED"]),
     planKey: planKey.optional().default("free"),
+    accessMode: z.enum(["free", "paid"]).optional().default("free"),
     tags: z.array(categoryTagInputSchema).max(5).optional().default([]),
   })
   .superRefine((value, ctx) => {

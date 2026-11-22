@@ -34,9 +34,9 @@ Questions sit at the bottom of the same lesson page: multiple choice (one correc
 
 Reading progress is a debounced scroll percent (`POST /api/materials/:slug/progress`). A lesson with no questions completes on that first progress touch.
 
-### Plan access
+### Plan / package access
 
-Each category has `plan_key` (default `free`) and grants live in `user_learning_access`. `assertCategoryAccess` allows every signed-in user while `LEARNING_PAYWALL_ENABLED` is unset or not `true`/`1`. When the flag is on, `free` categories stay open and other plans need an active grant. Any future payment gateway only writes that grant. The existing billing stub is not connected.
+Each category has `access_mode` (`free` | `paid`, default `free`) plus legacy `plan_key`. Package purchases write `user_feature_grant` via DOKU webhooks (see [PAYMENTS.md](./PAYMENTS.md)). `assertCategoryAccess` allows every signed-in user while `LEARNING_PAYWALL_ENABLED` is unset or not `true`/`1`. When the flag is on, Free paths stay open; Paid-only paths need an active grant for that category id or an all-paths grant (`feature_type=learning_path`, `target_id` null). Legacy `user_learning_access` rows remain a fallback. Transaction history UI is deferred; `commerce_order` is the hook.
 
 ## Data model
 
@@ -49,7 +49,8 @@ Migration `drizzle/0005_learning_materials.sql`:
 
 Migration `drizzle/0008_learning_paths.sql`:
 
-- `learning_category` — unique slug (among non-deleted rows), bilingual name/description, cover, position, status, `plan_key` default `free`, soft delete; popularity via `student_view_count` + `last_student_access_at` (migration `0011_category_student_views.sql`, indexed for published paths)
+- `learning_category` — unique slug (among non-deleted rows), bilingual name/description, cover, position, status, `plan_key` default `free`, `access_mode` (`free`|`paid`, migration `0012_commerce_packages.sql`), soft delete; popularity via `student_view_count` + `last_student_access_at` (migration `0011_category_student_views.sql`, indexed for published paths)
+- `class_package` + `class_package_entitlement` + `commerce_order` + `user_feature_grant` — SaaS class packages and DOKU orders (see [PAYMENTS.md](./PAYMENTS.md))
 - `learning_material.category_id`, `position`, `pass_score` (50–100, default 80), `shuffle_questions` / `shuffle_choices` (booleans, default false). Check: `PUBLIC` must have null category and position. Unique `(category_id, position)` among non-deleted rows
 - `learning_question` + `learning_question_option` — `multiple_choice` | `short_answer` | `flashcard`; correct answers stay server-side
 - `learning_lesson_progress` — primary key `(user_id, material_id)`
@@ -110,7 +111,7 @@ Media: cover/content images via existing media presign with `folder: cms`, clean
 
 ## Admin UI
 
-- Sidebar **News** → `/admin/news`. Every news row is `PUBLIC`; the editor does not show a visibility control. Featured, status, SEO, and Preview stay. Sidebar **Learning** → `/admin/learning` (categories, ordered lessons, practice builder, pass score). Lesson editor has no visibility, featured, or SEO fields. Route transitions and first data loads use shared skeleton loaders (`AdminCategoryBoardSkeleton`, `AdminCategoryEditorSkeleton`, `AdminMaterialEditorSkeleton`) plus App Router `loading.tsx` under `/admin/learning/**`, so back/refresh/navigation never flash an empty form while data is fetching.
+- Sidebar **News** → `/admin/news`. Every news row is `PUBLIC`; the editor does not show a visibility control. Featured, status, SEO, and Preview stay. Sidebar **Learning** → `/admin/learning` (categories, ordered lessons, practice builder, pass score). The category list uses the same **path-catalog chrome** as student/public (compact header mark `管`, washi toolbar, hanko status chips, sort tabs: Recently updated / Featured / Most popular / Name, brand-rail cards) with an admin CTA for **New category**. Admin mobile keeps **sidebar/drawer only** (no bottom dock). Lesson editor has no visibility, featured, or SEO fields. Route transitions and first data loads use shared skeleton loaders (`AdminCategoryBoardSkeleton`, `AdminCategoryEditorSkeleton`, `AdminMaterialEditorSkeleton`) plus App Router `loading.tsx` under `/admin/learning/**`, so back/refresh/navigation never flash an empty form while data is fetching.
 - Breadcrumbs are separate: News uses Home → News → New article / Edit article. Learning uses Home → Learning → New category / Category → New lesson / Edit lesson. The list pages do not append a create crumb. `/admin/news` must not be treated as a “new” route.
 - News list: debounced search, status/sort filters, pagination. Learning category list: debounced search, status filter, sort (recently updated, name), page size, pagination. Path order is stored automatically and is not a list filter. Both stay on their own APIs.
 - News editor: locale tabs + TipTap; side panel with cover, status, featured, tags. No visibility field. Learning category editor uses Indonesia/English tabs, a rich-text description (1000 visible characters), an optional cover, **path tags (max 5, news-like suggest/create/edit with bilingual labels)**, and status. The page uses the same `max-w-[96rem]` width as the learning list and the lesson editor. From the `xl` breakpoint the lesson list sits beside the form in a side column up to 26rem, and the form uses the remaining width. Below that, the list is a full-width panel under the form and scrolls when a category has many lessons. On a phone, each lesson stays one compact row. **Archive** and **Delete** are icon buttons with tooltips next to Save. The lessons panel supports multi-select checkboxes, select-all, and **Delete selected** with a danger confirmation dialog. Bulk delete permanently removes those lessons (questions, attempts, covers via SeaweedFS) inside the category, then renumbers remaining positions so the category can be hard-deleted once empty. Category form dirty state (name, description, cover, status, **tags**) uses the same leave confirmation + beforeunload pattern as the lesson editor. Question cards put the title above the icon actions on a phone, and sit on one row from the small breakpoint up. The text toolbar scrolls sideways on a phone and wraps onto extra rows from the medium breakpoint up. The student path is read-only information, not a form field. Plan key stays `free` in the database and is not an admin input until a payment package is connected. A cover is optional. When none is stored, admin and student surfaces show the Onigiroku logo (`/images/onigiroku-logo.png`). Required fields are marked with an asterisk. Name is required. Cover, description, and status have defaults.
@@ -125,6 +126,8 @@ Media: cover/content images via existing media presign with `folder: cms`, clean
 - **PUBLIC (news) tools:** **Preview** button opens a clean article-style dialog (title, cover, body — mirrors the public reader). When status is `PUBLISHED`, **Open live page** jumps to `/news/{slug}`. Per-locale **SEO title** (max 70) and **SEO description** (max 160) with placeholders, char counters, and client + Go validation; empty values fall back to article title / excerpt for meta tags (SEO is edited in the form, not shown inside Preview)
 - TipTap: H2/H3, bold/italic/underline, lists, link, image (multi-file pick, SeaweedFS `cms/`), blockquote, HR, text align, table insert (default 2×2) with distinct add/delete row/column/table icons. Rendered prose uses shared `.material-prose` styles so student/public views match the toolbar. Empty editors show the placeholder before focus (`showOnlyCurrent: false`, empty document starts with one empty paragraph). Long editors are resizable (`resize-y`) with a sensible max height.
 - Soft-delete / Archive sets `status=ARCHIVED` (still visible in admin under Status → Archived or All). Hard-delete removes the row and cleans SeaweedFS cover objects. The Archive action is hidden once a material is already archived.
+- **Draft vs Archived (learning paths + class packages share the same mental model):** **Draft** = unfinished / never public. **Published** = live for eligible users. **Archived** = retired from catalogs (republish anytime); prefer Archive over hard delete. Admin list filters show contextual hints and status-specific empty states; path editor shows `statusHelp.active.*` under the status control. Class packages use the same distinction on `/admin/packages` (News-style list header; Learning keeps path-catalog chrome as the product hero).
+- Public **Classes** catalog (`/classes`): marketing-style cards, **search-only** (debounced, no sort tabs). Buy now → checkout directly; `/classes/{slug}` redirects to checkout. Pricing supports fractional `discount_percent` (see [PAYMENTS.md](./PAYMENTS.md)).
 - Create / save / remove-cover / archive / hard-delete / unused-tag-delete all use confirmation dialogs
 - List layout toggle: row list vs card grid (persisted in localStorage)
 - TipTap link insert uses an in-app dialog (http/https only), not the browser prompt
@@ -190,11 +193,11 @@ Media: cover/content images via existing media presign with `folder: cms`, clean
 - MIME/size validation for `cms/` uploads (5MB); folder allowlist
 - Tag delete is idempotent-safe and rejects in-use tags (`TAG_IN_USE`)
 
-## Paid access (future gateway)
+## Paid access (DOKU packages)
 
-1. Set `LEARNING_PAYWALL_ENABLED=true` on the Go API
-2. Give paid categories a `plan_key` other than `free`
-3. Have the payment provider write `user_learning_access` (`plan_key`, status `active`, optional window, `source`, `external_ref`)
-4. Leave the billing stub unwired until that writer exists. The grant table is the only contract; it does not name a gateway
+1. Admin publishes a class package with learning-path entitlements ([PAYMENTS.md](./PAYMENTS.md))
+2. Set learning path **Access mode** to Paid-only
+3. Set `LEARNING_PAYWALL_ENABLED=true` on the Go API
+4. Successful DOKU webhooks write `user_feature_grant` (and keep legacy `user_learning_access` as fallback)
 
-See also: [CMS.md](./CMS.md), [STORAGE.md](./STORAGE.md), [INTEGRATION.md](./INTEGRATION.md), [ENVIRONMENT.md](./ENVIRONMENT.md).
+See also: [PAYMENTS.md](./PAYMENTS.md), [CMS.md](./CMS.md), [STORAGE.md](./STORAGE.md), [INTEGRATION.md](./INTEGRATION.md), [ENVIRONMENT.md](./ENVIRONMENT.md).

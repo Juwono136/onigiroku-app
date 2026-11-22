@@ -65,6 +65,21 @@ export function AppBreadcrumb({ items, className }: Props) {
         } else if (!onList) {
           crumbs.push({ label: t("breadcrumb.categoryEdit") });
         }
+      } else if (pathname === "/admin/packages" || pathname.startsWith("/admin/packages/")) {
+        crumbs[0] = { label: t("breadcrumb.home"), href: "/admin" };
+        const onList = pathname === "/admin/packages";
+        crumbs.push({
+          label: t("breadcrumb.packages"),
+          href: onList ? undefined : "/admin/packages",
+        });
+        if (!onList) {
+          crumbs.push({
+            label:
+              segments[2] === "new"
+                ? t("breadcrumb.packageNew")
+                : t("breadcrumb.packageEdit"),
+          });
+        }
       } else if (pathname.startsWith("/admin/users")) {
         crumbs[0] = { label: t("breadcrumb.home"), href: "/admin" };
         crumbs.push({ label: t("breadcrumb.users") });

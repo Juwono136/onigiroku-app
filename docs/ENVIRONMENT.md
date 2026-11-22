@@ -74,16 +74,19 @@ Password harus ada di URL (setelah `redis://:`). Jika Redis lokal tanpa auth, te
 
 Template email memakai `EMAIL_LOGO_URL` lewat `src/lib/email/templates/` (layout modular + template auth Better Auth). Detail: [AUTH.md](./AUTH.md).
 
-## Storage / Logging / Health / Go / Xendit
+## Storage / Logging / Health / Go / DOKU
 
 Lihat `.env.example` untuk daftar lengkap key (template). Ringkas:
 
 - SeaweedFS: `STORAGE_*`, `USERNAME_STORAGE`, `PASSWORD_STORAGE` — lifecycle lengkap di [STORAGE.md](./STORAGE.md)
 - `LOG_LEVEL`, `HEALTH_CHECK_TOKEN`
 - Go: `GIN_MODE`, `API_*_TIMEOUT`, `API_RATE_LIMIT_MAX`, `INTERNAL_API_SECRET`
-- Xendit: `XENDIT_SECRET_KEY`, `XENDIT_CALLBACK_TOKEN`, `XENDIT_PUBLIC_KEY`
-  - Keys are present for a future payment integration. Learning access does not call a gateway. Grants, if any, are rows in `user_learning_access`.
-- `LEARNING_PAYWALL_ENABLED` (Go): unset, `false`, or anything other than `true`/`1` leaves every signed-in user on published learning paths. `true` requires `plan_key=free` or an active grant. See [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md).
+- DOKU Checkout: `DOKU_CLIENT_ID`, `DOKU_SECRET_KEY`, `DOKU_API_BASE_URL` — see [PAYMENTS.md](./PAYMENTS.md)
+  - Dashboard also shows API Key / Public Key / SNAP — **not used** by Onigiroku Checkout (HMAC Client ID + Secret Key only).
+  - Deprecated: `XENDIT_*` stubs were replaced by DOKU commerce.
+- `ALLOW_PAYMENT_SIMULATION`: local admin simulate-paid helper; must stay false/unset in production.
+- `LEARNING_PAYWALL_ENABLED` (Go): unset, `false`, or anything other than `true`/`1` leaves every signed-in user on published learning paths. `true` requires `access_mode=free` or an active `user_feature_grant` (legacy `user_learning_access` still honored). See [LEARNING_MATERIALS.md](./LEARNING_MATERIALS.md) and [PAYMENTS.md](./PAYMENTS.md).
+- `STORAGE_BUCKET` (default `onigiroku`): SeaweedFS namespace prefix for all new uploads (`onigiroku/cms/…`, `onigiroku/avatars/…`). See [STORAGE.md](./STORAGE.md).
 
 ## Production checklist
 

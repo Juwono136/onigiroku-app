@@ -22,7 +22,7 @@ type Props = {
 
 /**
  * Dedicated authenticated workspace chrome — separate from marketing SiteHeader/Footer.
- * Mobile uses a bottom dock (`AppMobileNav`) instead of relying only on the drawer.
+ * Students get a mobile bottom dock; admins rely on sidebar / drawer only.
  */
 export function AppShell({ user, role, children }: Props) {
   return (
@@ -36,7 +36,7 @@ export function AppShell({ user, role, children }: Props) {
           </div>
           <AppFooter role={role} />
         </div>
-        <AppMobileNav role={role} />
+        {role === "ADMIN" ? null : <AppMobileNav role={role} />}
       </div>
     </SidebarProvider>
   );
